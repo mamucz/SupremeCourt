@@ -8,7 +8,7 @@ namespace SupremeCourt.Infrastructure
         public DbSet<Player> Players { get; set; }
         public DbSet<Game> Games { get; set; }
         public DbSet<GameRound> GameRounds { get; set; }
-
+        public DbSet<User> Users { get; set; }
         public GameDbContext(DbContextOptions<GameDbContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

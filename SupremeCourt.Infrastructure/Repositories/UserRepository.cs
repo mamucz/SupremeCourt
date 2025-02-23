@@ -1,0 +1,33 @@
+﻿using Microsoft.EntityFrameworkCore;
+using SupremeCourt.Domain.Entities;
+using SupremeCourt.Domain.Interfaces;
+
+namespace SupremeCourt.Infrastructure.Repositories
+{
+    public class UserRepository : IUserRepository
+    {
+        private readonly GameDbContext _context;
+
+        public UserRepository(GameDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<User?> GetByUsernameAsync(string username)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+        }
+
+        public async Task AddAsync(User user)
+        {
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(User user)
+        {
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+        }
+    }
+}

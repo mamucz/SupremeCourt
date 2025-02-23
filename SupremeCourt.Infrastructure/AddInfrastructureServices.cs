@@ -15,6 +15,7 @@ namespace SupremeCourt.Infrastructure
 
             // Registrace repozitářů
             services.AddScoped<IPlayerRepository, PlayerRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
 
             return services;
         }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using SupremeCourt.Application.Services;
 
 namespace SupremeCourt.Application
 {
@@ -8,7 +9,9 @@ namespace SupremeCourt.Application
         {
             // Registrace handlerů a služeb Application vrstvy
             services.AddScoped<Players.Commands.CreatePlayerHandler>();
-
+            // Registrace AuthService
+            services.AddScoped<AuthService>();
+            services.AddSingleton<TokenBlacklistService>();
             return services;
         }
     }
