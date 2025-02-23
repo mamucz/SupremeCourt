@@ -1,0 +1,6 @@
+@SupremeCourt.Presentation_HostAddress = http://localhost:5069
+
+GET {{SupremeCourt.Presentation_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
