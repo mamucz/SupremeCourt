@@ -12,8 +12,8 @@ using SupremeCourt.Infrastructure;
 namespace SupremeCourt.Infrastructure.Migrations
 {
     [DbContext(typeof(GameDbContext))]
-    [Migration("20250223221742_AddUserTable")]
-    partial class AddUserTable
+    [Migration("20250224111643_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -55,17 +55,16 @@ namespace SupremeCourt.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<double>("AverageResult")
-                        .HasColumnType("float");
+                    b.Property<int>("CalculatedAverage")
+                        .HasColumnType("int");
 
                     b.Property<int>("GameId")
                         .HasColumnType("int");
 
-                    b.PrimitiveCollection<string>("SubmittedNumbers")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("RoundNumber")
+                        .HasColumnType("int");
 
-                    b.Property<int>("WinningNumber")
+                    b.Property<int>("WinningPlayerId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -89,16 +88,18 @@ namespace SupremeCourt.Infrastructure.Migrations
                     b.Property<bool>("IsEliminated")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("Score")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("GameId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("Players");
                 });
@@ -110,6 +111,9 @@ namespace SupremeCourt.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -126,11 +130,13 @@ namespace SupremeCourt.Infrastructure.Migrations
 
             modelBuilder.Entity("SupremeCourt.Domain.Entities.GameRound", b =>
                 {
-                    b.HasOne("SupremeCourt.Domain.Entities.Game", null)
+                    b.HasOne("SupremeCourt.Domain.Entities.Game", "Game")
                         .WithMany("Rounds")
                         .HasForeignKey("GameId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Game");
                 });
 
             modelBuilder.Entity("SupremeCourt.Domain.Entities.Player", b =>
@@ -138,7 +144,15 @@ namespace SupremeCourt.Infrastructure.Migrations
                     b.HasOne("SupremeCourt.Domain.Entities.Game", null)
                         .WithMany("Players")
                         .HasForeignKey("GameId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SupremeCourt.Domain.Entities.User", "User")
+                        .WithOne("Player")
+                        .HasForeignKey("SupremeCourt.Domain.Entities.Player", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SupremeCourt.Domain.Entities.Game", b =>
@@ -146,6 +160,11 @@ namespace SupremeCourt.Infrastructure.Migrations
                     b.Navigation("Players");
 
                     b.Navigation("Rounds");
+                });
+
+            modelBuilder.Entity("SupremeCourt.Domain.Entities.User", b =>
+                {
+                    b.Navigation("Player");
                 });
 #pragma warning restore 612, 618
         }

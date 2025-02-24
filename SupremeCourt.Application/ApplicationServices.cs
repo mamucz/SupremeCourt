@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using SupremeCourt.Application.Games.Commands;
 using SupremeCourt.Application.Services;
 
 namespace SupremeCourt.Application
@@ -12,6 +13,8 @@ namespace SupremeCourt.Application
             // Registrace AuthService
             services.AddScoped<AuthService>();
             services.AddSingleton<TokenBlacklistService>();
+            services.AddScoped<GameService>();
+            services.AddScoped<CreateGameHandler>();
             return services;
         }
     }

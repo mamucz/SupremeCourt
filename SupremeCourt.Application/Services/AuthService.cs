@@ -15,10 +15,12 @@ namespace SupremeCourt.Application.Services
         private readonly IConfiguration _configuration;
         private readonly TokenBlacklistService _tokenBlacklistService;
         private readonly ILogger<AuthService> _logger;
+        private readonly IPlayerRepository _playerRepository;
 
-        public AuthService(IUserRepository userRepository, IConfiguration configuration, TokenBlacklistService tokenBlacklistService, ILogger<AuthService> logger)
+        public AuthService(IUserRepository userRepository, IPlayerRepository playerRepository, IConfiguration configuration, TokenBlacklistService tokenBlacklistService, ILogger<AuthService> logger)
         {
             _userRepository = userRepository;
+            _playerRepository = playerRepository;
             _configuration = configuration;
             _tokenBlacklistService = tokenBlacklistService;
             _logger = logger;
@@ -58,11 +60,17 @@ namespace SupremeCourt.Application.Services
 
             var hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
             var user = new User { Username = username, PasswordHash = hashedPassword };
-            await _userRepository.AddAsync(user);
 
-            _logger.LogInformation("Uživatel {Username} úspěšně zaregistrován", username);
+            // Vytvoříme i Player při registraci Usera
+            var player = new Player { User = user, UserId = user.Id };
+
+            await _userRepository.AddAsync(user);
+            await _playerRepository.AddAsync(player); // Nová logika
+
+            _logger.LogInformation("Uživatel {Username} a jeho Player účet úspěšně vytvořeni", username);
             return true;
         }
+
 
         /// <summary>
         /// Odhlášení uživatele (přidání tokenu na blacklist).
@@ -78,21 +86,25 @@ namespace SupremeCourt.Application.Services
         /// </summary>
         public async Task<bool> DeleteUserAsync(string username, string token)
         {
-            _logger.LogInformation("Smazání uživatele: {Username}", username);
+            _logger.LogInformation("Mazání uživatele: {Username}", username);
 
             var user = await _userRepository.GetByUsernameAsync(username);
-            if (user == null)
+            if (user == null || user.Deleted)
             {
-                _logger.LogWarning("Uživatel {Username} nebyl nalezen", username);
+                _logger.LogWarning("Uživatel {Username} nenalezen nebo již smazán", username);
                 return false;
             }
 
-            await _userRepository.DeleteAsync(user);
+            user.Deleted = true; // Pouze označíme uživatele jako smazaného
+            await _userRepository.UpdateAsync(user);
             _tokenBlacklistService.BlacklistToken(token);
 
-            _logger.LogInformation("Uživatel {Username} úspěšně smazán", username);
+            _logger.LogInformation("Uživatel {Username} úspěšně označen jako smazaný", username);
             return true;
         }
+
+
+
 
         /// <summary>
         /// Generování JWT tokenu pro uživatele.

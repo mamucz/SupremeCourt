@@ -16,11 +16,5 @@ namespace SupremeCourt.Presentation.Controllers
             _createPlayerHandler = createPlayerHandler;
         }
 
-        [HttpPost("create")]
-        public async Task<IActionResult> CreatePlayer([FromBody] CreatePlayerCommand command)
-        {
-            var player = await _createPlayerHandler.Handle(command);
-            return Ok(player);
-        }
     }
 }

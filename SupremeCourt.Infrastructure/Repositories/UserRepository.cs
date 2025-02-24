@@ -24,10 +24,15 @@ namespace SupremeCourt.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(User user)
+        public async Task UpdateAsync(User user) // Přidáno
         {
-            _context.Users.Remove(user);
+            _context.Users.Update(user);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<User?> GetByIdAsync(int id)
+        {
+            return await _context.Users.FindAsync(id);
         }
     }
 }

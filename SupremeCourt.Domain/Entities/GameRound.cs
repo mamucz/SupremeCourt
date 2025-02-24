@@ -1,11 +1,23 @@
-﻿namespace SupremeCourt.Domain.Entities
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace SupremeCourt.Domain.Entities
 {
-    public record GameRound
+    public class GameRound
     {
+        [Key]
         public int Id { get; set; }
+
+        [ForeignKey("Game")]
         public int GameId { get; set; }
-        public List<int> SubmittedNumbers { get; set; } = new();
-        public double AverageResult { get; set; }
-        public int WinningNumber { get; set; }
+        public Game Game { get; set; } = null!;
+
+        public int RoundNumber { get; set; }
+
+        [NotMapped] // EF Core nebude mapovat tuto vlastnost
+        public Dictionary<int, int> PlayerChoices { get; set; } = new();
+
+        public int CalculatedAverage { get; set; }
+        public int WinningPlayerId { get; set; }
     }
 }

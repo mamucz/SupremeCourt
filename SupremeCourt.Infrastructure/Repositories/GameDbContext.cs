@@ -5,23 +5,27 @@ namespace SupremeCourt.Infrastructure
 {
     public class GameDbContext : DbContext
     {
-        public DbSet<Player> Players { get; set; }
-        public DbSet<Game> Games { get; set; }
-        public DbSet<GameRound> GameRounds { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Player> Players { get; set; }
+        public DbSet<Game> Games { get; set; } // Přidáno
+        public DbSet<GameRound> GameRounds { get; set; } // Přidáno
+
         public GameDbContext(DbContextOptions<GameDbContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // 1:M vztah mezi Game a Players
             modelBuilder.Entity<Game>()
                 .HasMany(g => g.Players)
                 .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);  // ⚠️ Zabránění cyklům smazání
 
+            // 1:M vztah mezi Game a GameRounds
             modelBuilder.Entity<Game>()
                 .HasMany(g => g.Rounds)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
+                .WithOne(r => r.Game)
+                .HasForeignKey(r => r.GameId)
+                .OnDelete(DeleteBehavior.Restrict);  // ⚠️ Zabránění cyklům smazání
         }
     }
 }
