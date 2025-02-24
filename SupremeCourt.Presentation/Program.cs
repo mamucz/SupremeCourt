@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
 using SupremeCourt.Application;
 using SupremeCourt.Infrastructure;
 using SupremeCourt.Presentation;
@@ -10,6 +11,17 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Nastavení Serilogu
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File("logs/app.log", rollingInterval: RollingInterval.Day)
+    .WriteTo.Seq(builder.Configuration["Seq:Url"] ?? "http://localhost:5341")
+    .CreateLogger();
+
+// Použití Serilogu místo výchozího logování
+builder.Host.UseSerilog();
 // Naètení connection stringu
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
