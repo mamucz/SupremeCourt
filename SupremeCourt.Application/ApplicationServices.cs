@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SupremeCourt.Application.Games.Commands;
 using SupremeCourt.Application.Services;
+using SupremeCourt.Domain.Interfaces;
 
 namespace SupremeCourt.Application
 {
@@ -13,8 +14,9 @@ namespace SupremeCourt.Application
             // Registrace AuthService
             services.AddScoped<AuthService>();
             services.AddSingleton<TokenBlacklistService>();
-            services.AddScoped<GameService>();
             services.AddScoped<CreateGameHandler>();
+            services.AddScoped<IGameService, GameService>();
+            services.AddScoped<IWaitingRoomService, WaitingRoomService>(); // ✅ Přidáno
             return services;
         }
     }

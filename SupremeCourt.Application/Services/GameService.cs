@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using SupremeCourt.Domain.Entities;
 using SupremeCourt.Domain.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace SupremeCourt.Application.Services
 {
-    public class GameService
+    public class GameService : IGameService
     {
         private readonly IGameRepository _gameRepository;
         private readonly IPlayerRepository _playerRepository;
@@ -18,6 +19,19 @@ namespace SupremeCourt.Application.Services
             _gameRepository = gameRepository;
             _playerRepository = playerRepository;
             _logger = logger;
+        }
+
+        public async Task<Game?> CreateGameAsync()
+        {
+            var game = new Game();
+            await _gameRepository.AddAsync(game);
+            _logger.LogInformation("Hra {GameId} vytvořena.", game.Id);
+            return game;
+        }
+
+        public async Task<Game?> GetGameByIdAsync(int gameId)
+        {
+            return await _gameRepository.GetByIdAsync(gameId);
         }
 
         public async Task<GameRound> StartNewRound(int gameId, Dictionary<int, int> playerChoices)
@@ -45,7 +59,6 @@ namespace SupremeCourt.Application.Services
             {
                 GameId = gameId,
                 RoundNumber = game.RoundNumber,
-                PlayerChoices = playerChoices,
                 CalculatedAverage = calculatedAverage,
                 WinningPlayerId = winningPlayerId
             };

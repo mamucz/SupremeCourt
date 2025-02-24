@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+Ôªøusing Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -8,10 +8,12 @@ using SupremeCourt.Presentation;
 using SupremeCourt.Presentation.Hubs;
 using SupremeCourt.Presentation.Middleware;
 using System.Text;
+using SupremeCourt.Application.Background;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
-// NastavenÌ Serilogu
+// Nastaven√≠ Serilogu
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
@@ -20,17 +22,17 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Seq(builder.Configuration["Seq:Url"] ?? "http://localhost:5341")
     .CreateLogger();
 
-// PouûitÌ Serilogu mÌsto v˝chozÌho logov·nÌ
+// Pou≈æit√≠ Serilogu m√≠sto v√Ωchoz√≠ho logov√°n√≠
 builder.Host.UseSerilog();
-// NaËtenÌ connection stringu
+// Naƒçten√≠ connection stringu
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// NaËtenÌ konfigurace JWT
+// Naƒçten√≠ konfigurace JWT
 var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 var jwtAudience = builder.Configuration["Jwt:Audience"];
 
-// Registrace autentizace a autorizace pomocÌ JWT
+// Registrace autentizace a autorizace pomoc√≠ JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -54,11 +56,11 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "SupremeCourt API", Version = "v1" });
 
-    // P¯id·nÌ moûnosti zadat JWT token do Swaggeru
+    // P≈ôid√°n√≠ mo≈ænosti zadat JWT token do Swaggeru
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
-        Description = "Vloûte JWT token s 'Bearer ' p¯edponou",
+        Description = "Vlo≈æte JWT token s 'Bearer ' p≈ôedponou",
         Name = "Authorization",
         Type = SecuritySchemeType.ApiKey,
         Scheme = "Bearer"
@@ -80,11 +82,12 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// Registrace sluûeb z jednotliv˝ch vrstev
+// Registrace slu≈æeb z jednotliv√Ωch vrstev
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(connectionString);
 builder.Services.AddPresentationServices();
-
+// P≈ôid√°n√≠ BackgroundService pro monitoring WaitingRoom
+builder.Services.AddHostedService<WaitingRoomMonitor>(); // ‚úÖ P≈ôid√°no
 var app = builder.Build();
 
 // Middleware
