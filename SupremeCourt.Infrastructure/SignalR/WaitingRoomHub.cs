@@ -4,10 +4,18 @@ namespace SupremeCourt.Infrastructure.SignalR
 {
     public class WaitingRoomHub : Hub
     {
+        private static readonly HashSet<string> _connectedUsers = new();
         public async Task JoinRoom(string gameId)
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, gameId);
-            await Clients.Group(gameId).SendAsync("PlayerJoined", $"Hráč se připojil k místnosti {gameId}");
+            var connectionId = Context.ConnectionId;
+
+            // Kontrola, zda už je uživatel připojen
+            if (!_connectedUsers.Contains(connectionId))
+            {
+                _connectedUsers.Add(connectionId);
+                await Groups.AddToGroupAsync(connectionId, gameId);
+                await Clients.Group(gameId).SendAsync("PlayerJoined", $"Hráč se připojil k místnosti {gameId}");
+            }
         }
     }
 }

@@ -1,16 +1,17 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 
-namespace SupremeCourt.Infrastructure.SignalR;
-
-public class GameHub : Hub
+namespace SupremeCourt.Infrastructure.SignalR
 {
-    public async Task SendGameUpdate(string gameId, string message)
+    public class GameHub : Hub
     {
-        await Clients.Group(gameId).SendAsync("GameUpdated", message);
-    }
+        public async Task SendGameUpdate(string gameId, string message)
+        {
+            await Clients.Group(gameId).SendAsync("GameUpdated", message);
+        }
 
-    public async Task JoinGame(string gameId)
-    {
-        await Groups.AddToGroupAsync(Context.ConnectionId, gameId);
+        public async Task JoinGame(string gameId)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, gameId);
+        }
     }
 }
