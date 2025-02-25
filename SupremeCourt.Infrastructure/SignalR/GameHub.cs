@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 
-namespace SupremeCourt.Presentation.Hubs;
+namespace SupremeCourt.Infrastructure.SignalR;
 
 public class GameHub : Hub
 {

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "SignalRTesting": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

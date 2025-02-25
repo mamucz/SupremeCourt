@@ -2,6 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using SupremeCourt.Application.Services;
 using System.Security.Claims;
+using SupremeCourt.Domain.DTOs;
+using SupremeCourt.Domain.Interfaces; // ✅ Přidáme using pro správnou definici UserDto
+
 
 namespace SupremeCourt.Presentation.Controllers
 {
@@ -9,10 +12,10 @@ namespace SupremeCourt.Presentation.Controllers
     [Route("api/auth")]
     public class AuthController : ControllerBase
     {
-        private readonly AuthService _authService;
+        private readonly IAuthService _authService;
         private readonly TokenBlacklistService _tokenBlacklistService;
 
-        public AuthController(AuthService authService, TokenBlacklistService tokenBlacklistService)
+        public AuthController(IAuthService authService, TokenBlacklistService tokenBlacklistService)
         {
             _authService = authService;
             _tokenBlacklistService = tokenBlacklistService;
@@ -68,6 +71,4 @@ namespace SupremeCourt.Presentation.Controllers
             return Ok("User deleted successfully.");
         }
     }
-
-    public record UserDto(string Username, string Password);
 }

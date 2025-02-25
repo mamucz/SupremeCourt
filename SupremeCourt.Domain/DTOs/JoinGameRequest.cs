@@ -1,4 +1,4 @@
-﻿namespace SupremeCourt.Application.DTOs
+﻿namespace SupremeCourt.Domain.DTOs
 {
     public class JoinGameRequest
     {

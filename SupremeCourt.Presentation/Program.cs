@@ -5,11 +5,10 @@ using Serilog;
 using SupremeCourt.Application;
 using SupremeCourt.Infrastructure;
 using SupremeCourt.Presentation;
-using SupremeCourt.Presentation.Hubs;
 using SupremeCourt.Presentation.Middleware;
 using System.Text;
 using SupremeCourt.Application.Background;
-
+using SupremeCourt.Infrastructure.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,8 +21,8 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Seq(builder.Configuration["Seq:Url"] ?? "http://localhost:5341")
     .CreateLogger();
 
-// Použití Serilogu místo výchozího logování
 builder.Host.UseSerilog();
+
 // Načtení connection stringu
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -56,7 +55,6 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "SupremeCourt API", Version = "v1" });
 
-    // Přidání možnosti zadat JWT token do Swaggeru
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
@@ -86,8 +84,8 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(connectionString);
 builder.Services.AddPresentationServices();
-// Přidání BackgroundService pro monitoring WaitingRoom
-builder.Services.AddHostedService<WaitingRoomMonitor>(); // ✅ Přidáno
+builder.Services.AddHostedService<WaitingRoomMonitor>();
+
 var app = builder.Build();
 
 // Middleware
@@ -96,11 +94,18 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseSerilogRequestLogging();
+
+app.UseRouting(); // ✅ Zajišťuje správné směrování
+
 app.UseMiddleware<BlacklistTokenMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// ✅ Použití registrací tras nejvyšší úrovně místo app.UseEndpoints()
 app.MapControllers();
 app.MapHub<GameHub>("/gameHub");
+app.MapHub<WaitingRoomHub>("/waitingRoomHub");
 
 app.Run();

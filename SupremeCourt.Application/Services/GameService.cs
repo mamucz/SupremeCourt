@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using SupremeCourt.Domain.Entities;
 using SupremeCourt.Domain.Interfaces;
 using Microsoft.Extensions.Logging;
+using SupremeCourt.Domain.Logic;
 
 namespace SupremeCourt.Application.Services
 {
@@ -36,8 +37,6 @@ namespace SupremeCourt.Application.Services
 
         public async Task<GameRound> StartNewRound(int gameId, Dictionary<int, int> playerChoices)
         {
-            _logger.LogInformation("Spouštím nové kolo pro hru ID: {GameId}", gameId);
-
             var game = await _gameRepository.GetByIdAsync(gameId);
             if (game == null || !game.IsActive)
             {
@@ -45,48 +44,31 @@ namespace SupremeCourt.Application.Services
                 throw new InvalidOperationException("Hra neexistuje nebo není aktivní.");
             }
 
-            // Výpočet zaokrouhleného průměru * 0.8
-            double average = playerChoices.Values.Average();
-            int calculatedAverage = (int)Math.Round(average * 0.8);
+            GameRules.ProcessRound(game, playerChoices); // ✅ Voláme logiku z Domain
 
-            // Hledání hráče s nejbližší hodnotou k výsledku
-            int winningPlayerId = playerChoices
-                .OrderBy(p => Math.Abs(p.Value - calculatedAverage))
-                .First().Key;
+            await _gameRepository.UpdateAsync(game);
 
-            // Vytvoření nového kola
-            var round = new GameRound
+            return new GameRound
             {
                 GameId = gameId,
                 RoundNumber = game.RoundNumber,
-                CalculatedAverage = calculatedAverage,
-                WinningPlayerId = winningPlayerId
+                PlayerChoices = playerChoices,
+                CalculatedAverage = (int)Math.Round(playerChoices.Values.Average() * 0.8),
+                WinningPlayerId = playerChoices.OrderBy(p => Math.Abs(p.Value - (int)Math.Round(playerChoices.Values.Average() * 0.8))).First().Key
             };
-
-            // Snížení skóre hráčům, kteří nevyhráli
-            foreach (var playerId in playerChoices.Keys)
-            {
-                if (playerId != winningPlayerId)
-                {
-                    var player = await _playerRepository.GetByIdAsync(playerId);
-                    if (player != null)
-                    {
-                        player.Score -= 1;
-                        if (player.Score <= -10)
-                        {
-                            player.IsEliminated = true;
-                        }
-                        await _playerRepository.UpdateAsync(player);
-                    }
-                }
-            }
-
-            game.RoundNumber++;
-            await _gameRepository.UpdateAsync(game);
-
-            _logger.LogInformation("Kolo {RoundNumber} dokončeno. Vítězem je hráč ID {WinningPlayerId}", round.RoundNumber, winningPlayerId);
-
-            return round;
         }
+        public async Task<bool> StartGameAsync(int gameId)
+        {
+            var game = await _gameRepository.GetByIdAsync(gameId);
+            if (game == null || game.IsActive) return false;
+
+            GameRules.StartGame(game); // ✅ Voláme logiku z Domain
+
+            await _gameRepository.UpdateAsync(game);
+            _logger.LogInformation($"Hra {gameId} byla spuštěna.");
+
+            return true;
+        }
+
     }
 }

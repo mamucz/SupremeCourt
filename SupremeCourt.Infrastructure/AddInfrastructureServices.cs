@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using SupremeCourt.Domain.Interfaces;
 using SupremeCourt.Infrastructure.Repositories;
+using SupremeCourt.Infrastructure.Services;
 
 namespace SupremeCourt.Infrastructure
 {
@@ -16,6 +17,8 @@ namespace SupremeCourt.Infrastructure
             services.AddScoped<IPlayerRepository, PlayerRepository>(); // Registrace PlayerRepository
             services.AddScoped<IGameRepository, GameRepository>();
             services.AddScoped<IWaitingRoomRepository, WaitingRoomRepository>(); // ✅ Přidáno
+            services.AddScoped<IWaitingRoomNotifier, WaitingRoomNotifier>(); // ✅ Registrace Notifieru
+            services.AddSignalR();
             return services;
         }
     }

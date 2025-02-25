@@ -9,7 +9,7 @@ using SupremeCourt.Domain.Interfaces;
 
 namespace SupremeCourt.Application.Services
 {
-    public class AuthService
+    public class AuthService : IAuthService
     {
         private readonly IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
