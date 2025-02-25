@@ -103,4 +103,4 @@ ng serve
 | Angular           | ✅ |
 
 📌 **License:** MIT  
-📌 **Authors:** [Your GitHub Username]
+📌 **Authors:** [mamucz(Petr Ondra - Back End && Tobias Ondra - Front End)]
