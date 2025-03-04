@@ -11,7 +11,7 @@
 5. **Penalties:**
    - Other players lose 1 point.
    - If a player reaches **-10 points**, they are eliminated.
-6. **Special Rules:**  
+6. **Special Rules: (each is applied after the elimination of one player)**  
    - If two players choose the same number, both lose a point.
    - If someone hits the exact result, all others lose 2 points.
    - If a player selects **0**, another player can win by selecting **100**.
