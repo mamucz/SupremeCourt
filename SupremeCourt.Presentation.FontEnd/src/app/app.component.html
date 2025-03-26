@@ -1,0 +1,22 @@
+<!-- 
+Autor: Petr Ondra
+Date: 9.3.2021
+Description: Root component
+File Name: app.component.html
+-->
+
+<!-- Navigace -->
+<nav style="margin-bottom: 1rem;">
+    <ng-container *ngIf="!auth.isLoggedIn(); else loggedIn">
+      <a routerLink="/login" style="margin-right: 10px;">🔐 Login</a>
+      <a routerLink="/register">📝 Register</a>
+    </ng-container>
+  
+    <ng-template #loggedIn>
+      <a routerLink="/waiting-rooms" style="margin-right: 10px;">🕹️ Waiting Rooms</a>
+      <a href="#" (click)="logout()">🚪 Logout</a>
+    </ng-template>
+  </nav>
+  
+  <router-outlet />
+  

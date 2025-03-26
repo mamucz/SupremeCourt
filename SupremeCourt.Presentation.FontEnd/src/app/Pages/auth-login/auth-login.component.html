@@ -1,0 +1,22 @@
+<!-- 
+Autor: Petr Ondra
+Date: 9.3.2021
+Description: Login page component
+Finle Name: auth-login.component.html
+-->
+<form (ngSubmit)="onSubmit()">
+    <input [(ngModel)]="username" name="username" placeholder="Uživatelské jméno" required>
+    <input [(ngModel)]="password" name="password" placeholder="Heslo" type="password" required>
+    <button type="submit">Přihlásit</button>
+  </form>
+  
+  <!-- ✅ Úspěšná zpráva -->
+  <div *ngIf="message" style="color: green;">
+    {{ message }}
+  </div>
+  
+  <!-- ❌ Chybová zpráva -->
+  <div *ngIf="errorMessage" style="color: red;">
+    {{ errorMessage }}
+  </div>  
+

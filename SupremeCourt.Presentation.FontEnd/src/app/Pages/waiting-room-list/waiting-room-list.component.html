@@ -1,0 +1,32 @@
+<h2>🎮 Čekací místnosti</h2>
+
+<button (click)="createGame()">➕ Vytvořit novou místnost</button>
+
+<div *ngIf="message" style="color: green;">{{ message }}</div>
+<div *ngIf="error" style="color: red;">{{ error }}</div>
+
+<table *ngIf="waitingRooms.length > 0" border="1" style="margin-top: 1rem;">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Vytvořeno</th>
+      <th>Hráč</th>
+      <th>Hráči</th>
+      <th>Akce</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let room of waitingRooms">
+      <td>{{ room.waitingRoomId }}</td>
+      <td>{{ room.createdAt | date:'short' }}</td>
+      <td>{{ room.createdBy }}</td>
+      <td>{{ room.playerCount }}/5</td>
+      <td>
+        <!-- Zde je pevný playerId – nahradit dynamicky podle přihlášení -->
+        <button (click)="joinRoom(room.waitingRoomId, 1)">Join</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<p *ngIf="waitingRooms.length === 0">Žádné dostupné čekací místnosti.</p>
