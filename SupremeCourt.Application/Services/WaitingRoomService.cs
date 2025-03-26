@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using SupremeCourt.Domain.DTOs;
 using SupremeCourt.Domain.Entities;
 using SupremeCourt.Domain.Interfaces;
 using SupremeCourt.Domain.Logic;
@@ -82,6 +83,32 @@ namespace SupremeCourt.Application.Services
         public async Task<List<WaitingRoom>> GetAllWaitingRoomsAsync() // ✅ Přidáno
         {
             return await _waitingRoomRepository.GetAllAsync();
+        }
+
+        public async Task<List<WaitingRoomInfoDto>> GetWaitingRoomSummariesAsync()
+        {
+            var all = await _waitingRoomRepository.GetAllAsync();
+
+            var filtered = all
+                .Where(wr =>
+                    wr.Game != null &&
+                    !wr.Game.IsActive &&
+                    wr.Players.Count < GameRules.MaxPlayers)
+                .Select(wr =>
+                {
+                    var creator = wr.Players.FirstOrDefault()?.User?.Username ?? "Neznámý";
+
+                    return new WaitingRoomInfoDto
+                    {
+                        WaitingRoomId = wr.Id,
+                        CreatedAt = wr.CreatedAt,
+                        CreatedBy = creator,
+                        PlayerCount = wr.Players.Count
+                    };
+                })
+                .ToList();
+
+            return filtered;
         }
     }
 }

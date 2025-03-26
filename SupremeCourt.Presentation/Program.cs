@@ -86,6 +86,19 @@ builder.Services.AddInfrastructureServices(connectionString);
 builder.Services.AddPresentationServices();
 builder.Services.AddHostedService<WaitingRoomMonitor>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:4200") // ✅ tvoje Angular adresa
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials(); // ✅ nutné pokud používáš cookies nebo SignalR
+    });
+});
+
+
 var app = builder.Build();
 
 // Middleware
@@ -98,7 +111,7 @@ if (app.Environment.IsDevelopment())
 app.UseSerilogRequestLogging();
 
 app.UseRouting(); // ✅ Zajišťuje správné směrování
-
+app.UseCors();
 app.UseMiddleware<BlacklistTokenMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();

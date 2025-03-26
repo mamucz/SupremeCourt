@@ -26,20 +26,26 @@ namespace SupremeCourt.Presentation.Controllers
         {
             var success = await _authService.RegisterAsync(user.Username, user.Password);
             if (!success)
-                return BadRequest("User already exists.");
+                return BadRequest(new { message = "User already exists." });
 
-            return Ok("Registration successful");
+            return Ok(new { message = "Registration successful" }); // ✅ objekt s klíčem message
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserDto user)
         {
             var token = await _authService.AuthenticateAsync(user.Username, user.Password);
-            if (token == null)
-                return Unauthorized();
 
-            return Ok(new { Token = token });
+            if (token == null)
+                return Unauthorized(new { message = "Invalid username or password." });
+
+            return Ok(new
+            {
+                message = "Login successful",
+                token = token
+            });
         }
+
 
         [Authorize]
         [HttpPost("logout")]
@@ -48,11 +54,13 @@ namespace SupremeCourt.Presentation.Controllers
             var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
             if (string.IsNullOrEmpty(token))
-                return BadRequest("No token provided.");
+                return BadRequest(new { message = "No token provided." });
 
             _tokenBlacklistService.BlacklistToken(token);
-            return Ok("Logged out successfully.");
+
+            return Ok(new { message = "Logged out successfully." });
         }
+
 
         [Authorize]
         [HttpDelete("delete")]
@@ -66,9 +74,9 @@ namespace SupremeCourt.Presentation.Controllers
 
             var success = await _authService.DeleteUserAsync(username, token);
             if (!success)
-                return NotFound("User not found.");
+                return NotFound(new {message = "User not found."});
 
-            return Ok("User deleted successfully.");
+            return Ok(new { message = "User deleted successfully." });
         }
     }
 }

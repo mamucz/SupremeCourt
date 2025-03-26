@@ -11,12 +11,14 @@ namespace SupremeCourt.Application
         {
             // Registrace handlerů a služeb Application vrstvy
             services.AddScoped<Players.Commands.CreatePlayerHandler>();
-            // Registrace AuthService
-            services.AddScoped<AuthService>();
-            services.AddSingleton<TokenBlacklistService>();
             services.AddScoped<CreateGameHandler>();
+
+            // Registrace služeb
+            services.AddScoped<IAuthService, AuthService>();            // ✅ OPRAVA zde
             services.AddScoped<IGameService, GameService>();
-            services.AddScoped<IWaitingRoomService, WaitingRoomService>(); // ✅ Přidáno
+            services.AddScoped<IWaitingRoomService, WaitingRoomService>();
+            services.AddSingleton<TokenBlacklistService>();
+            services.AddScoped<ICreateGameHandler, CreateGameHandler>();
             return services;
         }
     }

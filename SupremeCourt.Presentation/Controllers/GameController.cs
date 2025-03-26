@@ -51,5 +51,13 @@ namespace SupremeCourt.Presentation.Controllers
 
             return Ok("Joined successfully.");
         }
+
+        [HttpGet("waitingrooms")]
+        public async Task<IActionResult> GetWaitingRooms()
+        {
+            var rooms = await _waitingRoomService.GetWaitingRoomSummariesAsync();
+            return Ok(rooms);
+        }
+
     }
 }

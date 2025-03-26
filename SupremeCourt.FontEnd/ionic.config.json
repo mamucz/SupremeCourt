@@ -1,7 +1,0 @@
-{
-  "name": "SupremeCourt.FrontEnd",
-  "integrations": {
-    "capacitor": {}
-  },
-  "type": "angular-standalone"
-}

@@ -1,4 +1,5 @@
-﻿using SupremeCourt.Domain.Entities;
+﻿using SupremeCourt.Domain.DTOs;
+using SupremeCourt.Domain.Entities;
 
 namespace SupremeCourt.Domain.Interfaces
 {
@@ -8,5 +9,6 @@ namespace SupremeCourt.Domain.Interfaces
         Task<bool> JoinWaitingRoomAsync(int gameId, int playerId);
         Task<bool> IsTimeExpiredAsync(int gameId);
         Task<List<WaitingRoom>> GetAllWaitingRoomsAsync(); // ✅ Přidáno
+        Task<List<WaitingRoomInfoDto>> GetWaitingRoomSummariesAsync(); // ✅ Přidáno
     }
 }
