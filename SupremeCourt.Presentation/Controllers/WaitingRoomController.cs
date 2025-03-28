@@ -19,24 +19,24 @@ namespace SupremeCourt.Presentation.Controllers
             _gameService = gameService;
         }
 
-        /// <summary>
-        /// Vytvoří novou hru a waiting room.
+        // <summary>
+        /// Vytvoří novou waiting room pro hráče.
         /// </summary>
         [HttpPost("create")]
-        public async Task<IActionResult> CreateGameAndWaitingRoom([FromBody] CreateGameDto dto)
+        public async Task<IActionResult> CreateWaitingRoom([FromBody] CreateWaitingRoomRequest request)
         {
-            var game = await _gameService.CreateGameAsync();
-            if (game == null)
-                return BadRequest("Game creation failed.");
+            if (request.PlayerId <= 0)
+                return BadRequest("Neplatné ID hráče.");
 
-            var waitingRoom = await _waitingRoomService.CreateWaitingRoomAsync(game.Id);
+            var waitingRoom = await _waitingRoomService.CreateWaitingRoomAsync(request.PlayerId);
             if (waitingRoom == null)
                 return BadRequest("Waiting room creation failed.");
 
             return Ok(new
             {
-                GameId = game.Id,
-                WaitingRoomId = waitingRoom.Id
+                WaitingRoomId = waitingRoom.Id,
+                CreatedAt = waitingRoom.CreatedAt,
+                CreatedByPlayerId = waitingRoom.CreatedByPlayerId
             });
         }
 
@@ -50,6 +50,13 @@ namespace SupremeCourt.Presentation.Controllers
             if (!result) return BadRequest("Failed to join the game.");
 
             return Ok("Joined successfully.");
+        }
+
+        [HttpGet("waitingrooms")]
+        public async Task<IActionResult> GetWaitingRooms()
+        {
+            var rooms = await _waitingRoomService.GetWaitingRoomSummariesAsync();
+            return Ok(rooms);
         }
     }
 }

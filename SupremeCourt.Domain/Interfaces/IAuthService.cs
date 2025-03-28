@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using SupremeCourt.Domain.Entities;
 
 namespace SupremeCourt.Domain.Interfaces
 {
@@ -6,6 +7,7 @@ namespace SupremeCourt.Domain.Interfaces
     {
         Task<string?> AuthenticateAsync(string username, string password);
         Task<bool> RegisterAsync(string username, string password);
-        Task<bool> DeleteUserAsync(string username, string token); // ✅ Přidáno
+        Task<bool> DeleteUserAsync(string username, string token);
+        Task<User?> GetUserByUsernameAsync(string username);
     }
 }

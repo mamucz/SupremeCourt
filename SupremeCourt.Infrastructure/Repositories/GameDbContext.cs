@@ -33,6 +33,12 @@ namespace SupremeCourt.Infrastructure
                 .WithOne()
                 .HasForeignKey<WaitingRoom>(w => w.GameId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Player>()
+                .HasOne(p => p.User)
+                .WithOne(u => u.Player)
+                .HasForeignKey<Player>(p => p.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

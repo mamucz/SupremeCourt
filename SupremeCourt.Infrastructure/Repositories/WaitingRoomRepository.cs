@@ -35,5 +35,11 @@ namespace SupremeCourt.Infrastructure.Repositories
         {
             return await _context.WaitingRooms.Include(w => w.Players).ToListAsync();
         }
+
+        public async Task DeleteAsync(WaitingRoom waitingRoom)
+        {
+            _context.WaitingRooms.Remove(waitingRoom);
+            await _context.SaveChangesAsync();
+        }
     }
 }

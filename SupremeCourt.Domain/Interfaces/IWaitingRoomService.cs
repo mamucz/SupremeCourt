@@ -7,7 +7,6 @@ namespace SupremeCourt.Domain.Interfaces
     {
         Task<WaitingRoom?> CreateWaitingRoomAsync(int gameId);
         Task<bool> JoinWaitingRoomAsync(int gameId, int playerId);
-        Task<bool> IsTimeExpiredAsync(int gameId);
         Task<List<WaitingRoom>> GetAllWaitingRoomsAsync(); // ✅ Přidáno
         Task<List<WaitingRoomInfoDto>> GetWaitingRoomSummariesAsync(); // ✅ Přidáno
     }

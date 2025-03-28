@@ -130,5 +130,10 @@ namespace SupremeCourt.Application.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+        public async Task<User?> GetUserByUsernameAsync(string username)
+        {
+            return await _userRepository.GetByUsernameAsync(username);
+        }
     }
 }

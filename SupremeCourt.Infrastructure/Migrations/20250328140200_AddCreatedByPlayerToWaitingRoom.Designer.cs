@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SupremeCourt.Infrastructure;
 
@@ -11,9 +12,11 @@ using SupremeCourt.Infrastructure;
 namespace SupremeCourt.Infrastructure.Migrations
 {
     [DbContext(typeof(GameDbContext))]
-    partial class GameDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250328140200_AddCreatedByPlayerToWaitingRoom")]
+    partial class AddCreatedByPlayerToWaitingRoom
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -176,7 +179,7 @@ namespace SupremeCourt.Infrastructure.Migrations
                     b.HasOne("SupremeCourt.Domain.Entities.User", "User")
                         .WithOne("Player")
                         .HasForeignKey("SupremeCourt.Domain.Entities.Player", "UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("SupremeCourt.Domain.Entities.WaitingRoom", null)

@@ -15,7 +15,9 @@ namespace SupremeCourt.Infrastructure.Repositories
 
         public async Task<Player?> GetByIdAsync(int id)
         {
-            return await _context.Players.FindAsync(id);
+            return await _context.Players
+                .Include(p => p.User)
+                .FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task<Player?> GetByUserIdAsync(int userId)

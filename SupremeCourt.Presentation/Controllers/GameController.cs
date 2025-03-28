@@ -43,21 +43,5 @@ namespace SupremeCourt.Presentation.Controllers
                 WaitingRoomId = waitingRoom?.Id
             });
         }
-        [HttpPost("join")]
-        public async Task<IActionResult> JoinGame([FromBody] JoinGameRequest request)
-        {
-            var result = await _waitingRoomService.JoinWaitingRoomAsync(request.GameId, request.PlayerId);
-            if (!result) return BadRequest("Failed to join the game.");
-
-            return Ok("Joined successfully.");
-        }
-
-        [HttpGet("waitingrooms")]
-        public async Task<IActionResult> GetWaitingRooms()
-        {
-            var rooms = await _waitingRoomService.GetWaitingRoomSummariesAsync();
-            return Ok(rooms);
-        }
-
     }
 }

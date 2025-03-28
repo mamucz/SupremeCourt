@@ -5,6 +5,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using SupremeCourt.Domain.Interfaces;
+using Microsoft.Extensions.Configuration;
+using SupremeCourt.Domain.Logic;
+
 
 namespace SupremeCourt.Application.Background
 {
@@ -12,11 +15,14 @@ namespace SupremeCourt.Application.Background
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<WaitingRoomMonitor> _logger;
+        private readonly int _expirationMinutes;
 
-        public WaitingRoomMonitor(IServiceScopeFactory scopeFactory, ILogger<WaitingRoomMonitor> logger)
+        public WaitingRoomMonitor(IServiceScopeFactory scopeFactory, ILogger<WaitingRoomMonitor> logger, IConfiguration configuration)
         {
             _scopeFactory = scopeFactory;
             _logger = logger;
+            _expirationMinutes = _expirationMinutes = configuration.GetValue<int>("WaitingRoom:ExpirationMinutes", 15);
+
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -25,17 +31,21 @@ namespace SupremeCourt.Application.Background
             {
                 using var scope = _scopeFactory.CreateScope();
                 var waitingRoomService = scope.ServiceProvider.GetRequiredService<IWaitingRoomService>();
+                var waitingRoomRepository = scope.ServiceProvider.GetRequiredService<IWaitingRoomRepository>();
 
                 var allWaitingRooms = await waitingRoomService.GetAllWaitingRoomsAsync();
+
                 foreach (var waitingRoom in allWaitingRooms)
                 {
-                    if (await waitingRoomService.IsTimeExpiredAsync(waitingRoom.GameId))
+                    var isExpired = DateTime.UtcNow > waitingRoom.CreatedAt.AddMinutes(_expirationMinutes);
+                    var hasEnoughPlayers = waitingRoom.Players.Count >= GameRules.MaxPlayers;
+
+                    if (isExpired && !hasEnoughPlayers)
                     {
-                        _logger.LogInformation($"WaitingRoom {waitingRoom.Id} expired. Starting game.");
-                        // Zde bychom zavolali start hry
+                        await waitingRoomRepository.DeleteAsync(waitingRoom);
+                        _logger.LogInformation("🗑️ WaitingRoom {Id} byl zrušen – expiroval a nemá dost hráčů.", waitingRoom.Id);
                     }
                 }
-
                 await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
             }
         }

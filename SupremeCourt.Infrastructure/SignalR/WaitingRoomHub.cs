@@ -17,5 +17,9 @@ namespace SupremeCourt.Infrastructure.SignalR
                 await Clients.Group(gameId).SendAsync("PlayerJoined", $"Hráč se připojil k místnosti {gameId}");
             }
         }
+        public async Task JoinWaitingRoomList()
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, "waitingroom-list");
+        }
     }
 }

@@ -1,6 +1,6 @@
 <h2>🎮 Čekací místnosti</h2>
 
-<button (click)="createGame()">➕ Vytvořit novou místnost</button>
+<button (click)="createWaitingRoom()">➕ Vytvořit novou místnost</button>
 
 <div *ngIf="message" style="color: green;">{{ message }}</div>
 <div *ngIf="error" style="color: red;">{{ error }}</div>
@@ -23,7 +23,7 @@
       <td>{{ room.playerCount }}/5</td>
       <td>
         <!-- Zde je pevný playerId – nahradit dynamicky podle přihlášení -->
-        <button (click)="joinRoom(room.waitingRoomId, 1)">Join</button>
+        <button (click)="joinRoom(room.waitingRoomId)">Join</button>
       </td>
     </tr>
   </tbody>

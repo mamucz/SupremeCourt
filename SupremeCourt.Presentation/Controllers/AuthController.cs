@@ -35,14 +35,16 @@ namespace SupremeCourt.Presentation.Controllers
         public async Task<IActionResult> Login([FromBody] UserDto user)
         {
             var token = await _authService.AuthenticateAsync(user.Username, user.Password);
+            var userEntity = await _authService.GetUserByUsernameAsync(user.Username); // nový řádek
 
-            if (token == null)
+            if (token == null || userEntity == null)
                 return Unauthorized(new { message = "Invalid username or password." });
 
             return Ok(new
             {
                 message = "Login successful",
-                token = token
+                token = token,
+                userId = userEntity.Id // přidáno ID uživatele
             });
         }
 

@@ -30,15 +30,14 @@ export class AuthLoginComponent {
   onSubmit() {
     this.auth.login(this.username, this.password).subscribe({
       next: (res) => {
-        this.auth.saveToken(res.token);
-        this.message = 'Přihlášení bylo úspěšné.'; // nebo jen this.router.navigate(...)
+        this.auth.saveSession(res.token, res.userId); // Uloží token i userId
+        this.message = 'Přihlášení bylo úspěšné.';
         this.router.navigate(['/waiting-rooms']);
-        // this.router.navigate(['/dashboard']); // Volitelné přesměrování
       },
       error: (err) => {
         this.errorMessage = err.error?.message || 'Login failed.';
         this.message = '';
       }
     });
-  }
+  }  
 }

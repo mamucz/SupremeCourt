@@ -32,16 +32,28 @@ namespace SupremeCourt.Application.Services
             _logger = logger;
         }
 
-        public async Task<WaitingRoom?> CreateWaitingRoomAsync(int gameId)
+        public async Task<WaitingRoom?> CreateWaitingRoomAsync(int createdByPlayerId)
         {
-            var game = await _gameRepository.GetByIdAsync(gameId);
-            if (game == null) return null;
+            var player = await _playerRepository.GetByIdAsync(createdByPlayerId);
+            if (player == null) return null;
 
-            var waitingRoom = new WaitingRoom { GameId = gameId };
+            var waitingRoom = new WaitingRoom
+            {
+                CreatedByPlayerId = createdByPlayerId,
+                Players = new List<Player> ()
+            };
+
             await _waitingRoomRepository.AddAsync(waitingRoom);
+            // Po vytvoření místnosti odešli notifikaci
+            await _waitingRoomNotifier.NotifyWaitingRoomCreatedAsync(new
+            {
+                WaitingRoomId = waitingRoom.Id,
+                CreatedAt = waitingRoom.CreatedAt,
+                CreatedBy = player.User?.Username ?? "Neznámý", 
+                PlayerCount = 0
+            });
             return waitingRoom;
         }
-
         public async Task<bool> JoinWaitingRoomAsync(int gameId, int playerId)
         {
             var waitingRoom = await _waitingRoomRepository.GetByGameIdAsync(gameId);
@@ -71,15 +83,6 @@ namespace SupremeCourt.Application.Services
             return true;
         }
 
-
-        public async Task<bool> IsTimeExpiredAsync(int gameId)
-        {
-            var waitingRoom = await _waitingRoomRepository.GetByGameIdAsync(gameId);
-            if (waitingRoom == null) return false;
-
-            return DateTime.UtcNow > waitingRoom.CreatedAt.AddMinutes(1);
-        }
-
         public async Task<List<WaitingRoom>> GetAllWaitingRoomsAsync() // ✅ Přidáno
         {
             return await _waitingRoomRepository.GetAllAsync();
@@ -89,26 +92,23 @@ namespace SupremeCourt.Application.Services
         {
             var all = await _waitingRoomRepository.GetAllAsync();
 
-            var filtered = all
-                .Where(wr =>
-                    wr.Game != null &&
-                    !wr.Game.IsActive &&
-                    wr.Players.Count < GameRules.MaxPlayers)
-                .Select(wr =>
+            var result = new List<WaitingRoomInfoDto>();
+
+            foreach (var wr in all.Where(wr => wr.Players.Count < GameRules.MaxPlayers))
+            {
+                var creator = await _playerRepository.GetByIdAsync(wr.CreatedByPlayerId);
+                var creatorName = creator?.User?.Username ?? "Neznámý";
+
+                result.Add(new WaitingRoomInfoDto
                 {
-                    var creator = wr.Players.FirstOrDefault()?.User?.Username ?? "Neznámý";
+                    WaitingRoomId = wr.Id,
+                    CreatedAt = wr.CreatedAt,
+                    CreatedBy = creatorName,
+                    PlayerCount = wr.Players.Count
+                });
+            }
 
-                    return new WaitingRoomInfoDto
-                    {
-                        WaitingRoomId = wr.Id,
-                        CreatedAt = wr.CreatedAt,
-                        CreatedBy = creator,
-                        PlayerCount = wr.Players.Count
-                    };
-                })
-                .ToList();
-
-            return filtered;
+            return result;
         }
     }
 }

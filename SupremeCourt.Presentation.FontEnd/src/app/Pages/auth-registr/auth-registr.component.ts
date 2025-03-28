@@ -27,7 +27,7 @@ export class AuthRegistrPagesComponent {
     this.authService.register(this.username, this.password).subscribe({
       next: (response) => {
         // ✅ Zde vypíšeš návratové hodnoty
-        this.message = response.message || 'Registrace proběhla úspěšně.';
+        this.message = response?.message || 'Registrace proběhla úspěšně.';
         this.errorMessage = ''; // smažeme předchozí chybu
       },
       error: (err) => {

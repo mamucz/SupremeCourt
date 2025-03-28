@@ -8,5 +8,6 @@ namespace SupremeCourt.Domain.Interfaces
         Task AddAsync(WaitingRoom waitingRoom);
         Task UpdateAsync(WaitingRoom waitingRoom);
         Task<List<WaitingRoom>> GetAllAsync(); // ✅ Přidáno
+        Task DeleteAsync(WaitingRoom waitingRoom);
     }
 }
