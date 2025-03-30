@@ -46,7 +46,7 @@ namespace SupremeCourt.Presentation.Controllers
         [HttpPost("join")]
         public async Task<IActionResult> JoinWaitingRoom([FromBody] JoinGameRequest request)
         {
-            var result = await _waitingRoomService.JoinWaitingRoomAsync(request.GameId, request.PlayerId);
+            var result = await _waitingRoomService.JoinWaitingRoomAsync(request.WaitingRoomId, request.PlayerId);
             if (!result) return BadRequest("Failed to join the game.");
 
             return Ok("Joined successfully.");

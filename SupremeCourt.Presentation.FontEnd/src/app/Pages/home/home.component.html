@@ -2,7 +2,29 @@
 Autor: Petr Ondra
 Date: 9.3.2021
 Description: Home page component
-File Name: home.component.html
+Finle Name: home.component.html
 -->
-
-<p>home works!</p>
+  
+  <h2>{{ 'HOME.TITLE' | translate }}</h2>
+  <p>{{ 'HOME.INTRO' | translate }}</p>
+  <p>{{ 'HOME.CHALLENGE' | translate }}</p>
+  
+  <h3>{{ 'HOME.RULES_TITLE' | translate }}</h3>
+  <ul>
+    <li>{{ 'HOME.RULES.1' | translate }}</li>
+    <li>{{ 'HOME.RULES.2' | translate }}</li>
+    <li>{{ 'HOME.RULES.3' | translate }}</li>
+    <li>{{ 'HOME.RULES.4' | translate }}</li>
+    <li>{{ 'HOME.RULES.5' | translate }}</li>
+    <li>{{ 'HOME.RULES.6' | translate }}</li>
+    <li>{{ 'HOME.RULES.7' | translate }}</li>
+    <li>{{ 'HOME.RULES.8' | translate }}</li>
+  </ul>
+  
+  <p>
+    {{ 'HOME.READY' | translate }}
+    👉 <a routerLink="/login">{{ 'HOME.LOGIN' | translate }}</a>
+    {{ 'HOME.OR' | translate }}
+    <a routerLink="/register">{{ 'HOME.REGISTER' | translate }}</a>
+  </p>
+  

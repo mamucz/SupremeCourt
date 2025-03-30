@@ -1,6 +1,6 @@
-<h2>🎮 Čekací místnosti</h2>
+<h2>🎮 {{ 'WAITINGROOM.TITLE' | translate }}</h2>
 
-<button (click)="createWaitingRoom()">➕ Vytvořit novou místnost</button>
+<button (click)="createWaitingRoom()">➕ {{ 'WAITINGROOM.CREATE' | translate }}</button>
 
 <div *ngIf="message" style="color: green;">{{ message }}</div>
 <div *ngIf="error" style="color: red;">{{ error }}</div>
@@ -8,11 +8,11 @@
 <table *ngIf="waitingRooms.length > 0" border="1" style="margin-top: 1rem;">
   <thead>
     <tr>
-      <th>ID</th>
-      <th>Vytvořeno</th>
-      <th>Hráč</th>
-      <th>Hráči</th>
-      <th>Akce</th>
+      <th>{{ 'WAITINGROOM.TABLE.ID' | translate }}</th>
+      <th>{{ 'WAITINGROOM.TABLE.CREATED' | translate }}</th>
+      <th>{{ 'WAITINGROOM.TABLE.PLAYER' | translate }}</th>
+      <th>{{ 'WAITINGROOM.TABLE.PLAYERS' | translate }}</th>
+      <th>{{ 'WAITINGROOM.TABLE.ACTION' | translate }}</th>
     </tr>
   </thead>
   <tbody>
@@ -22,11 +22,10 @@
       <td>{{ room.createdBy }}</td>
       <td>{{ room.playerCount }}/5</td>
       <td>
-        <!-- Zde je pevný playerId – nahradit dynamicky podle přihlášení -->
-        <button (click)="joinRoom(room.waitingRoomId)">Join</button>
+        <button (click)="joinRoom(room.waitingRoomId)">{{ 'WAITINGROOM.JOIN' | translate }}</button>
       </td>
     </tr>
   </tbody>
 </table>
 
-<p *ngIf="waitingRooms.length === 0">Žádné dostupné čekací místnosti.</p>
+<p *ngIf="waitingRooms.length === 0">{{ 'WAITINGROOM.EMPTY' | translate }}</p>

@@ -1,0 +1,73 @@
+{
+  "NAV": {
+    "LOGIN": "Přihlášení",
+    "REGISTER": "Registrace",
+    "WAITINGROOM": "Čekací místnost",
+    "LOGOUT": "Odhlásit se"
+  },
+  "HOME": {
+    "TITLE": "🎮 Vítejte ve hře SupremeCourt - Alice in Borderland",
+    "INTRO": "Tato hra je inspirována japonským seriálem Alice in Borderland...",
+    "CHALLENGE": "Vrcholem je výzva s 🂾 Králem srdcovým – záhadným vládcem hry.",
+    "RULES_TITLE": "🧾 Pravidla hry",
+    "RULES": {
+      "1": "Po přihlášení se dostanete na seznam čekacích místností.",
+      "2": "Můžete vytvořit nebo se připojit k místnosti (max. 5 hráčů).",
+      "3": "Každý hráč zvolí číslo mezi 0 a 100.",
+      "4": "Výsledek je zaokrouhlený průměr × 0.8.",
+      "5": "Hráč nejblíže výsledku vyhrává.",
+      "6": "Ostatní ztrácí bod, -10 znamená eliminaci.",
+      "7": "Při každé eliminaci přibude nové pravidlo.",
+      "8": "Hra končí, když zůstane jeden hráč."
+    },
+    "READY": "Připraveni?",
+    "LOGIN": "Přihlaste se",
+    "REGISTER": "zaregistrujte",
+    "OR": "nebo"
+  },
+  "LOGIN": {
+    "USERNAME": "Uživatelské jméno",
+    "PASSWORD": "Heslo",
+    "SUBMIT": "Přihlásit",
+    "SUCCESS": "Přihlášení bylo úspěšné.",
+    "ERROR": "Nepodařilo se přihlásit."
+  },
+  "REGISTER": {
+    "USERNAME": "Uživatelské jméno",
+    "PASSWORD": "Heslo",
+    "SUBMIT": "Registrovat",
+    "SUCCESS": "Registrace byla úspěšná.",
+    "ERROR": "Nepodařilo se zaregistrovat."
+  },
+  "WAITINGROOM": {
+  "TITLE": "Čekací místnosti",
+  "CREATE": "Vytvořit novou místnost",
+  "JOIN": "Připojit se",
+  "JOINED": "Úspěšně připojeno k místnosti #",
+  "CREATED": "Místnost # byla vytvořena.",
+  "CREATE_ERROR": "Nepodařilo se vytvořit místnost.",
+  "JOIN_ERROR": "Nepodařilo se připojit.",
+  "EMPTY": "Žádné dostupné čekací místnosti.",
+  "TABLE": {
+    "ID": "ID",
+    "CREATED": "Vytvořeno",
+    "PLAYER": "Hráč",
+    "PLAYERS": "Hráči",
+    "ACTION": "Akce"
+  },
+  "ERROR": {
+    "SERVER": "Server se nepodařilo načíst.",
+    "NOT_FOUND": "Stránka nenalezena.",
+    "UNAUTHORIZED": "Neautorizovaný přístup.",
+    "FORBIDDEN": "Zakázaný přístup.",
+    "INTERNAL_SERVER": "Interní chyba serveru."
+  },
+  "SUCCESS": {
+    "CREATED": "Úspěšně vytvořeno.",
+    "UPDATED": "Úspěšně aktualizováno.",
+    "DELETED": "Úspěšně smazáno."
+  }
+}
+  
+
+}

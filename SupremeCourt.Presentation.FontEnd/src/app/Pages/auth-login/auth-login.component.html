@@ -5,18 +5,18 @@ Description: Login page component
 Finle Name: auth-login.component.html
 -->
 <form (ngSubmit)="onSubmit()">
-    <input [(ngModel)]="username" name="username" placeholder="Uživatelské jméno" required>
-    <input [(ngModel)]="password" name="password" placeholder="Heslo" type="password" required>
-    <button type="submit">Přihlásit</button>
-  </form>
-  
-  <!-- ✅ Úspěšná zpráva -->
-  <div *ngIf="message" style="color: green;">
-    {{ message }}
-  </div>
-  
-  <!-- ❌ Chybová zpráva -->
-  <div *ngIf="errorMessage" style="color: red;">
-    {{ errorMessage }}
-  </div>  
+  <input [(ngModel)]="username" name="username" [placeholder]="'LOGIN.USERNAME' | translate" required />
+  <input [(ngModel)]="password" name="password" [placeholder]="'LOGIN.PASSWORD' | translate" type="password" required />
+  <button type="submit">{{ 'LOGIN.SUBMIT' | translate }}</button>
+</form>
+
+<!-- ✅ Úspěšná zpráva -->
+<div *ngIf="message" style="color: green;">
+  {{ 'LOGIN.SUCCESS' | translate }}
+</div>
+
+<!-- ❌ Chybová zpráva -->
+<div *ngIf="errorMessage" style="color: red;">
+  {{ 'LOGIN.ERROR' | translate }}
+</div>
 

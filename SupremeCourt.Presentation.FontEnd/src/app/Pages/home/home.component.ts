@@ -1,24 +1,24 @@
 // Autor: Petr Ondra
 // Date: 9.3.2021
 // Description: Home page component
-// Finle Name: home.component.ts
+// File Name: home.component.ts
 
 import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router'; // ✅ importuj RouterModule
+import { RouterModule } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [RouterModule],
-  template: `
-    <h2>Vítejte ve hře SupremeCourt - Alice in Borderland</h2>
-    <p>
-      Tato hra je inspirována japonským seriálem Alice in Borderland. 
-      Hra je postavena na principu hry "SupremeCourt".
-    </p>
-    <p>
-      Přihlašte se nebo zaregistrujte pro zahájení hry.
-    </p>
-  `,
+  imports: [RouterModule, TranslateModule],
+  templateUrl: './home.component.html',
+  styleUrls: ['./home.component.scss']
 })
-export class HomePageComponent {}
+export class HomePageComponent {
+  constructor(private translate: TranslateService) {
+    this.translate.setDefaultLang('cs'); // výchozí jazyk
+    this.translate.use('cs');            // použít výchozí
+  }
+
+  
+}

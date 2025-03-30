@@ -1,6 +1,6 @@
 // Autor: Petr Ondra
 // Date: 9.3.2021
-// Description: Component for displaying waiting rooms
+// Description: Component for displaying waiting rooms with i18n
 // File: waiting-room-list.component.ts
 
 import { Component, OnInit, OnDestroy } from '@angular/core';
@@ -8,6 +8,7 @@ import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../Services/auth.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core'; // ✅ Přidat
 import * as signalR from '@microsoft/signalr';
 
 interface WaitingRoomDto {
@@ -20,7 +21,7 @@ interface WaitingRoomDto {
 @Component({
   selector: 'app-waiting-room-list',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, TranslateModule],
   templateUrl: './waiting-room-list.component.html',
   styleUrls: ['./waiting-room-list.component.scss']
 })
@@ -32,8 +33,13 @@ export class WaitingRoomListComponent implements OnInit, OnDestroy {
 
   constructor(
     private http: HttpClient,
-    private auth: AuthService
-  ) {}
+    private auth: AuthService,
+    private translate: TranslateService // ✅ Přidat
+  ) {
+    const savedLang = localStorage.getItem('lang') || 'cs';
+    this.translate.setDefaultLang(savedLang);
+    this.translate.use(savedLang);
+  }
 
   ngOnInit(): void {
     this.loadWaitingRooms();
@@ -54,13 +60,15 @@ export class WaitingRoomListComponent implements OnInit, OnDestroy {
         this.waitingRooms = data || [];
         this.error = '';
         if (this.waitingRooms.length === 0) {
-          this.message = 'Žádné čekací místnosti zatím nejsou.';
+          this.translate.get('WAITINGROOM.EMPTY').subscribe(text => this.message = text);
         }
       },
       error: (err) => {
         this.waitingRooms = [];
         this.message = '';
-        this.error = err.error?.message || 'Chyba při načítání čekacích místností.';
+        this.translate.get('WAITINGROOM.CREATE_ERROR').subscribe(text => {
+          this.error = err.error?.message || text;
+        });
       }
     });
   }
@@ -68,7 +76,7 @@ export class WaitingRoomListComponent implements OnInit, OnDestroy {
   createWaitingRoom() {
     const playerId = this.auth.getUserId();
     if (!playerId) {
-      this.error = 'Chybí ID hráče (playerId).';
+      this.translate.get('WAITINGROOM.CREATE_ERROR').subscribe(text => this.error = text);
       return;
     }
 
@@ -76,12 +84,15 @@ export class WaitingRoomListComponent implements OnInit, OnDestroy {
       headers: this.auth.getAuthHeaders()
     }).subscribe({
       next: res => {
-        this.message = `✅ Vytvořena místnost #${res.waitingRoomId}`;
+        this.translate.get('WAITINGROOM.CREATED').subscribe(text => {
+          this.message = `✅ ${text.replace('#', res.waitingRoomId)}`;
+        });
         this.error = '';
-        // Nepotřebujeme volat loadWaitingRooms(), SignalR se postará
       },
       error: err => {
-        this.error = err.error?.message || 'Nepodařilo se vytvořit místnost.';
+        this.translate.get('WAITINGROOM.CREATE_ERROR').subscribe(text => {
+          this.error = err.error?.message || text;
+        });
         this.message = '';
       }
     });
@@ -90,7 +101,7 @@ export class WaitingRoomListComponent implements OnInit, OnDestroy {
   joinRoom(gameId: number) {
     const playerId = this.auth.getUserId();
     if (!playerId) {
-      this.error = 'Nejste přihlášen.';
+      this.translate.get('LOGIN.ERROR').subscribe(text => this.error = text);
       return;
     }
 
@@ -101,11 +112,15 @@ export class WaitingRoomListComponent implements OnInit, OnDestroy {
       headers: this.auth.getAuthHeaders()
     }).subscribe({
       next: () => {
-        this.message = `✅ Připojeno k místnosti #${gameId}`;
+        this.translate.get('WAITINGROOM.JOINED').subscribe(text => {
+          this.message = `✅ ${text}${gameId}`;
+        });
         this.error = '';
       },
       error: err => {
-        this.error = err.error?.message || 'Nepodařilo se připojit.';
+        this.translate.get('WAITINGROOM.JOIN_ERROR').subscribe(text => {
+          this.error = err.error?.message || text;
+        });
         this.message = '';
       }
     });
@@ -122,16 +137,18 @@ export class WaitingRoomListComponent implements OnInit, OnDestroy {
     this.hubConnection
       .start()
       .then(() => {
-        console.log('✅ SignalR připojeno');
-        this.hubConnection.invoke('JoinWaitingRoomList'); // připojení ke skupině
+        console.log('✅ SignalR connected');
+        this.hubConnection.invoke('JoinWaitingRoomList');
       })
       .catch(err => {
-        console.error('❌ Chyba při připojování SignalR:', err);
+        console.error('❌ SignalR connection error:', err);
       });
 
     this.hubConnection.on('NewWaitingRoomCreated', (newRoom: WaitingRoomDto) => {
       this.waitingRooms.push(newRoom);
-      this.message = `🆕 Nová místnost #${newRoom.waitingRoomId} byla vytvořena.`;
+      this.translate.get('WAITINGROOM.CREATED').subscribe(text => {
+        this.message = `🆕 ${text.replace('#', newRoom.waitingRoomId)}`;
+      });
     });
   }
 }

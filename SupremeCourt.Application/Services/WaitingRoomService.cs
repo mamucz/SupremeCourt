@@ -54,14 +54,22 @@ namespace SupremeCourt.Application.Services
             });
             return waitingRoom;
         }
-        public async Task<bool> JoinWaitingRoomAsync(int gameId, int playerId)
+        public async Task<bool> JoinWaitingRoomAsync(int waitingRoomId, int playerId)
         {
-            var waitingRoom = await _waitingRoomRepository.GetByGameIdAsync(gameId);
+            // ⛔ Zjisti, zda už není v jiné místnosti
+            var existingRoom = await _waitingRoomRepository.GetRoomByPlayerIdAsync(playerId);
+            if (existingRoom != null)
+            {
+                _logger.LogWarning("Hráč {PlayerId} je již ve waiting room #{RoomId}", playerId, existingRoom.Id);
+                return false;
+            }
+
+            var waitingRoom = await _waitingRoomRepository.GetByIdAsync(waitingRoomId);
             if (waitingRoom == null) return false;
 
-            if (waitingRoom.Players.Count >= GameRules.MaxPlayers) // ✅ Použití konstanty z Domain
+            if (waitingRoom.Players.Count >= GameRules.MaxPlayers)
             {
-                _logger.LogWarning($"Hráč {playerId} se pokusil připojit do plné hry {gameId}.");
+                _logger.LogWarning($"Hráč {playerId} se pokusil připojit do plné místnosti {waitingRoomId}.");
                 return false;
             }
 
@@ -71,17 +79,11 @@ namespace SupremeCourt.Application.Services
             waitingRoom.Players.Add(player);
             await _waitingRoomRepository.UpdateAsync(waitingRoom);
 
-            if (waitingRoom.Players.Count == GameRules.MaxPlayers) // ✅ Použití pravidla z Domain
-            {
-                _logger.LogInformation($"Hra {gameId} má 5 hráčů, spouštíme ji.");
-                return await _gameService.StartGameAsync(gameId);
-            }
-            // 🟢 Posíláme notifikaci přes SignalR všem hráčům v dané hře
-            // 🟢 Použití notifieru místo přímého volání SignalR
-            await _waitingRoomNotifier.NotifyPlayerJoinedAsync(gameId, player.User.Username);
+            await _waitingRoomNotifier.NotifyPlayerJoinedAsync(waitingRoomId, player.User.Username);
 
             return true;
         }
+
 
         public async Task<List<WaitingRoom>> GetAllWaitingRoomsAsync() // ✅ Přidáno
         {

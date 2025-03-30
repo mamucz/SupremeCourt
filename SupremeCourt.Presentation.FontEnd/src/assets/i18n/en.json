@@ -1,0 +1,59 @@
+{
+  "NAV": {
+    "LOGIN": "Login",
+    "REGISTER": "Register",
+    "WAITINGROOM": "Waiting Room",
+    "LOGOUT": "Logout"
+  },
+  "HOME": {
+    "TITLE": "🎮 Welcome to SupremeCourt - Alice in Borderland",
+    "INTRO": "This game is inspired by the Japanese series Alice in Borderland...",
+    "CHALLENGE": "The highlight is the challenge with the 🂾 King of Hearts – the mysterious ruler of the game.",
+    "RULES_TITLE": "🧾 Game Rules",
+    "RULES": {
+      "1": "After logging in, you will see a list of waiting rooms.",
+      "2": "You can create or join a room (max. 5 players).",
+      "3": "Each player chooses a number between 0 and 100.",
+      "4": "The result is the rounded average × 0.8.",
+      "5": "The player closest to the result wins.",
+      "6": "Others lose a point. -10 means elimination.",
+      "7": "With each elimination, a new rule is added.",
+      "8": "The game ends when only one player remains."
+    },
+    "READY": "Ready?",
+    "LOGIN": "Log in",
+    "REGISTER": "register",
+    "OR": "or"
+  },
+  "LOGIN": {
+    "USERNAME": "Username",
+    "PASSWORD": "Password",
+    "SUBMIT": "Log In",
+    "SUCCESS": "Login was successful.",
+    "ERROR": "Login failed."
+  },
+  "REGISTER": {
+    "USERNAME": "Username",
+    "PASSWORD": "Password",
+    "SUBMIT": "Register",
+    "SUCCESS": "Registration successful.",
+    "ERROR": "Registration failed."
+  },
+  "WAITINGROOM": {
+    "TITLE": "Waiting Rooms",
+    "CREATE": "Create new room",
+    "JOIN": "Join",
+    "EMPTY": "No waiting rooms available.",
+    "JOINED": "Successfully joined room #",
+    "CREATED": "Room # was created.",
+    "CREATE_ERROR": "Failed to create room.",
+    "JOIN_ERROR": "Failed to join.",
+    "TABLE": {
+      "ID": "ID",
+      "CREATED": "Created",
+      "PLAYER": "Player",
+      "PLAYERS": "Players",
+      "ACTION": "Action"
+    }
+  }  
+}

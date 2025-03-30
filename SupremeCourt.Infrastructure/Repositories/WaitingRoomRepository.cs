@@ -13,11 +13,11 @@ namespace SupremeCourt.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<WaitingRoom?> GetByGameIdAsync(int gameId)
+        public async Task<WaitingRoom?> GetByIdAsync(int waitingRoomId)
         {
             return await _context.WaitingRooms
                 .Include(w => w.Players)
-                .FirstOrDefaultAsync(w => w.GameId == gameId);
+                .FirstOrDefaultAsync(w => w.Id == waitingRoomId);
         }
 
         public async Task AddAsync(WaitingRoom waitingRoom)
@@ -41,5 +41,13 @@ namespace SupremeCourt.Infrastructure.Repositories
             _context.WaitingRooms.Remove(waitingRoom);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<WaitingRoom?> GetRoomByPlayerIdAsync(int playerId)
+        {
+            return await _context.WaitingRooms
+                .Include(w => w.Players)
+                .FirstOrDefaultAsync(w => w.Players.Any(p => p.Id == playerId));
+        }
+
     }
 }

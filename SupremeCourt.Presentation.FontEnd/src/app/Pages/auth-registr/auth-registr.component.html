@@ -2,26 +2,21 @@
 Autor: Petr Ondra
 Date: 9.3.2021
 Description: Registration page component
-Finle Name: auth-registr.component.html
+File Name: auth-registr.component.html
 -->
 
-<form (ngSubmit)="OnSubmit()">
-  <input [(ngModel)]="username" name="username" placeholder="Jméno" required>
-  <input [(ngModel)]="password" name="password" placeholder="Heslo" type="password" required>
-  <button type="submit">Registrovat</button>
+<form (ngSubmit)="onSubmit()">
+  <input [(ngModel)]="username" name="username" [placeholder]="'REGISTER.USERNAME' | translate" required>
+  <input [(ngModel)]="password" name="password" [placeholder]="'REGISTER.PASSWORD' | translate" type="password" required>
+  <button type="submit">{{ 'REGISTER.SUBMIT' | translate }}</button>
 </form>
 
 <!-- ✅ Úspěšná zpráva -->
-@if(message){
-  <div  style="color: green;">  
-    {{ message }}
-  </div>
-    
-}
+<div *ngIf="message" style="color: green;">  
+  {{ message }}
+</div>
 
 <!-- ❌ Chybová zpráva -->
- @if(errorMessage){
-  <div  style="color: red;">  
-    {{ errorMessage }}
-  </div>
-}
+<div *ngIf="errorMessage" style="color: red;">  
+  {{ errorMessage }}
+</div>
