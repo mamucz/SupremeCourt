@@ -10,6 +10,7 @@ import { RouterModule } from '@angular/router';
 import { AuthService } from '../../Services/auth.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core'; // ✅ Přidat
 import * as signalR from '@microsoft/signalr';
+import { Router } from '@angular/router';
 
 interface WaitingRoomDto {
   waitingRoomId: number;
@@ -34,7 +35,8 @@ export class WaitingRoomListComponent implements OnInit, OnDestroy {
   constructor(
     private http: HttpClient,
     private auth: AuthService,
-    private translate: TranslateService // ✅ Přidat
+    private translate: TranslateService,
+    private router: Router
   ) {
     const savedLang = localStorage.getItem('lang') || 'cs';
     this.translate.setDefaultLang(savedLang);
@@ -101,30 +103,29 @@ export class WaitingRoomListComponent implements OnInit, OnDestroy {
   joinRoom(gameId: number) {
     const playerId = this.auth.getUserId();
     if (!playerId) {
-      this.translate.get('LOGIN.ERROR').subscribe(text => this.error = text);
+      this.error = 'Nejste přihlášen.';
       return;
     }
-
+  
     this.http.post('https://localhost:7078/api/waitingroom/join', {
-      gameId,
+      waitingRoomId: gameId,
       playerId
     }, {
       headers: this.auth.getAuthHeaders()
     }).subscribe({
       next: () => {
-        this.translate.get('WAITINGROOM.JOINED').subscribe(text => {
-          this.message = `✅ ${text}${gameId}`;
-        });
+        this.message = `✅ Připojeno k místnosti #${gameId}`;
         this.error = '';
+        // přesměrování do detailu místnosti
+        this.router.navigate([`/waiting-room/${gameId}`]);
       },
       error: err => {
-        this.translate.get('WAITINGROOM.JOIN_ERROR').subscribe(text => {
-          this.error = err.error?.message || text;
-        });
+        this.error = err.error?.message || 'Nepodařilo se připojit.';
         this.message = '';
       }
     });
   }
+  
 
   private setupSignalR(): void {
     this.hubConnection = new signalR.HubConnectionBuilder()

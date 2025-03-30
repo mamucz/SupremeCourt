@@ -1,0 +1,16 @@
+<h2>👥 Čekárna místnosti #{{ waitingRoomId }}</h2>
+<p>Zbývá čas: {{ countdown }}s</p>
+
+<ul>
+  <li *ngFor="let player of players">
+    {{ player.username }}
+    <button *ngIf="player.id === playerId" (click)="leaveRoom()">🚪 Opustit</button>
+  </li>
+</ul>
+
+<p>{{ players.length }}/5 hráčů</p>
+
+<button [disabled]="!canStartGame()">🎮 Zahájit hru</button>
+
+<div *ngIf="message" style="color: green;">{{ message }}</div>
+<div *ngIf="error" style="color: red;">{{ error }}</div>

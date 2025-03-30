@@ -54,7 +54,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "SupremeCourt API", Version = "v1" });
-
+    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "SupremeCourt.Presentation.xml"));
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
@@ -119,6 +119,7 @@ app.UseAuthorization();
 // ✅ Použití registrací tras nejvyšší úrovně místo app.UseEndpoints()
 app.MapControllers();
 app.MapHub<GameHub>("/gameHub");
+app.MapHub<WaitingRoomListHub>("/waitingRoomListHub");
 app.MapHub<WaitingRoomHub>("/waitingRoomHub");
 
 app.Run();

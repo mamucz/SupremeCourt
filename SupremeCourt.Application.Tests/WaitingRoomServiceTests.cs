@@ -15,11 +15,11 @@ namespace SupremeCourt.Application.Tests
         private Mock<IWaitingRoomRepository> _mockWaitingRoomRepo;
         private Mock<IGameRepository> _mockGameRepo;
         private Mock<IPlayerRepository> _mockPlayerRepo;
-        private Mock<IWaitingRoomNotifier> _mockNotifier;
+        private Mock<IWaitingRoomListNotifier> _mockNotifier;
         private Mock<IGameService> _mockGameService;
-        private Mock<ILogger<WaitingRoomService>> _mockLogger;
+        private Mock<ILogger<WaitingRoomListService>> _mockLogger;
 
-        private WaitingRoomService _waitingRoomService;
+        private WaitingRoomListService _waitingRoomService;
 
         [SetUp]
         public void Setup()
@@ -27,11 +27,11 @@ namespace SupremeCourt.Application.Tests
             _mockWaitingRoomRepo = new Mock<IWaitingRoomRepository>();
             _mockGameRepo = new Mock<IGameRepository>();
             _mockPlayerRepo = new Mock<IPlayerRepository>();
-            _mockNotifier = new Mock<IWaitingRoomNotifier>();
+            _mockNotifier = new Mock<IWaitingRoomListNotifier>();
             _mockGameService = new Mock<IGameService>();
-            _mockLogger = new Mock<ILogger<WaitingRoomService>>();
+            _mockLogger = new Mock<ILogger<WaitingRoomListService>>();
 
-            _waitingRoomService = new WaitingRoomService(
+            _waitingRoomService = new WaitingRoomListService(
                 _mockWaitingRoomRepo.Object,
                 _mockGameRepo.Object,
                 _mockPlayerRepo.Object,

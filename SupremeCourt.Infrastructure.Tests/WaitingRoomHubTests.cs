@@ -9,7 +9,7 @@ namespace SupremeCourt.Infrastructure.Tests
     [TestFixture]
     public class WaitingRoomHubTests : IDisposable
     {
-        private WaitingRoomHub _waitingRoomHub;
+        private WaitingRoomListHub _waitingRoomHub;
         private Mock<IHubCallerClients> _mockClients;
         private Mock<IClientProxy> _mockClientProxy;
         private Mock<IGroupManager> _mockGroups;
@@ -23,7 +23,7 @@ namespace SupremeCourt.Infrastructure.Tests
             _mockGroups = new Mock<IGroupManager>();
 
             _mockClients.Setup(clients => clients.Group(It.IsAny<string>())).Returns(_mockClientProxy.Object);
-            _waitingRoomHub = new WaitingRoomHub
+            _waitingRoomHub = new WaitingRoomListHub
             {
                 Clients = _mockClients.Object,
                 Groups = _mockGroups.Object

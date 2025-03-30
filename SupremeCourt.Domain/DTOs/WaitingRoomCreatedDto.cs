@@ -6,11 +6,10 @@ using System.Threading.Tasks;
 
 namespace SupremeCourt.Domain.DTOs
 {
-    public class WaitingRoomInfoDto
+    public class WaitingRoomCreatedDto
     {
         public int WaitingRoomId { get; set; }
         public DateTime CreatedAt { get; set; }
-        public string CreatedBy { get; set; } = string.Empty;
-        public int PlayerCount { get; set; }
+        public int CreatedByPlayerId { get; set; }
     }
 }

@@ -1,25 +1,26 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
+using System.Threading.Tasks;
 
 namespace SupremeCourt.Infrastructure.SignalR
 {
+    [Authorize]
     public class WaitingRoomHub : Hub
     {
-        private static readonly HashSet<string> _connectedUsers = new();
-        public async Task JoinRoom(string gameId)
+        /// <summary>
+        /// Připojí klienta do skupiny pro konkrétní místnost (podle ID).
+        /// </summary>
+        public async Task JoinRoom(string roomId)
         {
-            var connectionId = Context.ConnectionId;
-
-            // Kontrola, zda už je uživatel připojen
-            if (!_connectedUsers.Contains(connectionId))
-            {
-                _connectedUsers.Add(connectionId);
-                await Groups.AddToGroupAsync(connectionId, gameId);
-                await Clients.Group(gameId).SendAsync("PlayerJoined", $"Hráč se připojil k místnosti {gameId}");
-            }
+            await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
         }
-        public async Task JoinWaitingRoomList()
+
+        /// <summary>
+        /// Odpojí klienta ze skupiny při opuštění místnosti.
+        /// </summary>
+        public async Task LeaveRoom(string roomId)
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, "waitingroom-list");
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using SupremeCourt.Domain.DTOs;
 using SupremeCourt.Domain.Interfaces;
 using SupremeCourt.Infrastructure.SignalR;
 
@@ -13,14 +14,39 @@ namespace SupremeCourt.Infrastructure.Services
             _hubContext = hubContext;
         }
 
-        public async Task NotifyPlayerJoinedAsync(int gameId, string playerName)
+        public async Task NotifyRoomUpdatedAsync(WaitingRoomDto dto)
         {
-            await _hubContext.Clients.Group(gameId.ToString()).SendAsync("PlayerJoined", playerName);
+            await _hubContext.Clients.Group(dto.WaitingRoomId.ToString())
+                .SendAsync("RoomUpdated", dto);
         }
 
-        public async Task NotifyWaitingRoomCreatedAsync(object roomDto)
+        public async Task NotifyCountdownAsync(int roomId, int secondsLeft)
         {
-            await _hubContext.Clients.Group("waitingroom-list").SendAsync("NewWaitingRoomCreated", roomDto);
+            await _hubContext.Clients.Group(roomId.ToString())
+                .SendAsync("CountdownTick", secondsLeft);
+        }
+
+        public async Task NotifyRoomExpiredAsync(int roomId)
+        {
+            await _hubContext.Clients.Group(roomId.ToString())
+                .SendAsync("RoomExpired");
+        }
+
+        public async Task NotifyWaitingRoomCreatedAsync(object payload)
+        {
+            await _hubContext.Clients.All.SendAsync("NewWaitingRoomCreated", payload);
+        }
+
+        public async Task NotifyPlayerJoinedAsync(int waitingRoomId, string playerName)
+        {
+            await _hubContext.Clients.Group(waitingRoomId.ToString())
+                .SendAsync("PlayerJoined", playerName);
+        }
+
+        public async Task NotifyCountdownTickAsync(int roomId, int secondsLeft)
+        {
+            await _hubContext.Clients.Group(roomId.ToString())
+                .SendAsync("CountdownTick", secondsLeft);
         }
     }
 }

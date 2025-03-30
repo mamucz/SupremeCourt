@@ -16,9 +16,9 @@ namespace SupremeCourt.Presentation.Controllers
         private readonly ICreateGameHandler _createGameHandler; // ✅ Použití interface
         private readonly ILogger<GameController> _logger;
         private readonly IGameService _gameService;
-        private readonly IWaitingRoomService _waitingRoomService;
+        private readonly IWaitingRoomListService _waitingRoomService;
 
-        public GameController(ICreateGameHandler createGameHandler, IGameService gameService, IWaitingRoomService waitingRoomService, ILogger<GameController> logger)
+        public GameController(ICreateGameHandler createGameHandler, IGameService gameService, IWaitingRoomListService waitingRoomService, ILogger<GameController> logger)
         {
             _createGameHandler = createGameHandler;
             _logger = logger;

@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SupremeCourt.Application.CQRS.WaitingRooms.Commands;
+using SupremeCourt.Application.CQRS.WaitingRooms.Queries;
 using SupremeCourt.Domain.DTOs;
-using SupremeCourt.Domain.Interfaces;
 
 namespace SupremeCourt.Presentation.Controllers
 {
@@ -10,53 +12,63 @@ namespace SupremeCourt.Presentation.Controllers
     [Authorize]
     public class WaitingRoomController : ControllerBase
     {
-        private readonly IWaitingRoomService _waitingRoomService;
-        private readonly IGameService _gameService;
+        private readonly IMediator _mediator;
 
-        public WaitingRoomController(IWaitingRoomService waitingRoomService, IGameService gameService)
+        public WaitingRoomController(IMediator mediator)
         {
-            _waitingRoomService = waitingRoomService;
-            _gameService = gameService;
-        }
-
-        // <summary>
-        /// Vytvoří novou waiting room pro hráče.
-        /// </summary>
-        [HttpPost("create")]
-        public async Task<IActionResult> CreateWaitingRoom([FromBody] CreateWaitingRoomRequest request)
-        {
-            if (request.PlayerId <= 0)
-                return BadRequest("Neplatné ID hráče.");
-
-            var waitingRoom = await _waitingRoomService.CreateWaitingRoomAsync(request.PlayerId);
-            if (waitingRoom == null)
-                return BadRequest("Waiting room creation failed.");
-
-            return Ok(new
-            {
-                WaitingRoomId = waitingRoom.Id,
-                CreatedAt = waitingRoom.CreatedAt,
-                CreatedByPlayerId = waitingRoom.CreatedByPlayerId
-            });
+            _mediator = mediator;
         }
 
         /// <summary>
-        /// Připojí hráče do waiting room.
+        /// Creates a new waiting room for a player.
         /// </summary>
-        [HttpPost("join")]
-        public async Task<IActionResult> JoinWaitingRoom([FromBody] JoinGameRequest request)
+        /// <param name="request">Contains the player ID who is creating the room.</param>
+        /// <returns>
+        /// 200 OK with created room info.  
+        /// 400 BadRequest if creation failed.
+        /// </returns>
+        [HttpPost("create")]
+        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> CreateWaitingRoom([FromBody] CreateWaitingRoomRequest request)
         {
-            var result = await _waitingRoomService.JoinWaitingRoomAsync(request.WaitingRoomId, request.PlayerId);
-            if (!result) return BadRequest("Failed to join the game.");
+            var result = await _mediator.Send(new CreateWaitingRoomCommand(request.PlayerId));
+            if (result == null)
+                return BadRequest(new { message = "Waiting room creation failed." });
 
-            return Ok("Joined successfully.");
+            return Ok(result);
         }
 
+        /// <summary>
+        /// Adds a player to an existing waiting room.
+        /// </summary>
+        /// <param name="request">Contains the waiting room ID and the player ID.</param>
+        /// <returns>
+        /// 200 OK if joined successfully.  
+        /// 400 BadRequest if join fails (e.g., already in another room, room full).
+        /// </returns>
+        [HttpPost("join")]
+        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> JoinWaitingRoom([FromBody] JoinGameRequest request)
+        {
+            var result = await _mediator.Send(new JoinWaitingRoomCommand(request.WaitingRoomId, request.PlayerId));
+            if (!result)
+                return BadRequest(new { message = "Unable to join the waiting room." });
+
+            return Ok(new { message = "Joined successfully." });
+        }
+
+        /// <summary>
+        /// Retrieves a list of all available waiting rooms with less than 5 players.
+        /// </summary>
+        /// <returns>200 OK with the list of waiting rooms.</returns>
         [HttpGet("waitingrooms")]
+        [ProducesResponseType(typeof(IEnumerable<WaitingRoomDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetWaitingRooms()
         {
-            var rooms = await _waitingRoomService.GetWaitingRoomSummariesAsync();
-            return Ok(rooms);
+            var result = await _mediator.Send(new GetWaitingRoomsQuery());
+            return Ok(result);
         }
     }
 }

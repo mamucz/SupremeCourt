@@ -15,7 +15,7 @@ namespace SupremeCourt.Presentation.Tests
     {
         private Mock<ICreateGameHandler> _mockCreateGameHandler;
         private Mock<IGameService> _mockGameService;
-        private Mock<IWaitingRoomService> _mockWaitingRoomService;
+        private Mock<IWaitingRoomListService> _mockWaitingRoomService;
         private Mock<ILogger<GameController>> _mockLogger;
         private GameController _gameController;
 
@@ -24,7 +24,7 @@ namespace SupremeCourt.Presentation.Tests
         {
             _mockCreateGameHandler = new Mock<ICreateGameHandler>();
             _mockGameService = new Mock<IGameService>();
-            _mockWaitingRoomService = new Mock<IWaitingRoomService>();
+            _mockWaitingRoomService = new Mock<IWaitingRoomListService>();
             _mockLogger = new Mock<ILogger<GameController>>();
 
             _gameController = new GameController(

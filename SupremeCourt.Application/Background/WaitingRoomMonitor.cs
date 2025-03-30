@@ -30,7 +30,7 @@ namespace SupremeCourt.Application.Background
             while (!stoppingToken.IsCancellationRequested)
             {
                 using var scope = _scopeFactory.CreateScope();
-                var waitingRoomService = scope.ServiceProvider.GetRequiredService<IWaitingRoomService>();
+                var waitingRoomService = scope.ServiceProvider.GetRequiredService<IWaitingRoomListService>();
                 var waitingRoomRepository = scope.ServiceProvider.GetRequiredService<IWaitingRoomRepository>();
 
                 var allWaitingRooms = await waitingRoomService.GetAllWaitingRoomsAsync();

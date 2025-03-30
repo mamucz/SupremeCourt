@@ -1,6 +1,6 @@
 ﻿using SupremeCourt.Domain.DTOs;
 
-namespace SupremeCourt.Application.Games.Commands
+namespace SupremeCourt.Application.CQRS.Games.Commands
 {
     public class CreateGameCommand
     {

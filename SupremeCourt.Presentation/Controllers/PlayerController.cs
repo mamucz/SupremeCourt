@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SupremeCourt.Application.Players.Commands;
+using SupremeCourt.Application.CQRS.Players.Commands;
 
 namespace SupremeCourt.Presentation.Controllers
 {

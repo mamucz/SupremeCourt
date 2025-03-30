@@ -1,4 +1,4 @@
-﻿namespace SupremeCourt.Application.Players.Commands
+﻿namespace SupremeCourt.Application.CQRS.Players.Commands
 {
     public class CreatePlayerCommand
     {

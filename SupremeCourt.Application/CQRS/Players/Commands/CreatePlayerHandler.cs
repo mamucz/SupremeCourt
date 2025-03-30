@@ -2,7 +2,7 @@
 using SupremeCourt.Domain.Entities;
 using SupremeCourt.Domain.Interfaces;
 
-namespace SupremeCourt.Application.Players.Commands
+namespace SupremeCourt.Application.CQRS.Players.Commands
 {
     public class CreatePlayerHandler
     {

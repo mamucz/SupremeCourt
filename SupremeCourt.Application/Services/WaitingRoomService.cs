@@ -1,34 +1,40 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using SupremeCourt.Domain.DTOs;
 using SupremeCourt.Domain.Entities;
 using SupremeCourt.Domain.Interfaces;
 using SupremeCourt.Domain.Logic;
+using SupremeCourt.Domain.Sessions;
+using SupremeCourt.Domain.Mappings;
+using SupremeCourt.Application.Sessions;
+using SupremeCourt.Domain.Mappings;
 
 namespace SupremeCourt.Application.Services
 {
     public class WaitingRoomService : IWaitingRoomService
     {
         private readonly IWaitingRoomRepository _waitingRoomRepository;
-        private readonly IGameRepository _gameRepository;
         private readonly IPlayerRepository _playerRepository;
-        private readonly ILogger<WaitingRoomService> _logger;
         private readonly IGameService _gameService;
-        private readonly IWaitingRoomNotifier _waitingRoomNotifier; // ✅ Použití nového notifieru
+        private readonly IWaitingRoomNotifier _waitingRoomNotifier;
+        private readonly WaitingRoomSessionManager _sessionManager;
+        private readonly WaitingRoomMapper _mapper;
+        private readonly ILogger<WaitingRoomService> _logger;
 
         public WaitingRoomService(
             IWaitingRoomRepository waitingRoomRepository,
-            IGameRepository gameRepository,
             IPlayerRepository playerRepository,
             IGameService gameService,
             IWaitingRoomNotifier waitingRoomNotifier,
+            WaitingRoomSessionManager sessionManager,
+            WaitingRoomMapper mapper,
             ILogger<WaitingRoomService> logger)
         {
             _waitingRoomRepository = waitingRoomRepository;
-            _gameRepository = gameRepository;
             _playerRepository = playerRepository;
             _gameService = gameService;
             _waitingRoomNotifier = waitingRoomNotifier;
+            _sessionManager = sessionManager;
+            _mapper = mapper;
             _logger = logger;
         }
 
@@ -39,78 +45,105 @@ namespace SupremeCourt.Application.Services
 
             var waitingRoom = new WaitingRoom
             {
-                CreatedByPlayerId = createdByPlayerId,
-                Players = new List<Player> ()
+                CreatedByPlayerId = createdByPlayerId
             };
 
             await _waitingRoomRepository.AddAsync(waitingRoom);
-            // Po vytvoření místnosti odešli notifikaci
+
+            // Vytvoření runtime session
+            var session = _mapper.ToSession(waitingRoom);
+            session.OnCountdownTick += async timeLeft =>
+            {
+                await _waitingRoomNotifier.NotifyCountdownAsync(session.WaitingRoomId, timeLeft);
+            };
+            session.OnRoomExpired += async roomId =>
+            {
+                await _waitingRoomNotifier.NotifyRoomExpiredAsync(roomId);
+                await _waitingRoomRepository.DeleteAsync(waitingRoom);
+                _sessionManager.RemoveSession(roomId);
+            };
+
+            _sessionManager.AddSession(session);
+
             await _waitingRoomNotifier.NotifyWaitingRoomCreatedAsync(new
             {
                 WaitingRoomId = waitingRoom.Id,
                 CreatedAt = waitingRoom.CreatedAt,
-                CreatedBy = player.User?.Username ?? "Neznámý", 
+                CreatedBy = player.User?.Username ?? "Neznámý",
                 PlayerCount = 0
             });
+
             return waitingRoom;
         }
+
         public async Task<bool> JoinWaitingRoomAsync(int waitingRoomId, int playerId)
         {
-            // ⛔ Zjisti, zda už není v jiné místnosti
             var existingRoom = await _waitingRoomRepository.GetRoomByPlayerIdAsync(playerId);
-            if (existingRoom != null)
-            {
-                _logger.LogWarning("Hráč {PlayerId} je již ve waiting room #{RoomId}", playerId, existingRoom.Id);
-                return false;
-            }
+            if (existingRoom != null) return false;
 
-            var waitingRoom = await _waitingRoomRepository.GetByIdAsync(waitingRoomId);
-            if (waitingRoom == null) return false;
+            var room = await _waitingRoomRepository.GetByIdAsync(waitingRoomId);
+            if (room == null) return false;
 
-            if (waitingRoom.Players.Count >= GameRules.MaxPlayers)
+            if (room.Players.Count >= GameRules.MaxPlayers)
             {
-                _logger.LogWarning($"Hráč {playerId} se pokusil připojit do plné místnosti {waitingRoomId}.");
+                _logger.LogWarning("Room {RoomId} is full", waitingRoomId);
                 return false;
             }
 
             var player = await _playerRepository.GetByIdAsync(playerId);
             if (player == null) return false;
 
-            waitingRoom.Players.Add(player);
-            await _waitingRoomRepository.UpdateAsync(waitingRoom);
+            room.Players.Add(player);
+            await _waitingRoomRepository.UpdateAsync(room);
 
-            await _waitingRoomNotifier.NotifyPlayerJoinedAsync(waitingRoomId, player.User.Username);
+            // Aktualizace runtime session
+            var session = _sessionManager.GetSession(waitingRoomId);
+            if (session != null)
+            {
+                session.AddPlayer(player);
+                await _waitingRoomNotifier.NotifyRoomUpdatedAsync(_mapper.ToDto(session));
+            }
 
             return true;
         }
 
-
-        public async Task<List<WaitingRoom>> GetAllWaitingRoomsAsync() // ✅ Přidáno
+        public async Task<List<WaitingRoom>> GetAllWaitingRoomsAsync()
         {
             return await _waitingRoomRepository.GetAllAsync();
         }
 
-        public async Task<List<WaitingRoomInfoDto>> GetWaitingRoomSummariesAsync()
+        public async Task<List<WaitingRoomDto>> GetWaitingRoomSummariesAsync()
         {
-            var all = await _waitingRoomRepository.GetAllAsync();
+            var rooms = await _waitingRoomRepository.GetAllAsync();
 
-            var result = new List<WaitingRoomInfoDto>();
-
-            foreach (var wr in all.Where(wr => wr.Players.Count < GameRules.MaxPlayers))
+            var list = new List<WaitingRoomDto>();
+            foreach (var room in rooms.Where(r => r.Players.Count < GameRules.MaxPlayers))
             {
-                var creator = await _playerRepository.GetByIdAsync(wr.CreatedByPlayerId);
-                var creatorName = creator?.User?.Username ?? "Neznámý";
-
-                result.Add(new WaitingRoomInfoDto
+                var creator = await _playerRepository.GetByIdAsync(room.CreatedByPlayerId);
+                list.Add(new WaitingRoomDto
                 {
-                    WaitingRoomId = wr.Id,
-                    CreatedAt = wr.CreatedAt,
-                    CreatedBy = creatorName,
-                    PlayerCount = wr.Players.Count
+                    WaitingRoomId = room.Id,
+                    CreatedAt = room.CreatedAt,
+                    CreatedByPlayerId = room.CreatedByPlayerId,
+                    Players = room.Players
+                        .Select(p => new PlayerDto { PlayerId = p.Id, Username = p.User?.Username ?? "?" })
+                        .ToList()
                 });
             }
 
-            return result;
+            return list;
+        }
+
+        public async Task<WaitingRoomDto?> GetWaitingRoomByIdAsync(int id)
+        {
+            var room = await _waitingRoomRepository.GetByIdAsync(id);
+            if (room == null) return null;
+
+            var session = _sessionManager.GetSession(id);
+            var dto = _mapper.ToDto(room);
+            dto.TimeLeftSeconds = session?.GetTimeLeft() ?? 0;
+
+            return dto;
         }
     }
 }

@@ -4,7 +4,7 @@ using SupremeCourt.Domain.DTOs;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 
-namespace SupremeCourt.Application.Games.Commands
+namespace SupremeCourt.Application.CQRS.Games.Commands
 {
     public class CreateGameHandler : ICreateGameHandler
     {

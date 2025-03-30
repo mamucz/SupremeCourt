@@ -6,6 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>49b7e3b0-5970-4a9c-86f5-8744050a81b1</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn> <!-- ⚠️ potlačí warningy pro nedokumentované public členy -->
   </PropertyGroup>
 
   <ItemGroup>
