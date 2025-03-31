@@ -12,6 +12,7 @@ namespace SupremeCourt.Domain.DTOs
         public int WaitingRoomId { get; set; }
         public List<PlayerDto> Players { get; set; } = new();
         public int CreatedByPlayerId { get; set; }
+        public string CreatedByPlayerName { get; set; }
         public DateTime CreatedAt { get; set; }
         public int PlayerCount => Players.Count;
         public bool CanStartGame => Players.Count >= GameRules.MaxPlayers;

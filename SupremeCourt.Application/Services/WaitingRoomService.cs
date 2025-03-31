@@ -127,6 +127,7 @@ namespace SupremeCourt.Application.Services
                     WaitingRoomId = room.Id,
                     CreatedAt = room.CreatedAt,
                     CreatedByPlayerId = room.CreatedByPlayerId,
+                    CreatedByPlayerName = creator?.User?.Username ?? "Neznámý",
                     Players = room.Players
                         .Select(p => new PlayerDto { PlayerId = p.Id, Username = p.User?.Username ?? "?" })
                         .ToList()

@@ -57,12 +57,14 @@ namespace SupremeCourt.Application.Services
             _sessionManager.AddSession(session);
 
             // Po vytvoření místnosti odešli notifikaci
-            await _waitingRoomListNotifier.NotifyWaitingRoomCreatedAsync(new
+            await _waitingRoomListNotifier.NotifyWaitingRoomCreatedAsync(new WaitingRoomDto
             {
                 WaitingRoomId = waitingRoom.Id,
                 CreatedAt = waitingRoom.CreatedAt,
-                CreatedBy = player.User?.Username ?? "Neznámý", 
-                PlayerCount = 0
+                CreatedByPlayerId = player.User.Id,
+                CreatedByPlayerName = player.User?.Username ?? "Neznámý", 
+
+                
             });
             return waitingRoom;
         }
@@ -119,6 +121,7 @@ namespace SupremeCourt.Application.Services
                     WaitingRoomId = wr.Id,
                     CreatedAt = wr.CreatedAt,
                     CreatedByPlayerId = creatorUserId,
+                    CreatedByPlayerName = creatorName,
                 });
             }
 
