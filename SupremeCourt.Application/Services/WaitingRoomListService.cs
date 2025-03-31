@@ -112,12 +112,13 @@ namespace SupremeCourt.Application.Services
             {
                 var creator = await _playerRepository.GetByIdAsync(wr.CreatedByPlayerId);
                 var creatorName = creator?.User?.Username ?? "Neznámý";
+                var creatorUserId = creator?.User?.Id ?? -1;
 
                 result.Add(new WaitingRoomDto
                 {
                     WaitingRoomId = wr.Id,
                     CreatedAt = wr.CreatedAt,
-                    CreatedByPlayerId = (await _playerRepository.GetByIdAsync(wr.CreatedByPlayerId)).User.Id,
+                    CreatedByPlayerId = creatorUserId,
                 });
             }
 

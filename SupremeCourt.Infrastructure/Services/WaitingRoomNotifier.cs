@@ -7,46 +7,44 @@ namespace SupremeCourt.Infrastructure.Services
 {
     public class WaitingRoomNotifier : IWaitingRoomNotifier
     {
-        private readonly IHubContext<WaitingRoomHub> _hubContext;
+        private readonly IHubContext<WaitingRoomListHub> _listHub;
+        private readonly IHubContext<WaitingRoomHub> _roomHub;
 
-        public WaitingRoomNotifier(IHubContext<WaitingRoomHub> hubContext)
+        public WaitingRoomNotifier(
+            IHubContext<WaitingRoomListHub> listHub,
+            IHubContext<WaitingRoomHub> roomHub)
         {
-            _hubContext = hubContext;
+            _listHub = listHub;
+            _roomHub = roomHub;
         }
 
-        public async Task NotifyRoomUpdatedAsync(WaitingRoomDto dto)
+        public async Task NotifyPlayerJoinedAsync(int waitingRoomId, string playerName)
         {
-            await _hubContext.Clients.Group(dto.WaitingRoomId.ToString())
-                .SendAsync("RoomUpdated", dto);
+            await _roomHub.Clients.Group(waitingRoomId.ToString())
+                .SendAsync("PlayerJoined", playerName);
         }
 
-        public async Task NotifyCountdownAsync(int roomId, int secondsLeft)
+        public async Task NotifyWaitingRoomCreatedAsync(object dto)
         {
-            await _hubContext.Clients.Group(roomId.ToString())
+            await _listHub.Clients.All.SendAsync("NewWaitingRoomCreated", dto);
+        }
+
+        public async Task NotifyCountdownTickAsync(int roomId, int secondsLeft)
+        {
+            await _roomHub.Clients.Group(roomId.ToString())
                 .SendAsync("CountdownTick", secondsLeft);
         }
 
         public async Task NotifyRoomExpiredAsync(int roomId)
         {
-            await _hubContext.Clients.Group(roomId.ToString())
+            await _roomHub.Clients.Group(roomId.ToString())
                 .SendAsync("RoomExpired");
         }
 
-        public async Task NotifyWaitingRoomCreatedAsync(object payload)
+        public async Task NotifyRoomUpdatedAsync(WaitingRoomDto dto)
         {
-            await _hubContext.Clients.All.SendAsync("NewWaitingRoomCreated", payload);
-        }
-
-        public async Task NotifyPlayerJoinedAsync(int waitingRoomId, string playerName)
-        {
-            await _hubContext.Clients.Group(waitingRoomId.ToString())
-                .SendAsync("PlayerJoined", playerName);
-        }
-
-        public async Task NotifyCountdownTickAsync(int roomId, int secondsLeft)
-        {
-            await _hubContext.Clients.Group(roomId.ToString())
-                .SendAsync("CountdownTick", secondsLeft);
+            await _roomHub.Clients.Group(dto.WaitingRoomId.ToString())
+                .SendAsync("RoomUpdated", dto);
         }
     }
 }

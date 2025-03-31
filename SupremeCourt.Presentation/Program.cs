@@ -25,7 +25,10 @@ builder.Host.UseSerilog();
 
 // Načtení connection stringu
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException("Connection string 'DefaultConnection' is missing or empty in appsettings.");
+}
 // Načtení konfigurace JWT
 var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];

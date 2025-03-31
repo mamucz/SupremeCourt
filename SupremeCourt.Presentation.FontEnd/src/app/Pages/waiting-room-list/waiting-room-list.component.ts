@@ -129,17 +129,17 @@ export class WaitingRoomListComponent implements OnInit, OnDestroy {
 
   private setupSignalR(): void {
     this.hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl('https://localhost:7078/waitingRoomHub', {
+      .withUrl('https://localhost:7078/waitingRoomListHub', {
         accessTokenFactory: () => this.auth.getToken() || ''
       })
       .withAutomaticReconnect()
       .build();
 
-    this.hubConnection
+      this.hubConnection
       .start()
       .then(() => {
-        console.log('✅ SignalR connected');
-        this.hubConnection.invoke('JoinWaitingRoomList');
+        console.log('✅ SignalR connected to WaitingRoomListHub');
+        return this.hubConnection.invoke('JoinWaitingRoomList'); // ✅ Zavolá se až po připojení
       })
       .catch(err => {
         console.error('❌ SignalR connection error:', err);

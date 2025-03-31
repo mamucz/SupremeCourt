@@ -17,7 +17,10 @@ namespace SupremeCourt.Infrastructure
             services.AddScoped<IPlayerRepository, PlayerRepository>(); // Registrace PlayerRepository
             services.AddScoped<IGameRepository, GameRepository>();
             services.AddScoped<IWaitingRoomRepository, WaitingRoomRepository>(); // ✅ Přidáno
-            services.AddScoped<IWaitingRoomListNotifier, WaitingRoomListNotifier>(); // ✅ Registrace Notifieru
+            
+            services.AddSingleton<IWaitingRoomNotifier, WaitingRoomNotifier>();
+            services.AddSingleton<IWaitingRoomListNotifier, WaitingRoomListNotifier>(); // ✅ Registrace Notifieru
+
             services.AddSignalR();
             return services;
         }

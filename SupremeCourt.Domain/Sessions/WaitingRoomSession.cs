@@ -22,14 +22,14 @@ namespace SupremeCourt.Domain.Sessions
         }
 
         // ➕ volitelný inicializátor z entity
-        public void InitializeFromEntity(WaitingRoom entity)
+        public void InitializeFromEntity(WaitingRoom entity, int expirationSeconds)
         {
             WaitingRoomId = entity.Id;
             CreatedAt = entity.CreatedAt;
             CreatedByPlayerId = entity.CreatedByPlayerId;
             Players = entity.Players;
 
-            _timeLeftSeconds = 60;
+            _timeLeftSeconds = expirationSeconds;
             _timer = new Timer(Tick, null, 1000, 1000);
         }
 

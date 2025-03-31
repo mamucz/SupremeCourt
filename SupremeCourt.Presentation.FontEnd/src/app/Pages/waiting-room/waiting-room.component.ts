@@ -1,14 +1,24 @@
 // File: waiting-room.component.ts
 
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../Services/auth.service';
+import * as signalR from '@microsoft/signalr';
 
 interface PlayerInfo {
-  id: number;
+  playerId: number;
   username: string;
+}
+
+interface WaitingRoomDto {
+  waitingRoomId: number;
+  createdByPlayerId: number;
+  createdAt: string;
+  players: PlayerInfo[];
+  timeLeftSeconds: number;
+  canStartGame: boolean;
 }
 
 @Component({
@@ -18,17 +28,17 @@ interface PlayerInfo {
   templateUrl: './waiting-room.component.html',
   styleUrls: ['./waiting-room.component.scss']
 })
-export class WaitingRoomComponent implements OnInit {
+export class WaitingRoomComponent implements OnInit, OnDestroy {
   waitingRoomId!: number;
-  players: PlayerInfo[] = [];
+  waitingRoom: WaitingRoomDto | null = null;
   playerId: number | null = null;
-  countdown: number = 60;
-  interval: any;
   message = '';
   error = '';
+  private hubConnection!: signalR.HubConnection;
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private http: HttpClient,
     private auth: AuthService
   ) {}
@@ -37,29 +47,56 @@ export class WaitingRoomComponent implements OnInit {
     this.waitingRoomId = Number(this.route.snapshot.paramMap.get('id'));
     this.playerId = this.auth.getUserId();
 
-    this.loadPlayers();
-    this.startCountdown();
-
-    // TODO: SignalR setup pro aktualizace
+    this.loadWaitingRoom();
+    this.setupSignalR();
   }
 
-  loadPlayers() {
-    this.http.get<PlayerInfo[]>(`https://localhost:7078/api/waitingroom/${this.waitingRoomId}/players`, {
+  ngOnDestroy(): void {
+    if (this.hubConnection) {
+      this.hubConnection.stop();
+    }
+  }
+
+  loadWaitingRoom() {
+    this.http.get<WaitingRoomDto>(`https://localhost:7078/api/waitingroom/${this.waitingRoomId}`, {
       headers: this.auth.getAuthHeaders()
     }).subscribe({
-      next: (data) => this.players = data,
-      error: () => this.error = 'Chyba při načítání hráčů.'
+      next: (data) => {
+        this.waitingRoom = data;
+      },
+      error: () => this.error = 'Chyba při načítání místnosti.'
     });
   }
 
-  startCountdown() {
-    this.interval = setInterval(() => {
-      this.countdown--;
+  setupSignalR() {
+    this.hubConnection = new signalR.HubConnectionBuilder()
+      .withUrl('https://localhost:7078/waitingRoomHub', {
+        accessTokenFactory: () => this.auth.getToken() || ''
+      })
+      .withAutomaticReconnect()
+      .build();
 
-      if (this.countdown <= 0) {
-        clearInterval(this.interval);
+    this.hubConnection.start()
+      .then(() => {
+        this.hubConnection.invoke('JoinRoom', this.waitingRoomId.toString());
+        console.log('✅ Připojeno do SignalR místnosti', this.waitingRoomId);
+      })
+      .catch(err => console.error('❌ Chyba SignalR:', err));
+
+    this.hubConnection.on('WaitingRoomUpdated', (data: WaitingRoomDto) => {
+      this.waitingRoom = data;
+    });
+
+    this.hubConnection.on('CountdownTick', (secondsLeft: number) => {
+      if (this.waitingRoom) {
+        this.waitingRoom.timeLeftSeconds = secondsLeft;
       }
-    }, 1000);
+    });
+
+    this.hubConnection.on('RoomExpired', () => {
+      this.message = '⛔ Místnost byla zrušena.';
+      this.router.navigate(['/waiting-rooms']);
+    });
   }
 
   leaveRoom() {
@@ -69,12 +106,21 @@ export class WaitingRoomComponent implements OnInit {
       headers: this.auth.getAuthHeaders()
     }).subscribe(() => {
       this.message = 'Opustil jsi místnost.';
-      clearInterval(this.interval);
-      // Redirect to list
+      this.router.navigate(['/waiting-rooms']);
     });
   }
 
+  canLeave(): boolean {
+    return this.waitingRoom?.players.some(p => p.playerId === this.playerId) ?? false;
+  }
+
   canStartGame(): boolean {
-    return this.players.length === 5;
+    if (!this.waitingRoom) return false;
+    return this.waitingRoom.canStartGame && this.playerId === this.waitingRoom.createdByPlayerId;
+  }
+
+  startGame(): void {
+    // TODO: Odeslat požadavek na zahájení hry (např. přes HTTP)
+    console.log('Hra zahájena!');
   }
 }

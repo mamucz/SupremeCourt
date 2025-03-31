@@ -6,11 +6,11 @@ namespace SupremeCourt.Application.EventHandlers
     public class WaitingRoomEventHandler : IWaitingRoomEventHandler
     {
         private readonly IWaitingRoomNotifier _notifier;
-        private readonly WaitingRoomSessionManager _sessionManager;
+        private readonly Lazy<WaitingRoomSessionManager> _sessionManager;
 
         public WaitingRoomEventHandler(
             IWaitingRoomNotifier notifier,
-            WaitingRoomSessionManager sessionManager)
+            Lazy<WaitingRoomSessionManager> sessionManager)
         {
             _notifier = notifier;
             _sessionManager = sessionManager;
@@ -23,7 +23,7 @@ namespace SupremeCourt.Application.EventHandlers
 
         public async Task HandleRoomExpiredAsync(int roomId)
         {
-            _sessionManager.RemoveSession(roomId);
+            _sessionManager.Value.RemoveSession(roomId);
             await _notifier.NotifyRoomExpiredAsync(roomId);
         }
     }

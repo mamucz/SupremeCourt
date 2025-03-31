@@ -1,16 +1,36 @@
-<h2>👥 Čekárna místnosti #{{ waitingRoomId }}</h2>
-<p>Zbývá čas: {{ countdown }}s</p>
+<h2>🎮 Čekací místnost #{{ waitingRoomId }}</h2>
 
+<!-- ✅ Počet hráčů -->
+<p>
+  👥 Připojeno hráčů: {{ waitingRoom?.players || 0 }}/5
+</p>
+
+<!-- 🕒 Odpočet -->
+<p *ngIf="waitingRoom && waitingRoom.timeLeftSeconds > 0">
+  ⏳ Čas: {{ waitingRoom.timeLeftSeconds }}s
+</p>
+
+<!-- 🧑 Seznam hráčů -->
 <ul>
-  <li *ngFor="let player of players">
+  <li *ngFor="let player of waitingRoom?.players">
     {{ player.username }}
-    <button *ngIf="player.id === playerId" (click)="leaveRoom()">🚪 Opustit</button>
+    <button 
+      *ngIf="player.playerId === playerId" 
+      (click)="leaveRoom()"
+    >
+      Opustit místnost
+    </button>
   </li>
 </ul>
 
-<p>{{ players.length }}/5 hráčů</p>
+<!-- ✅ Tlačítko pro spuštění hry -->
+<button 
+  *ngIf="canStartGame()" 
+  (click)="startGame()"
+>
+  🚀 Zahájit hru
+</button>
 
-<button [disabled]="!canStartGame()">🎮 Zahájit hru</button>
-
+<!-- ✅ Zprávy -->
 <div *ngIf="message" style="color: green;">{{ message }}</div>
 <div *ngIf="error" style="color: red;">{{ error }}</div>

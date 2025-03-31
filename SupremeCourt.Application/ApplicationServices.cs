@@ -1,38 +1,35 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using SupremeCourt.Application.CQRS.Games.Commands;
-using SupremeCourt.Application.CQRS.Players.Commands;
-using SupremeCourt.Application.Services;
-using SupremeCourt.Application.CQRS.WaitingRooms.Queries;
-using SupremeCourt.Domain.Interfaces;
-using System.Reflection;
-using SupremeCourt.Domain.Sessions;
 using SupremeCourt.Application.EventHandlers;
+using SupremeCourt.Application.Services;
 using SupremeCourt.Application.Sessions;
+using SupremeCourt.Domain.Interfaces;
 
-namespace SupremeCourt.Application
+public static class ApplicationServices
 {
-    public static class ApplicationServices
+    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
-        public static IServiceCollection AddApplicationServices(this IServiceCollection services)
-        {
-            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
-            //services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(GetWaitingRoomsQuery).Assembly));
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
-            // Registrace handlerů a služeb Application vrstvy
-            services.AddScoped<CreatePlayerHandler>();
-            services.AddScoped<CreateGameHandler>();
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IGameService, GameService>();
+        services.AddScoped<IWaitingRoomListService, WaitingRoomListService>();
+        services.AddScoped<ICreateGameHandler, CreateGameHandler>();
 
-            // Registrace služeb
-            services.AddScoped<IAuthService, AuthService>();            // ✅ OPRAVA zde
-            services.AddScoped<IGameService, GameService>();
-            services.AddScoped<IWaitingRoomListService, WaitingRoomListService>();
-            services.AddSingleton<IWaitingRoomEventHandler, WaitingRoomEventHandler>();
-            services.AddSingleton<WaitingRoomSessionManager>();
+        // 🔁 Session management
+        services.AddSingleton<WaitingRoomSessionManager>();
+        services.AddSingleton(provider =>
+            new Lazy<WaitingRoomSessionManager>(() => provider.GetRequiredService<WaitingRoomSessionManager>())
+        );
 
-            services.AddSingleton<TokenBlacklistService>();
-            services.AddSingleton<WaitingRoomSession>();
-            services.AddScoped<ICreateGameHandler, CreateGameHandler>();
-            return services;
-        }
+        // ✅ Event handler using Lazy to break circular dependency
+        services.AddSingleton<IWaitingRoomEventHandler, WaitingRoomEventHandler>();
+
+      
+        // Token blacklist je taky singleton
+        services.AddSingleton<TokenBlacklistService>();
+
+        return services;
     }
 }
