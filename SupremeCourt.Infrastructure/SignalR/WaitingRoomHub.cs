@@ -22,5 +22,7 @@ namespace SupremeCourt.Infrastructure.SignalR
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
         }
+
+     
     }
 }

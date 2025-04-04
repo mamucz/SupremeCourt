@@ -19,7 +19,7 @@
     <tr *ngFor="let room of waitingRooms">
       <td>{{ room.waitingRoomId }}</td>
       <td>{{ room.createdAt | date:'short' }}</td>
-      <td>{{ room.createdBy }}</td>
+      <td>{{ room.createdByPlayerName }}</td>
       <td>{{ room.playerCount }}/5</td>
       <td>
         <button (click)="joinRoom(room.waitingRoomId)">{{ 'WAITINGROOM.JOIN' | translate }}</button>

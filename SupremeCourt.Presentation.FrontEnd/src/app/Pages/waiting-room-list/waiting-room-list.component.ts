@@ -12,11 +12,20 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core'; // ✅ 
 import * as signalR from '@microsoft/signalr';
 import { Router } from '@angular/router';
 
-interface WaitingRoomDto {
+export interface PlayerDto {
+  playerId: number;
+  name: string;
+}
+
+export interface WaitingRoomDto {
   waitingRoomId: number;
+  players: PlayerDto[];              // nový prvek
+  createdByPlayerId: number;
+  createdByPlayerName: string;
   createdAt: string;
-  createdBy: string;
   playerCount: number;
+  canStartGame: boolean;             // nový prvek
+  timeLeftSeconds: number;           // nový prvek
 }
 
 @Component({

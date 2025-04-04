@@ -94,7 +94,7 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
     {
         policy
-            .WithOrigins("http://localhost:4200") // ✅ tvoje Angular adresa
+            .WithOrigins("http://localhost:4200", "http://frontend:80") // ✅ tvoje Angular adresa
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials(); // ✅ nutné pokud používáš cookies nebo SignalR
@@ -105,11 +105,11 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Middleware
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+//}
 
 app.UseSerilogRequestLogging();
 

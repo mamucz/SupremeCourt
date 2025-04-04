@@ -8,6 +8,7 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn> <!-- ⚠️ potlačí warningy pro nedokumentované public členy -->
+	<OutDir>$(MSBuildProjectDirectory)\out\</OutDir>
   </PropertyGroup>
 
   <ItemGroup>
