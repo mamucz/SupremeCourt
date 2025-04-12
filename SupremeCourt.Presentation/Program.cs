@@ -9,6 +9,7 @@ using SupremeCourt.Presentation.Middleware;
 using System.Text;
 using SupremeCourt.Application.Background;
 using SupremeCourt.Infrastructure.SignalR;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -103,11 +104,15 @@ builder.Services.AddCors(options =>
 
 
 var app = builder.Build();
-
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<GameDbContext>();
+    db.Database.Migrate();
+}
 // Middleware
 //if (app.Environment.IsDevelopment())
 //{
-    app.UseSwagger();
+app.UseSwagger();
     app.UseSwaggerUI();
 //}
 

@@ -35,7 +35,9 @@ RUN dotnet publish "SupremeCourt.Presentation.csproj" -c $BUILD_CONFIGURATION -o
 # FINAL stage pro spuštìní aplikace (i pøi ladìní ve VS)
 FROM base AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
+# ? Add wait-for-it
+COPY --from=publish /app/publish . 
+COPY SupremeCourt.Presentation/wait-for-it.sh /wait-for-it.sh
+RUN chmod +x /wait-for-it.sh
 
-# Pøi spuštìní spustí aplikaci
-ENTRYPOINT ["dotnet", "SupremeCourt.Presentation.dll"]
+ENTRYPOINT ["/wait-for-it.sh", "mysql", "3306", "--", "dotnet", "SupremeCourt.Presentation.dll"]
