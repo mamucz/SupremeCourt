@@ -6,6 +6,8 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../Services/auth.service';
 import * as signalR from '@microsoft/signalr';
+import { environment } from '../../../environments/environment';
+
 
 interface PlayerInfo {
   playerId: number;
@@ -58,7 +60,7 @@ export class WaitingRoomComponent implements OnInit, OnDestroy {
   }
 
   loadWaitingRoom() {
-    this.http.get<WaitingRoomDto>(`https://localhost:7078/api/waitingroom/${this.waitingRoomId}`, {
+    this.http.get<WaitingRoomDto>(`${environment.apiUrl}/waitingroom/${this.waitingRoomId}`, {
       headers: this.auth.getAuthHeaders()
     }).subscribe({
       next: (data) => {
@@ -70,7 +72,7 @@ export class WaitingRoomComponent implements OnInit, OnDestroy {
 
   setupSignalR() {
     this.hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl('https://localhost:7078/waitingRoomHub', {
+      .withUrl('${environment.apiUrl}/waitingRoomHub', {
         accessTokenFactory: () => this.auth.getToken() || ''
       })
       .withAutomaticReconnect()
@@ -100,7 +102,7 @@ export class WaitingRoomComponent implements OnInit, OnDestroy {
   }
 
   leaveRoom() {
-    this.http.post(`https://localhost:7078/api/waitingroom/${this.waitingRoomId}/leave`, {
+    this.http.post(`${environment.apiUrl}/waitingroom/${this.waitingRoomId}/leave`, {
       playerId: this.playerId
     }, {
       headers: this.auth.getAuthHeaders()

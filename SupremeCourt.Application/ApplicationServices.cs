@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using SupremeCourt.Application.CQRS.Games.Commands;
 using SupremeCourt.Application.EventHandlers;
@@ -10,8 +11,15 @@ public static class ApplicationServices
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
-        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+        // ✅ Registrace MediatR handlerů + pipeline behavior
+        services.AddMediatR(cfg =>
+        {
+            cfg.RegisterServicesFromAssembly(typeof(LoggingBehavior<,>).Assembly);
+        });
 
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+
+        // ✅ Aplikační služby
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IGameService, GameService>();
         services.AddScoped<IWaitingRoomListService, WaitingRoomListService>();
@@ -26,8 +34,7 @@ public static class ApplicationServices
         // ✅ Event handler using Lazy to break circular dependency
         services.AddSingleton<IWaitingRoomEventHandler, WaitingRoomEventHandler>();
 
-      
-        // Token blacklist je taky singleton
+        // 🛡️ Token blacklist jako singleton
         services.AddSingleton<TokenBlacklistService>();
 
         return services;

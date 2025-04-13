@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "SupremeCourterStudy": {
+    "SupremeCourter": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/supreme-courter-study",
+            "outputPath": "dist/supreme-courter",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -68,10 +68,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "SupremeCourterStudy:build:production"
+              "buildTarget": "SupremeCourter:build:production"
             },
             "development": {
-              "buildTarget": "SupremeCourterStudy:build:development"
+              "buildTarget": "SupremeCourter:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -79,7 +79,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "buildTarget": "SupremeCourterStudy:build"
+            "buildTarget": "SupremeCourter:build"
           }
         },
         "test": {

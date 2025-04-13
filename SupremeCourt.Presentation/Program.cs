@@ -10,10 +10,11 @@ using System.Text;
 using SupremeCourt.Application.Background;
 using SupremeCourt.Infrastructure.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Nastavení Serilogu
+// 📝 Serilog nastavení
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
@@ -24,18 +25,14 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-// Načtení connection stringu
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (string.IsNullOrWhiteSpace(connectionString))
-{
-    throw new InvalidOperationException("Connection string 'DefaultConnection' is missing or empty in appsettings.");
-}
-// Načtení konfigurace JWT
+// 🔐 JWT + připojení na DB
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Missing connection string 'DefaultConnection'.");
+
 var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 var jwtAudience = builder.Configuration["Jwt:Audience"];
 
-// Registrace autentizace a autorizace pomocí JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -53,7 +50,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// Registrace Swaggeru
+// 🧾 Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -67,7 +64,6 @@ builder.Services.AddSwaggerGen(options =>
         Type = SecuritySchemeType.ApiKey,
         Scheme = "Bearer"
     });
-
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -79,55 +75,67 @@ builder.Services.AddSwaggerGen(options =>
                     Id = "Bearer"
                 }
             },
-            new string[] { }
+            Array.Empty<string>()
         }
     });
 });
 
-// Registrace služeb z jednotlivých vrstev
+// 🧱 Služby
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(connectionString);
 builder.Services.AddPresentationServices();
 builder.Services.AddHostedService<WaitingRoomMonitor>();
 
+// 🌐 CORS
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
         policy
-            .WithOrigins("http://localhost:4200", "http://frontend:80") // ✅ tvoje Angular adresa
+            .WithOrigins("http://localhost:4200", "http://frontend:80")
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowCredentials(); // ✅ nutné pokud používáš cookies nebo SignalR
+            .AllowCredentials();
     });
 });
 
-
 var app = builder.Build();
+
+// 🗃️ Migrace databáze
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<GameDbContext>();
     db.Database.Migrate();
 }
-// Middleware
-//if (app.Environment.IsDevelopment())
-//{
+
+// 📈 Serilog request logging s filtrem pro /health
+app.UseSerilogRequestLogging(options =>
+{
+    options.GetLevel = (httpContext, elapsed, ex) =>
+    {
+        // 🔇 Potlačit logování /health na Debug úroveň
+        if (httpContext.Request.Path.StartsWithSegments("/api/health") || httpContext.Request.Path.StartsWithSegments("/health"))
+            return LogEventLevel.Debug;
+
+        return LogEventLevel.Information;
+    };
+});
+
+// 🌍 Middleware
 app.UseSwagger();
-    app.UseSwaggerUI();
-//}
+app.UseSwaggerUI();
 
-app.UseSerilogRequestLogging();
-
-app.UseRouting(); // ✅ Zajišťuje správné směrování
+app.UseRouting();
 app.UseCors();
 app.UseMiddleware<BlacklistTokenMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// ✅ Použití registrací tras nejvyšší úrovně místo app.UseEndpoints()
+// 📡 Endpoints
 app.MapControllers();
 app.MapHub<GameHub>("/gameHub");
 app.MapHub<WaitingRoomListHub>("/waitingRoomListHub");
 app.MapHub<WaitingRoomHub>("/waitingRoomHub");
+app.MapGet("/health", () => "OK");
 
 app.Run();

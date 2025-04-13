@@ -8,9 +8,10 @@ import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../Services/auth.service';
-import { TranslateModule, TranslateService } from '@ngx-translate/core'; // ✅ Přidat
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import * as signalR from '@microsoft/signalr';
 import { Router } from '@angular/router';
+import { environment } from '../../../environments/environment';
 
 export interface PlayerDto {
   playerId: number;
@@ -19,13 +20,13 @@ export interface PlayerDto {
 
 export interface WaitingRoomDto {
   waitingRoomId: number;
-  players: PlayerDto[];              // nový prvek
+  players: PlayerDto[];
   createdByPlayerId: number;
   createdByPlayerName: string;
   createdAt: string;
   playerCount: number;
-  canStartGame: boolean;             // nový prvek
-  timeLeftSeconds: number;           // nový prvek
+  canStartGame: boolean;
+  timeLeftSeconds: number;
 }
 
 @Component({
@@ -64,7 +65,7 @@ export class WaitingRoomListComponent implements OnInit, OnDestroy {
   }
 
   loadWaitingRooms() {
-    this.http.get<WaitingRoomDto[]>('https://localhost:7078/api/waitingroom/waitingrooms', {
+    this.http.get<WaitingRoomDto[]>(`${environment.apiUrl}/waitingroom/waitingrooms`, {
       headers: this.auth.getAuthHeaders()
     }).subscribe({
       next: (data) => {
@@ -91,12 +92,13 @@ export class WaitingRoomListComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.http.post<any>('https://localhost:7078/api/waitingroom/create', { playerId }, {
+    this.http.post<any>(`${environment.apiUrl}/waitingroom/create`, { playerId }, {
       headers: this.auth.getAuthHeaders()
     }).subscribe({
       next: res => {
         this.translate.get('WAITINGROOM.CREATED').subscribe(text => {
-          this.message = `✅ ${text.replace('#', res.waitingRoomId)}`;
+          const id = res?.waitingRoomId ?? '?';
+          this.message = `✅ ${text.replace('#', id)}`;
         });
         this.error = '';
       },
@@ -115,8 +117,8 @@ export class WaitingRoomListComponent implements OnInit, OnDestroy {
       this.error = 'Nejste přihlášen.';
       return;
     }
-  
-    this.http.post('https://localhost:7078/api/waitingroom/join', {
+
+    this.http.post(`${environment.apiUrl}/waitingroom/join`, {
       waitingRoomId: gameId,
       playerId
     }, {
@@ -125,7 +127,6 @@ export class WaitingRoomListComponent implements OnInit, OnDestroy {
       next: () => {
         this.message = `✅ Připojeno k místnosti #${gameId}`;
         this.error = '';
-        // přesměrování do detailu místnosti
         this.router.navigate([`/waiting-room/${gameId}`]);
       },
       error: err => {
@@ -134,21 +135,22 @@ export class WaitingRoomListComponent implements OnInit, OnDestroy {
       }
     });
   }
-  
 
   private setupSignalR(): void {
+    const hubUrl = `${environment.apiUrl.replace('/api', '')}/waitingRoomListHub`;
+
     this.hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl('https://localhost:7078/waitingRoomListHub', {
+      .withUrl(hubUrl, {
         accessTokenFactory: () => this.auth.getToken() || ''
       })
       .withAutomaticReconnect()
       .build();
 
-      this.hubConnection
+    this.hubConnection
       .start()
       .then(() => {
         console.log('✅ SignalR connected to WaitingRoomListHub');
-        return this.hubConnection.invoke('JoinWaitingRoomList'); // ✅ Zavolá se až po připojení
+        return this.hubConnection.invoke('JoinWaitingRoomList');
       })
       .catch(err => {
         console.error('❌ SignalR connection error:', err);

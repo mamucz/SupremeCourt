@@ -8,13 +8,11 @@ services:
     environment:
       MYSQL_DATABASE: supremecourt_db
       MYSQL_USER: SupremeCourt
-      MYSQL_PASSWORD: Xkd4cHg3EvkQBUP6ZweFXunHkJ3EAtz5yvQeKuD7
+      MYSQL_PASSWORD: PipeMerlin24951411
       MYSQL_ROOT_PASSWORD: root
-    ports:
-      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-
+    
   api:
     build:
       context: .
@@ -24,19 +22,30 @@ services:
       - mysql
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=server=mysql;port=3306;database=supremecourt_db;user=SupremeCourt;password=Xkd4cHg3EvkQBUP6ZweFXunHkJ3EAtz5yvQeKuD7
+      - ConnectionStrings__DefaultConnection=server=mysql;port=3306;database=supremecourt_db;user=SupremeCourt;password=PipeMerlin24951411
     ports:
       - "5000:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   frontend:
     build:
       context: SupremeCourt.Presentation.FrontEnd
       dockerfile: Dockerfile
     container_name: supremecourt_frontend
+    depends_on:
+      api:
+        condition: service_healthy
     ports:
       - "4200:80"
-    depends_on:
-      - api
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   mysql_data:

@@ -1,6 +1,5 @@
 export const environment = {
-    production: false,
-    apiUrl: 'https://localhost:7078/api',
-    signalRBaseUrl: 'https://localhost:7078'
-  };
-  
+  production: false,
+  apiUrl: 'http://localhost:7078/api',
+  signalRBaseUrl: 'http://localhost:7078'
+};

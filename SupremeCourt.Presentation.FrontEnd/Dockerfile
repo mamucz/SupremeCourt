@@ -1,11 +1,22 @@
-# Build fáze
-FROM node:18 AS build
+# 📦 Build stage
+FROM node:20-alpine AS build
 WORKDIR /app
-COPY . .
-RUN npm install
-RUN npm run build -- --output-path=dist --configuration production
 
-# NGINX fáze
-FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-EXPOSE 80
+# 🧩 Instalace závislostí
+COPY package*.json ./
+RUN npm install
+
+# 📁 Kopírování zdrojového kódu
+COPY . .
+
+# 🏗 Produkční build Angular aplikace
+RUN npm run build -- --configuration=production
+
+# 🚀 Production stage s Nginx
+FROM nginx:stable-alpine
+
+# 📁 Zkopíruj správný výstup z Angularu
+COPY --from=build /app/dist/supreme-courter /usr/share/nginx/html
+
+# ⚙ Vlastní konfigurace Nginxu
+COPY nginx.conf /etc/nginx/conf.d/default.conf
