@@ -148,5 +148,16 @@ namespace SupremeCourt.Application.Services
 
             return dto;
         }
+
+        public async Task<WaitingRoom?> GetRoomIdByUserIdAsync(int userId)
+        {
+            return await _waitingRoomRepository.GetRoomByPlayerIdAsync(userId);            
+        }
+
+        public async Task<WaitingRoom?> GetRoomByPlayerIdAsync(int playerId)
+        {
+            return await _waitingRoomRepository.GetRoomByPlayerIdAsync(playerId);
+        }
+
     }
 }

@@ -1,5 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Session;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using SupremeCourt.Application.Common.Interfaces;
 using SupremeCourt.Domain.Interfaces;
 using SupremeCourt.Infrastructure.Repositories;
 using SupremeCourt.Infrastructure.Services;
@@ -20,6 +22,7 @@ namespace SupremeCourt.Infrastructure
             
             services.AddSingleton<IWaitingRoomNotifier, WaitingRoomNotifier>();
             services.AddSingleton<IWaitingRoomListNotifier, WaitingRoomListNotifier>(); // ✅ Registrace Notifieru
+            services.AddSingleton<IUserSessionRepository, UserSessionRepository>();
 
             services.AddSignalR();
             return services;

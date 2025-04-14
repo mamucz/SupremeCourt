@@ -6,6 +6,7 @@ using SupremeCourt.Application.EventHandlers;
 using SupremeCourt.Application.Services;
 using SupremeCourt.Application.Sessions;
 using SupremeCourt.Domain.Interfaces;
+using SupremeCourt.Domain.Mappings;
 
 public static class ApplicationServices
 {
@@ -18,12 +19,13 @@ public static class ApplicationServices
         });
 
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
-
+        services.AddSingleton<WaitingRoomMapper>();
         // ✅ Aplikační služby
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IGameService, GameService>();
         services.AddScoped<IWaitingRoomListService, WaitingRoomListService>();
         services.AddScoped<ICreateGameHandler, CreateGameHandler>();
+        services.AddScoped<IWaitingRoomService, WaitingRoomService>();
 
         // 🔁 Session management
         services.AddSingleton<WaitingRoomSessionManager>();

@@ -35,5 +35,14 @@ namespace SupremeCourt.Domain.Interfaces
         /// Includes player list and remaining time.
         /// </summary>
         Task<WaitingRoomDto?> GetWaitingRoomByIdAsync(int roomId);
+
+        /// <summary>
+        /// Gets a waiting room by player ID.
+        /// </summary>
+        /// <param name="playerId"></param>
+        /// <returns>IdWaitingroom?/returns>
+        Task<WaitingRoom?> GetRoomByPlayerIdAsync(int playerId);
+
+        
     }
 }

@@ -70,5 +70,9 @@ namespace SupremeCourt.Application.Services
             return true;
         }
 
+        public async Task<Game?> GetGameIdByUserIdAsync(int playerId)
+        {
+            return await _gameRepository.GetActiveGameByPlayerIdAsync(playerId);
+        }
     }
 }
