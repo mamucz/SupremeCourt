@@ -13,36 +13,36 @@ namespace SupremeCourt.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<WaitingRoom?> GetByIdAsync(int waitingRoomId)
+        public async Task<WaitingRoom?> GetByIdAsync(int waitingRoomId, CancellationToken cancellationToken)
         {
             return await _context.WaitingRooms
                 .Include(w => w.Players)
                 .FirstOrDefaultAsync(w => w.Id == waitingRoomId);
         }
 
-        public async Task AddAsync(WaitingRoom waitingRoom)
+        public async Task AddAsync(WaitingRoom waitingRoom, CancellationToken cancellationToken)
         {
             _context.WaitingRooms.Add(waitingRoom);
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(WaitingRoom waitingRoom)
+        public async Task UpdateAsync(WaitingRoom waitingRoom, CancellationToken cancellationToken)
         {
             _context.WaitingRooms.Update(waitingRoom);
             await _context.SaveChangesAsync();
         }
-        public async Task<List<WaitingRoom>> GetAllAsync() // ✅ Přidáno
+        public async Task<List<WaitingRoom>> GetAllAsync(CancellationToken cancellationToken) // ✅ Přidáno
         {
             return await _context.WaitingRooms.Include(w => w.Players).ToListAsync();
         }
 
-        public async Task DeleteAsync(WaitingRoom waitingRoom)
+        public async Task DeleteAsync(WaitingRoom waitingRoom, CancellationToken cancellationToken)
         {
             _context.WaitingRooms.Remove(waitingRoom);
             await _context.SaveChangesAsync();
         }
 
-        public async Task<WaitingRoom?> GetRoomByPlayerIdAsync(int playerId)
+        public async Task<WaitingRoom?> GetRoomByPlayerIdAsync(int playerId, CancellationToken cancellationToken)
         {
             return await _context.WaitingRooms
                 .Include(w => w.Players)

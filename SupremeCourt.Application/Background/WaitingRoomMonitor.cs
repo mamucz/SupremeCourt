@@ -33,7 +33,7 @@ namespace SupremeCourt.Application.Background
                 var waitingRoomService = scope.ServiceProvider.GetRequiredService<IWaitingRoomListService>();
                 var waitingRoomRepository = scope.ServiceProvider.GetRequiredService<IWaitingRoomRepository>();
 
-                var allWaitingRooms = await waitingRoomService.GetAllWaitingRoomsAsync();
+                var allWaitingRooms = await waitingRoomService.GetAllWaitingRoomsAsync(stoppingToken);
 
                 foreach (var waitingRoom in allWaitingRooms)
                 {
@@ -42,7 +42,7 @@ namespace SupremeCourt.Application.Background
 
                     if (isExpired && !hasEnoughPlayers)
                     {
-                        await waitingRoomRepository.DeleteAsync(waitingRoom);
+                        await waitingRoomRepository.DeleteAsync(waitingRoom, stoppingToken);
                         _logger.LogInformation("🗑️ WaitingRoom {Id} byl zrušen – expiroval a nemá dost hráčů.", waitingRoom.Id);
                     }
                 }

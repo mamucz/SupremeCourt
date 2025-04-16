@@ -16,14 +16,17 @@ namespace SupremeCourt.Application.Services
         private readonly TokenBlacklistService _tokenBlacklistService;
         private readonly ILogger<AuthService> _logger;
         private readonly IPlayerRepository _playerRepository;
+        private readonly IRefreshTokenRepository _refreshTokenRepository;
 
-        public AuthService(IUserRepository userRepository, IPlayerRepository playerRepository, IConfiguration configuration, TokenBlacklistService tokenBlacklistService, ILogger<AuthService> logger)
+        public AuthService(IUserRepository userRepository, IPlayerRepository playerRepository, IConfiguration configuration, TokenBlacklistService tokenBlacklistService, IRefreshTokenRepository refreshTokenRepository, ILogger<AuthService> logger)
         {
             _userRepository = userRepository;
             _playerRepository = playerRepository;
             _configuration = configuration;
             _tokenBlacklistService = tokenBlacklistService;
+            _refreshTokenRepository = refreshTokenRepository;
             _logger = logger;
+
         }
 
         /// <summary>
@@ -125,7 +128,7 @@ namespace SupremeCourt.Application.Services
                 _configuration["Jwt:Issuer"],
                 _configuration["Jwt:Audience"],
                 claims,
-                expires: DateTime.UtcNow.AddHours(1),
+                expires: DateTime.UtcNow.AddHours(100),
                 signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
@@ -135,5 +138,15 @@ namespace SupremeCourt.Application.Services
         {
             return await _userRepository.GetByUsernameAsync(username);
         }
+        public async Task<RefreshToken> GenerateRefreshTokenAsync(int playerId)
+        {
+            return await _refreshTokenRepository.CreateAsync(playerId);
+        }
+
+        string IAuthService.GenerateJwtToken(User user)
+        {
+            return GenerateJwtToken(user);
+        }
+
     }
 }

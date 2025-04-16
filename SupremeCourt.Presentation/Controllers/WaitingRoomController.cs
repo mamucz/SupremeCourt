@@ -70,5 +70,22 @@ namespace SupremeCourt.Presentation.Controllers
             var result = await _mediator.Send(new GetWaitingRoomsQuery());
             return Ok(result);
         }
+
+        /// <summary>
+        /// Gets the details of a specific waiting room by ID.
+        /// </summary>
+        /// <param name="id">ID of the waiting room</param>
+        /// <returns>200 OK with room details or 404 NotFound</returns>
+        [HttpGet("{id}")]
+        [ProducesResponseType(typeof(WaitingRoomDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetWaitingRoom(int id)
+        {
+            var result = await _mediator.Send(new GetWaitingRoomByIdQuery(id));
+            if (result == null)
+                return NotFound();
+
+            return Ok(result);
+        }
     }
 }

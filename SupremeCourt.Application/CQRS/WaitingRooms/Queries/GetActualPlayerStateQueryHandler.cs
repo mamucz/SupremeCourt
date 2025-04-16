@@ -26,7 +26,7 @@ namespace SupremeCourt.Application.CQRS.WaitingRooms.Handlers
         {
             var isLoggedIn = _userSessionRepository.IsUserConnected(request.UserId);
 
-            var waitingRoomId = await _waitingRoomService.GetRoomByPlayerIdAsync((int)request.UserId);
+            var waitingRoomId = await _waitingRoomService.GetRoomByPlayerIdAsync((int)request.UserId,cancellationToken);
             var gameId = await _gameService.GetGameIdByUserIdAsync(request.UserId);
 
             return new ActualPlayerStateDto

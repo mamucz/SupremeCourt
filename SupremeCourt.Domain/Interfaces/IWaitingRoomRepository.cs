@@ -4,12 +4,11 @@ namespace SupremeCourt.Domain.Interfaces
 {
     public interface IWaitingRoomRepository
     {
-        Task<WaitingRoom?> GetByIdAsync(int waitingRoomId);
-        Task AddAsync(WaitingRoom waitingRoom);
-        Task UpdateAsync(WaitingRoom waitingRoom);
-        Task<List<WaitingRoom>> GetAllAsync(); // ✅ Přidáno
-        Task DeleteAsync(WaitingRoom waitingRoom);
-
-        Task<WaitingRoom?> GetRoomByPlayerIdAsync(int playerId);
+        Task<WaitingRoom?> GetByIdAsync(int waitingRoomId, CancellationToken cancellationToken);
+        Task AddAsync(WaitingRoom waitingRoom, CancellationToken cancellationToken);
+        Task UpdateAsync(WaitingRoom waitingRoom, CancellationToken cancellationToken);
+        Task<List<WaitingRoom>> GetAllAsync( CancellationToken cancellationToken); // ✅ Přidáno
+        Task DeleteAsync(WaitingRoom waitingRoom, CancellationToken cancellationToken);
+        Task<WaitingRoom?> GetRoomByPlayerIdAsync(int playerId, CancellationToken cancellationToken);
     }
 }

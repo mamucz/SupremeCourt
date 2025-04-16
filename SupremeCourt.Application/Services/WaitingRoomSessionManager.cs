@@ -3,7 +3,7 @@ using SupremeCourt.Domain.Sessions;
 using System.Collections.Concurrent;
 using SupremeCourt.Domain.Interfaces;
 
-namespace SupremeCourt.Application.Sessions
+namespace SupremeCourt.Application.Services
 {
     public class WaitingRoomSessionManager
     {
