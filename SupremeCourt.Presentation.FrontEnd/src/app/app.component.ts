@@ -11,6 +11,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { HealthCheckService } from './Services/health-check.service';
 import { ConnectionLostComponent } from './Pages/connection-lost/connection-lost.component';
 
+
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -22,16 +24,29 @@ import { ConnectionLostComponent } from './Pages/connection-lost/connection-lost
   ],
   template: `
     <ng-container *ngIf="isConnected; else disconnected">
-      <!-- 🔝 Horní menu -->
-      <nav class="top-menu">
-      <button (click)="switchLanguage('cs')">🇨🇿</button>
-      <button (click)="switchLanguage('en')">🇬🇧</button>
-      <button (click)="switchLanguage('ja')">🇯a</button>
-        <button *ngIf="auth.isLoggedIn()" (click)="logout()">🚪 Logout</button>
-      </nav>
+  <!-- 🔝 Horní menu -->
+  <nav class="top-menu w-full bg-green-600 text-white p-3 flex justify-end items-center space-x-4 shadow-md">
+  <!-- 🌍 Jazykový výběr s vlajkami -->
+  <select
+    (change)="switchLanguage($any($event.target).value)"
+    class="bg-green-700 text-white rounded-full px-3 py-1 outline-none hover:bg-green-800 cursor-pointer text-xl"
+  >
+    <option value="cs">🇨🇿</option>
+    <option value="en">🇬🇧</option>
+    <option value="ja">🇯🇵</option>
+  </select>
+    <!-- 🚪 Odhlášení -->
+    <button
+      *ngIf="auth.isLoggedIn()"
+      (click)="logout()"
+      class="bg-red-600 hover:bg-red-700 text-white rounded px-3 py-1"
+    >
+      🚪 Logout
+    </button>
+  </nav>
 
-      <!-- 🔁 Obsah aplikace -->
-      <router-outlet></router-outlet>
+  <!-- 🔁 Obsah aplikace -->
+  <router-outlet></router-outlet>
     </ng-container>
 
     <ng-template #disconnected>
