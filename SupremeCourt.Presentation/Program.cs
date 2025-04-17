@@ -2,6 +2,7 @@
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using Serilog.Events;
 using SupremeCourt.Application;
 using SupremeCourt.Infrastructure;
 using SupremeCourt.Presentation;
@@ -10,20 +11,19 @@ using System.Text;
 using SupremeCourt.Application.Background;
 using SupremeCourt.Infrastructure.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Serilog.Events;
+
+// ✅ Bootstrap logger pro logování během startu
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 📝 Serilog nastavení
-Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
-    .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .WriteTo.File("logs/app.log", rollingInterval: RollingInterval.Day)
-    .WriteTo.Seq(builder.Configuration["Seq:Url"] ?? "http://localhost:5341")
-    .CreateLogger();
-
-builder.Host.UseSerilog();
+// ✅ Serilog z konfigurace
+builder.Host.UseSerilog((context, services, configuration) =>
+{
+    configuration.ReadFrom.Configuration(context.Configuration);
+});
 
 // 🔐 JWT + připojení na DB
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -113,7 +113,6 @@ app.UseSerilogRequestLogging(options =>
 {
     options.GetLevel = (httpContext, elapsed, ex) =>
     {
-        // 🔇 Potlačit logování /health na Debug úroveň
         if (httpContext.Request.Path.StartsWithSegments("/api/health") || httpContext.Request.Path.StartsWithSegments("/health"))
             return LogEventLevel.Debug;
 

@@ -1,5 +1,6 @@
 ﻿using SupremeCourt.Domain.Interfaces;
-using SupremeCourt.Application.Sessions;
+
+using SupremeCourt.Application.Services;
 
 namespace SupremeCourt.Application.EventHandlers
 {

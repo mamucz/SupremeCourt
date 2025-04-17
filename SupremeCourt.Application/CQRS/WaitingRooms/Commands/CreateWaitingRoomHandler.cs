@@ -23,7 +23,7 @@ namespace SupremeCourt.Application.CQRS.WaitingRooms.Commands
             if (request.PlayerId <= 0)
                 return null!;
 
-            var room = await _waitingRoomService.CreateWaitingRoomAsync(request.PlayerId);
+            var room = await _waitingRoomService.CreateWaitingRoomAsync(request.PlayerId, cancellationToken);
             if (room == null) return null!;
 
             _logger.LogInformation("🎯 Waiting room {Id} vytvořena hráčem {PlayerId}", room.Id, room.CreatedByPlayerId);

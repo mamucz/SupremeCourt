@@ -5,10 +5,6 @@ using SupremeCourt.Domain.Interfaces;
 using SupremeCourt.Domain.Logic;
 using SupremeCourt.Domain.Sessions;
 using SupremeCourt.Domain.Mappings;
-using SupremeCourt.Application.Sessions;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 
 namespace SupremeCourt.Application.Services
@@ -20,7 +16,6 @@ namespace SupremeCourt.Application.Services
         private readonly IGameService _gameService;
         private readonly IWaitingRoomNotifier _waitingRoomNotifier;
         private readonly WaitingRoomSessionManager _sessionManager;
-        private readonly WaitingRoomMapper _mapper;
         private readonly IWaitingRoomEventHandler _eventHandler;
         private readonly ILogger<WaitingRoomService> _logger;
         private readonly int _roomExpirationSeconds = 3*60;
@@ -31,7 +26,6 @@ namespace SupremeCourt.Application.Services
             IGameService gameService,
             IWaitingRoomNotifier waitingRoomNotifier,
             WaitingRoomSessionManager sessionManager,
-            WaitingRoomMapper mapper,
             IWaitingRoomEventHandler eventHandler,
             ILogger<WaitingRoomService> logger,
             IConfiguration configuration)
@@ -41,13 +35,12 @@ namespace SupremeCourt.Application.Services
             _gameService = gameService;
             _waitingRoomNotifier = waitingRoomNotifier;
             _sessionManager = sessionManager;
-            _mapper = mapper;
             _eventHandler = eventHandler;
             _logger = logger;
             _roomExpirationSeconds = configuration.GetValue<int>("WaitingRoom:ExpirationMinutes") * 60;
         }
 
-        public async Task<WaitingRoom?> CreateWaitingRoomAsync(int createdByPlayerId)
+        public async Task<WaitingRoom?> CreateWaitingRoomAsync(int createdByPlayerId, CancellationToken cancellationToken)
         {
             var player = await _playerRepository.GetByIdAsync(createdByPlayerId);
             if (player == null) return null;
@@ -55,10 +48,10 @@ namespace SupremeCourt.Application.Services
             var waitingRoom = new WaitingRoom();
             
 
-            await _waitingRoomRepository.AddAsync(waitingRoom);
+            await _waitingRoomRepository.AddAsync(waitingRoom, cancellationToken);
 
             // Vytvoření runtime session
-            var session = _mapper.ToSession(waitingRoom);
+            var session = Domain.Mappings.WaitingRoomMapper.Instance.ToSession(waitingRoom);
 
             session.OnCountdownTick += async seconds =>
                 await _eventHandler.HandleCountdownTickAsync(session.WaitingRoomId, seconds);
@@ -79,12 +72,12 @@ namespace SupremeCourt.Application.Services
             return waitingRoom;
         }
 
-        public async Task<bool> JoinWaitingRoomAsync(int waitingRoomId, int playerId)
+        public async Task<bool> JoinWaitingRoomAsync(int waitingRoomId, int playerId, CancellationToken cancellationToken)
         {
-            var existingRoom = await _waitingRoomRepository.GetRoomByPlayerIdAsync(playerId);
+            var existingRoom = await _waitingRoomRepository.GetRoomByPlayerIdAsync(playerId, cancellationToken);
             if (existingRoom != null) return false;
 
-            var room = await _waitingRoomRepository.GetByIdAsync(waitingRoomId);
+            var room = await _waitingRoomRepository.GetByIdAsync(waitingRoomId,cancellationToken);
             if (room == null) return false;
 
             if (room.Players.Count >= GameRules.MaxPlayers)
@@ -97,26 +90,26 @@ namespace SupremeCourt.Application.Services
             if (player == null) return false;
 
             room.Players.Add(player);
-            await _waitingRoomRepository.UpdateAsync(room);
+            await _waitingRoomRepository.UpdateAsync(room,cancellationToken);
 
             var session = _sessionManager.GetSession(waitingRoomId);
             if (session != null)
             {
                 session.AddPlayer(player);
-                await _waitingRoomNotifier.NotifyRoomUpdatedAsync(_mapper.ToDto(session));
+                await _waitingRoomNotifier.NotifyRoomUpdatedAsync(Domain.Mappings.WaitingRoomMapper.Instance.ToDto(session));
             }
 
             return true;
         }
 
-        public async Task<List<WaitingRoom>> GetAllWaitingRoomsAsync()
+        public async Task<List<WaitingRoom>> GetAllWaitingRoomsAsync(CancellationToken cancellationToken)
         {
-            return await _waitingRoomRepository.GetAllAsync();
+            return await _waitingRoomRepository.GetAllAsync(cancellationToken);
         }
 
-        public async Task<List<WaitingRoomDto>> GetWaitingRoomSummariesAsync()
+        public async Task<List<WaitingRoomDto>> GetWaitingRoomSummariesAsync(CancellationToken cancellationToken)
         {
-            var rooms = await _waitingRoomRepository.GetAllAsync();
+            var rooms = await _waitingRoomRepository.GetAllAsync(cancellationToken);
 
             var list = new List<WaitingRoomDto>();
             foreach (var room in rooms.Where(r => r.Players.Count < GameRules.MaxPlayers))
@@ -137,16 +130,27 @@ namespace SupremeCourt.Application.Services
             return list;
         }
 
-        public async Task<WaitingRoomDto?> GetWaitingRoomByIdAsync(int id)
+        public async Task<WaitingRoomDto?> GetWaitingRoomByIdAsync(int id, CancellationToken cancellationToken)
         {
-            var room = await _waitingRoomRepository.GetByIdAsync(id);
+            var room = await _waitingRoomRepository.GetByIdAsync(id, cancellationToken);
             if (room == null) return null;
 
             var session = _sessionManager.GetSession(id);
-            var dto = _mapper.ToDto(room);
+            var dto = Domain.Mappings.WaitingRoomMapper.Instance.ToDto(room);
             dto.TimeLeftSeconds = session?.GetTimeLeft() ?? 0;
 
             return dto;
         }
+
+        public async Task<WaitingRoom?> GetRoomIdByUserIdAsync(int userId, CancellationToken cancellationToken)
+        {
+            return await _waitingRoomRepository.GetRoomByPlayerIdAsync(userId,cancellationToken);            
+        }
+
+        public async Task<WaitingRoom?> GetRoomByPlayerIdAsync(int playerId, CancellationToken cancellationToken)
+        {
+            return await _waitingRoomRepository.GetRoomByPlayerIdAsync(playerId, cancellationToken);
+        }
+
     }
 }

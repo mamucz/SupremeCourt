@@ -6,6 +6,7 @@ using MediatR;
 using SupremeCourt.Domain.DTOs;
 using SupremeCourt.Domain.Interfaces;
 using SupremeCourt.Application.CQRS.Auth.Commands;
+using SupremeCourt.Application.CQRS.Auth.DTOs;
 
 namespace SupremeCourt.Presentation.Controllers
 {
@@ -131,5 +132,22 @@ namespace SupremeCourt.Presentation.Controllers
 
             return Ok(new { message = "User deleted successfully." });
         }
+
+        [AllowAnonymous]
+        [HttpPost("refresh")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto  request)
+        {
+            var token = await _mediator.Send(new RefreshTokenCommand(request.RefreshToken));
+            if (token == null)
+            {
+                return BadRequest(new { message = "Neplatný nebo expirovaný refresh token." });
+            }
+
+            return Ok(new { token });
+        }
+
+
     }
 }

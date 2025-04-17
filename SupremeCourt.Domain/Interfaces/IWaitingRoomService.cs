@@ -10,7 +10,7 @@ namespace SupremeCourt.Domain.Interfaces
         /// </summary>
         /// <param name="createdByPlayerId">ID of the player creating the room.</param>
         /// <returns>The created waiting room as entity (can be null if player is not found).</returns>
-        Task<WaitingRoom?> CreateWaitingRoomAsync(int createdByPlayerId);
+        Task<WaitingRoom?> CreateWaitingRoomAsync(int createdByPlayerId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Joins a player to a waiting room if they are not already in another one.
@@ -18,22 +18,31 @@ namespace SupremeCourt.Domain.Interfaces
         /// <param name="waitingRoomId">ID of the waiting room.</param>
         /// <param name="playerId">ID of the player joining.</param>
         /// <returns>True if joined successfully, otherwise false.</returns>
-        Task<bool> JoinWaitingRoomAsync(int waitingRoomId, int playerId);
+        Task<bool> JoinWaitingRoomAsync(int waitingRoomId, int playerId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets all waiting rooms as entities (internal use only).
         /// </summary>
-        Task<List<WaitingRoom>> GetAllWaitingRoomsAsync();
+        Task<List<WaitingRoom>> GetAllWaitingRoomsAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets summary info (DTOs) of all active waiting rooms.
         /// </summary>
-        Task<List<WaitingRoomDto>> GetWaitingRoomSummariesAsync();
+        Task<List<WaitingRoomDto>> GetWaitingRoomSummariesAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets detailed DTO representation of a waiting room by ID.
         /// Includes player list and remaining time.
         /// </summary>
-        Task<WaitingRoomDto?> GetWaitingRoomByIdAsync(int roomId);
+        Task<WaitingRoomDto?> GetWaitingRoomByIdAsync(int roomId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets a waiting room by player ID.
+        /// </summary>
+        /// <param name="playerId"></param>
+        /// <returns>IdWaitingroom?/returns>
+        Task<WaitingRoom?> GetRoomByPlayerIdAsync(int playerId, CancellationToken cancellationToken);
+
+        
     }
 }
