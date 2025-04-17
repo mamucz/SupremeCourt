@@ -8,5 +8,6 @@ namespace SupremeCourt.Domain.Interfaces
         Task<Game?> GetGameByIdAsync(int gameId);
         Task<GameRound> StartNewRound(int gameId, Dictionary<int, int> playerChoices);
         Task<bool> StartGameAsync(int gameId);
+        Task<Game?> GetGameIdByUserIdAsync(int playerId);
     }
 }

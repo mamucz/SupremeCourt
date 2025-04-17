@@ -9,5 +9,7 @@ namespace SupremeCourt.Domain.Interfaces
         Task<bool> RegisterAsync(string username, string password);
         Task<bool> DeleteUserAsync(string username, string token);
         Task<User?> GetUserByUsernameAsync(string username);
+        string GenerateJwtToken(User user);
+        Task<RefreshToken> GenerateRefreshTokenAsync(int playerId);
     }
 }

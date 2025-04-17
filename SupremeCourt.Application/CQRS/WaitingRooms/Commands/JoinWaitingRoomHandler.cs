@@ -34,11 +34,22 @@ namespace SupremeCourt.Application.CQRS.WaitingRooms.Commands
 
         public async Task<bool> Handle(JoinWaitingRoomCommand request, CancellationToken cancellationToken)
         {
-            var waitingRoom = await _waitingRoomRepository.GetByIdAsync(request.WaitingRoomId);
+            var waitingRoom = await _waitingRoomRepository.GetByIdAsync(request.WaitingRoomId, cancellationToken);
             if (waitingRoom == null) return false;
 
-            if (waitingRoom.Players.Any(p => p.Id == request.PlayerId))
-                return true; // už je připojený
+            //if (waitingRoom.Players.Any(p => p.Id == request.PlayerId))
+            //    return true; // už je připojený
+            _logger.LogInformation("ThreadId: {ThreadId} ➡️ Kontrola hráčů v místnosti ID: {RoomId}", Environment.CurrentManagedThreadId, waitingRoom.Id);
+            _logger.LogInformation("ThreadId: {ThreadId} ➡️ Počet hráčů: {Count}", Environment.CurrentManagedThreadId, waitingRoom.Players.Count);
+            foreach (var p in waitingRoom.Players)
+            {
+                _logger.LogInformation("ThreadId: {ThreadId} Environment.CurrentManagedThreadId🧑 Hráč ID: {Id}, UserID: {UserId}, Eliminated: {Eliminated}",
+                    Environment.CurrentManagedThreadId, p.Id, p.UserId, p.IsEliminated);
+            }
+            _logger.LogInformation("🧪 Hledám hráče ID: {RequestId}", request.PlayerId);
+            var alreadyJoined = waitingRoom.Players.Any(p => p.Id == request.PlayerId);
+            _logger.LogInformation("Výsledek kontrola připojení: {Result}", alreadyJoined);
+
 
             if (waitingRoom.Players.Count >= GameRules.MaxPlayers)
             {
@@ -50,7 +61,7 @@ namespace SupremeCourt.Application.CQRS.WaitingRooms.Commands
             if (player == null) return false;
 
             waitingRoom.Players.Add(player);
-            await _waitingRoomRepository.UpdateAsync(waitingRoom);
+            await _waitingRoomRepository.UpdateAsync(waitingRoom, cancellationToken);
 
             await _notifier.NotifyPlayerJoinedAsync(request.WaitingRoomId, player.User?.Username ?? "Hráč");
 

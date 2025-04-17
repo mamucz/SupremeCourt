@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using System.Threading;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
-using SupremeCourt.Application.Sessions;
 using SupremeCourt.Domain.DTOs;
 using SupremeCourt.Domain.Entities;
 using SupremeCourt.Domain.Interfaces;
@@ -18,7 +18,7 @@ namespace SupremeCourt.Application.Services
         private readonly IWaitingRoomListNotifier _waitingRoomListNotifier; // ✅ Použití nového notifieru
         private readonly IWaitingRoomNotifier _waitingRoomNotifier;
         private readonly WaitingRoomSessionManager _sessionManager;
-        private readonly WaitingRoomMapper _waitingRoomMapper;
+        
 
         public WaitingRoomListService(
             IWaitingRoomRepository waitingRoomRepository,
@@ -36,10 +36,10 @@ namespace SupremeCourt.Application.Services
             _waitingRoomNotifier = waitingRoomNotifier;
             _sessionManager = sessionManager;
             _logger = logger;
-            _waitingRoomMapper = new WaitingRoomMapper();
+            
         }
 
-        public async Task<WaitingRoom?> CreateWaitingRoomAsync(int createdByPlayerId)
+        public async Task<WaitingRoom?> CreateWaitingRoomAsync(int createdByPlayerId, CancellationToken cancellationToken)
         {
             var player = await _playerRepository.GetByIdAsync(createdByPlayerId);
             if (player == null) return null;
@@ -50,10 +50,10 @@ namespace SupremeCourt.Application.Services
                 Players = new List<Player> ()
             };
 
-            await _waitingRoomRepository.AddAsync(waitingRoom);
+            await _waitingRoomRepository.AddAsync(waitingRoom, cancellationToken);
 
             // ✅ Po uložení vytvoř runtime session a přidej ji do manageru
-            var session = _waitingRoomMapper.ToSession(waitingRoom);
+            var session = Domain.Mappings.WaitingRoomMapper.Instance.ToSession(waitingRoom);
             _sessionManager.AddSession(session);
 
             // Po vytvoření místnosti odešli notifikaci
@@ -63,27 +63,28 @@ namespace SupremeCourt.Application.Services
                 CreatedAt = waitingRoom.CreatedAt,
                 CreatedByPlayerId = player.User.Id,
                 CreatedByPlayerName = player.User?.Username ?? "Neznámý", 
-
+                
                 
             });
             return waitingRoom;
         }
-        public async Task<bool> JoinWaitingRoomAsync(int waitingRoomId, int playerId)
+
+        public async Task<bool> JoinWaitingRoomAsync(int waitingRoomId, int playerId, CancellationToken cancellationToken)
         {
             // ⛔ Zjisti, zda už není v jiné místnosti
-            var existingRoom = await _waitingRoomRepository.GetRoomByPlayerIdAsync(playerId);
+            var existingRoom = await _waitingRoomRepository.GetRoomByPlayerIdAsync(playerId, cancellationToken);
             if (existingRoom != null)
             {
                 _logger.LogWarning("Hráč {PlayerId} je již ve waiting room #{RoomId}", playerId, existingRoom.Id);
                 return false;
             }
 
-            var waitingRoom = await _waitingRoomRepository.GetByIdAsync(waitingRoomId);
+            var waitingRoom = await _waitingRoomRepository.GetByIdAsync(waitingRoomId, cancellationToken);
             if (waitingRoom == null) return false;
 
             if (waitingRoom.Players.Count >= GameRules.MaxPlayers)
             {
-                _logger.LogWarning($"Hráč {playerId} se pokusil připojit do plné místnosti {waitingRoomId}.");
+                _logger.LogWarning($"Hráč {playerId} se pokusil připojit do plné místnosti {waitingRoomId}.", cancellationToken);
                 return false;
             }
 
@@ -91,7 +92,7 @@ namespace SupremeCourt.Application.Services
             if (player == null) return false;
 
             waitingRoom.Players.Add(player);
-            await _waitingRoomRepository.UpdateAsync(waitingRoom);
+            await _waitingRoomRepository.UpdateAsync(waitingRoom, cancellationToken);
 
             await _waitingRoomNotifier.NotifyPlayerJoinedAsync(waitingRoomId, player.User.Username);
 
@@ -99,14 +100,14 @@ namespace SupremeCourt.Application.Services
         }
 
 
-        public async Task<List<WaitingRoom>> GetAllWaitingRoomsAsync() // ✅ Přidáno
+        public async Task<List<WaitingRoom>> GetAllWaitingRoomsAsync(CancellationToken cancellationToken) // ✅ Přidáno
         {
-            return await _waitingRoomRepository.GetAllAsync();
+            return await _waitingRoomRepository.GetAllAsync(cancellationToken);
         }
 
-        public async Task<List<WaitingRoomDto>> GetWaitingRoomSummariesAsync()
+        public async Task<List<WaitingRoomDto>> GetWaitingRoomSummariesAsync(CancellationToken cancellationToken)
         {
-            var all = await _waitingRoomRepository.GetAllAsync();
+            var all = await _waitingRoomRepository.GetAllAsync(cancellationToken);
 
             var result = new List<WaitingRoomDto>();
 
@@ -127,5 +128,7 @@ namespace SupremeCourt.Application.Services
 
             return result;
         }
+
+        
     }
 }

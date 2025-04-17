@@ -11,6 +11,8 @@ namespace SupremeCourt.Infrastructure
         public DbSet<GameRound> GameRounds { get; set; } // Přidáno
         public DbSet<WaitingRoom> WaitingRooms { get; set; }
 
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
+
         public GameDbContext(DbContextOptions<GameDbContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

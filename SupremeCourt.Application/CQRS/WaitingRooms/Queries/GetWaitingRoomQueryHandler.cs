@@ -19,7 +19,7 @@ namespace SupremeCourt.Application.CQRS.WaitingRooms.Queries
 
         public async Task<WaitingRoomDto?> Handle(GetWaitingRoomQuery request, CancellationToken cancellationToken)
         {
-            var room = await _waitingRoomRepository.GetByIdAsync(request.WaitingRoomId);
+            var room = await _waitingRoomRepository.GetByIdAsync(request.WaitingRoomId, cancellationToken);
             if (room == null)
                 return null;
 

@@ -29,19 +29,7 @@ namespace SupremeCourt.Presentation.Controllers
         [HttpPost("create")]
         public async Task<IActionResult> CreateGame()
         {
-            var dto = new CreateGameDto { HostUserId = 1 }; // Simulace přijatých dat
-            var game = await _createGameHandler.HandleAsync(dto);
-
-            if (game == null)
-                return BadRequest("Game creation failed.");
-
-            var waitingRoom = await _waitingRoomService.CreateWaitingRoomAsync(game.Id);
-
-            return Ok(new
-            {
-                GameId = game.Id,
-                WaitingRoomId = waitingRoom?.Id
-            });
+           return(Ok());
         }
     }
 }
