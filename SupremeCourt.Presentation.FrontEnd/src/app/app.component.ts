@@ -10,8 +10,8 @@ import { AuthService } from './Services/auth.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { HealthCheckService } from './Services/health-check.service';
 import { ConnectionLostComponent } from './Pages/connection-lost/connection-lost.component';
-
-
+import { HeaderComponent } from './Pages/header/header.component';
+import { FooterComponent } from './Pages/footer/footer.component';
 
 @Component({
   selector: 'app-root',
@@ -20,39 +20,11 @@ import { ConnectionLostComponent } from './Pages/connection-lost/connection-lost
     CommonModule,
     RouterModule,
     TranslateModule,
-    ConnectionLostComponent
+    ConnectionLostComponent,
+    HeaderComponent,
+    FooterComponent
   ],
-  template: `
-    <ng-container *ngIf="isConnected; else disconnected">
-  <!-- 🔝 Horní menu -->
-  <nav class="top-menu w-full bg-green-600 text-white p-3 flex justify-end items-center space-x-4 shadow-md">
-  <!-- 🌍 Jazykový výběr s vlajkami -->
-  <select
-    (change)="switchLanguage($any($event.target).value)"
-    class="bg-green-700 text-white rounded-full px-3 py-1 outline-none hover:bg-green-800 cursor-pointer text-xl"
-  >
-    <option value="cs">🇨🇿</option>
-    <option value="en">🇬🇧</option>
-    <option value="ja">🇯🇵</option>
-  </select>
-    <!-- 🚪 Odhlášení -->
-    <button
-      *ngIf="auth.isLoggedIn()"
-      (click)="logout()"
-      class="bg-red-600 hover:bg-red-700 text-white rounded px-3 py-1"
-    >
-      🚪 Logout
-    </button>
-  </nav>
-
-  <!-- 🔁 Obsah aplikace -->
-  <router-outlet></router-outlet>
-    </ng-container>
-
-    <ng-template #disconnected>
-      <app-connection-lost></app-connection-lost>
-    </ng-template>
-  `,
+  templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {

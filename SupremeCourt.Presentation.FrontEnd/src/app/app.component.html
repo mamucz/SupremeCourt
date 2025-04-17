@@ -5,29 +5,21 @@ Description: Root component
 File Name: app.component.html
 -->
 
-<!-- Navigace -->
-<nav style="margin-bottom: 1rem;">
-    <ng-container *ngIf="!auth.isLoggedIn(); else loggedIn">
-      <a routerLink="/login" routerLinkActive="active" style="margin-right: 10px;">
-        {{ 'NAV.LOGIN' | translate }}
-      </a>
-      <a routerLink="/register" routerLinkActive="active">
-        {{ 'NAV.REGISTER' | translate }}
-      </a>
-    </ng-container>
-  
-    <ng-template #loggedIn>
-      <a routerLink="/waiting-rooms" style="margin-right: 10px;">🕹️ {{ 'NAV.WAITINGROOM' | translate }}</a>
-      <a href="#" (click)="logout()">🚪 {{ 'NAV.LOGOUT' | translate }}</a>
-    </ng-template>
-  </nav>
-  <!-- Jazykový přepínač -->
-  <div style="margin-bottom: 1rem;">
-    🌐 <button (click)="switchLanguage('cs')">Čeština</button>
-    <button (click)="switchLanguage('en')">English</button>
-    <button (click)="switchLanguage('ja')">日本語</button>
-  </div>
+<ng-container *ngIf="isConnected; else disconnected">
+  <div class="min-h-screen flex flex-col">
+    <!-- 🔝 Header -->
+    <app-header></app-header>
 
-  
-  <router-outlet />
-  
+    <!-- 🔁 Obsah (flex-grow = roztáhnout zbytek stránky) -->
+    <main class="flex-1">
+      <router-outlet></router-outlet>
+    </main>
+
+    <!-- 🔻 Footer -->
+    <app-footer></app-footer>
+  </div>
+</ng-container>
+
+<ng-template #disconnected>
+  <app-connection-lost></app-connection-lost>
+</ng-template>
