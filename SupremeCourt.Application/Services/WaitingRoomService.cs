@@ -46,15 +46,15 @@ namespace SupremeCourt.Application.Services
             if (player == null) return null;
 
             var waitingRoom = new WaitingRoom();
-            
 
             await _waitingRoomRepository.AddAsync(waitingRoom, cancellationToken);
 
             // Vytvoření runtime session
             var session = Domain.Mappings.WaitingRoomMapper.Instance.ToSession(waitingRoom);
 
-            session.OnCountdownTick += async seconds =>
-                await _eventHandler.HandleCountdownTickAsync(session.WaitingRoomId, seconds);
+            // ✅ Opravený zápis: přidání roomId do parametru
+            session.OnCountdownTick += async (roomId, secondsLeft) =>
+                await _eventHandler.HandleCountdownTickAsync(roomId, secondsLeft);
 
             session.OnRoomExpired += async roomId =>
                 await _eventHandler.HandleRoomExpiredAsync(roomId);
@@ -71,6 +71,7 @@ namespace SupremeCourt.Application.Services
 
             return waitingRoom;
         }
+
 
         public async Task<bool> JoinWaitingRoomAsync(int waitingRoomId, int playerId, CancellationToken cancellationToken)
         {

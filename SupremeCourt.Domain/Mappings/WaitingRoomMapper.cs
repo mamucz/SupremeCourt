@@ -18,9 +18,6 @@ public partial class WaitingRoomMapper
     [MapProperty(nameof(WaitingRoomDto.WaitingRoomId), nameof(WaitingRoom.Id))]
     public partial WaitingRoom ToEntity(WaitingRoomDto dto);
 
-    // 🧭 Entita -> Session (např. při spuštění místnosti)
-    public partial WaitingRoomSession ToSession(WaitingRoom entity);
-
     // 🧭 Session -> DTO (pro zobrazení ve frontendu)
     [MapProperty(nameof(WaitingRoomSession.WaitingRoomId), nameof(WaitingRoomDto.WaitingRoomId))]
     [MapProperty(nameof(WaitingRoomSession.CreatedByPlayerId), nameof(WaitingRoomDto.CreatedByPlayerId))]
@@ -28,10 +25,18 @@ public partial class WaitingRoomMapper
     [MapProperty(nameof(WaitingRoomSession.Players), nameof(WaitingRoomDto.Players))]
     public partial WaitingRoomDto ToDto(WaitingRoomSession session);
 
-    // 🧭 Session -> Entita (např. pro uložení zpět do DB, pokud potřebuješ)
+    // 🧭 Session -> Entita (např. pro uložení zpět do DB)
     [MapProperty(nameof(WaitingRoomSession.WaitingRoomId), nameof(WaitingRoom.Id))]
     [MapProperty(nameof(WaitingRoomSession.CreatedByPlayerId), nameof(WaitingRoom.CreatedByPlayerId))]
     [MapProperty(nameof(WaitingRoomSession.CreatedAt), nameof(WaitingRoom.CreatedAt))]
     [MapProperty(nameof(WaitingRoomSession.Players), nameof(WaitingRoom.Players))]
     public partial WaitingRoom ToEntity(WaitingRoomSession session);
+
+    // ✅ Ručně implementovaná metoda: Entita → Session (se spuštěním časovače)
+    public WaitingRoomSession ToSession(WaitingRoom entity, int expirationSeconds = 180)
+    {
+        var session = new WaitingRoomSession();
+        session.InitializeFromEntity(entity, expirationSeconds);
+        return session;
+    }
 }

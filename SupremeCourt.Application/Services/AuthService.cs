@@ -17,8 +17,9 @@ namespace SupremeCourt.Application.Services
         private readonly ILogger<AuthService> _logger;
         private readonly IPlayerRepository _playerRepository;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
-
+        
         public AuthService(IUserRepository userRepository, IPlayerRepository playerRepository, IConfiguration configuration, TokenBlacklistService tokenBlacklistService, IRefreshTokenRepository refreshTokenRepository, ILogger<AuthService> logger)
+
         {
             _userRepository = userRepository;
             _playerRepository = playerRepository;
@@ -51,29 +52,24 @@ namespace SupremeCourt.Application.Services
         /// <summary>
         /// Registrace nového uživatele.
         /// </summary>
-        public async Task<bool> RegisterAsync(string username, string password)
+        public async Task<bool> RegisterAsync(string username, string password, byte[]? profilePicture, string? mimeType)
         {
-            _logger.LogInformation("Registrace uživatele: {Username}", username);
-
             if (await _userRepository.GetByUsernameAsync(username) != null)
-            {
-                _logger.LogWarning("Uživatel {Username} již existuje", username);
                 return false;
-            }
-
             var hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
-            var user = new User { Username = username, PasswordHash = hashedPassword };
 
-            // Vytvoříme i Player při registraci Usera
-            var player = new Player { User = user, UserId = user.Id };
+            var user = new User
+            {
+                Username = username,
+                PasswordHash = hashedPassword,
+                ProfilePicture = profilePicture,
+                ProfilePictureMimeType = mimeType,
+                Player = new Player()
+            };
 
             await _userRepository.AddAsync(user);
-            await _playerRepository.AddAsync(player); // Nová logika
-
-            _logger.LogInformation("Uživatel {Username} a jeho Player účet úspěšně vytvořeni", username);
             return true;
         }
-
 
         /// <summary>
         /// Odhlášení uživatele (přidání tokenu na blacklist).
@@ -119,9 +115,9 @@ namespace SupremeCourt.Application.Services
 
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Username),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Username)
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Username)
             };
 
             var token = new JwtSecurityToken(

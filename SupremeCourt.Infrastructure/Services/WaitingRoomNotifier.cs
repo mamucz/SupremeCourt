@@ -31,6 +31,15 @@ namespace SupremeCourt.Infrastructure.Services
 
         public async Task NotifyCountdownTickAsync(int roomId, int secondsLeft)
         {
+            // 👥 1️⃣ Poslat do přehledu místností
+            await _listHub.Clients.Group("waitingroom-list")
+                .SendAsync("UpdateTimeLeft", new
+                {
+                    waitingRoomId = roomId,
+                    timeLeftSeconds = secondsLeft
+                });
+
+            // 🧍 2️⃣ Poslat do konkrétní místnosti (detail místnosti)
             await _roomHub.Clients.Group(roomId.ToString())
                 .SendAsync("CountdownTick", secondsLeft);
         }

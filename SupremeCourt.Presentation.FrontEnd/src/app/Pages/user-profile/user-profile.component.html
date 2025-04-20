@@ -1,0 +1,89 @@
+<div class="max-w-xl mx-auto p-6 space-y-8">
+    <h2 class="text-2xl font-bold text-center mb-6">Profil uživatele</h2>
+  
+    <!-- 🧑‍💻 Změna přezdívky -->
+    <form [formGroup]="profileForm" (ngSubmit)="onChangeNickname()" class="space-y-4">
+      <h3 class="text-lg font-semibold">Změna přezdívky</h3>
+  
+      <div>
+        <label class="block text-sm font-medium">Přezdívka</label>
+        <input
+          formControlName="nickname"
+          class="w-full border p-2 rounded-md"
+          placeholder="Zadej novou přezdívku"
+        />
+      </div>
+  
+      <div class="text-center">
+        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+          Uložit přezdívku
+        </button>
+      </div>
+    </form>
+  
+    <!-- 🖼️ Změna profilového obrázku – pouze jedno tlačítko -->
+    <div class="space-y-4">
+      <h3 class="text-lg font-semibold">Změna profilového obrázku</h3>
+  
+      <div class="text-center">
+        <div class="flex justify-center mb-4">
+          <img
+            *ngIf="currentImageUrl"
+            [src]="currentImageUrl"
+            class="w-24 h-24 rounded-full object-cover border"
+          />
+        </div>
+  
+        <!-- 🎯 Jedno tlačítko -->
+        <label
+          for="fileInput"
+          class="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded cursor-pointer"
+        >
+          Změnit profilový obrázek
+        </label>
+  
+        <input
+          id="fileInput"
+          type="file"
+          accept="image/*"
+          (change)="onFileSelectedAndUpload($event)"
+          class="hidden"
+        />
+      </div>
+    </div>
+  
+    <!-- 🔐 Změna hesla -->
+    <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()" class="space-y-4 border-t pt-6">
+      <h3 class="text-lg font-semibold">Změna hesla</h3>
+  
+      <div>
+        <label class="block text-sm font-medium">Staré heslo</label>
+        <input type="password" formControlName="oldPassword" class="w-full border p-2 rounded-md" />
+      </div>
+  
+      <div>
+        <label class="block text-sm font-medium">Nové heslo</label>
+        <input type="password" formControlName="newPassword" class="w-full border p-2 rounded-md" />
+      </div>
+  
+      <div>
+        <label class="block text-sm font-medium">Potvrzení nového hesla</label>
+        <input type="password" formControlName="confirmPassword" class="w-full border p-2 rounded-md" />
+      </div>
+  
+      <div class="text-center">
+        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+          Změnit heslo
+        </button>
+      </div>
+    </form>
+  
+    <!-- ✅ Zprávy -->
+    <div *ngIf="message" class="text-green-600 text-center mt-4">
+      {{ message }}
+    </div>
+    <div *ngIf="errorMessage" class="text-red-600 text-center mt-4">
+      {{ errorMessage }}
+    </div>
+  </div>
+  

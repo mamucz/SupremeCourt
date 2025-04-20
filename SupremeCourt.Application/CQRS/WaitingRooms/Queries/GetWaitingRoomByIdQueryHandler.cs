@@ -22,7 +22,8 @@ namespace SupremeCourt.Application.CQRS.WaitingRooms.Queries
         public async Task<WaitingRoomDto?> Handle(GetWaitingRoomByIdQuery request, CancellationToken cancellationToken)
         {
             var result = await _repository.GetByIdAsync(request.WaitingRoomId, cancellationToken);
-
+            if (result == null)
+                return null;
             return Domain.Mappings.WaitingRoomMapper.Instance.ToDto(result);
         }
     }

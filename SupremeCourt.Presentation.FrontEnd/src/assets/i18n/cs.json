@@ -33,8 +33,12 @@
     "ERROR": "Nepodařilo se přihlásit."
   },
   "REGISTER": {
+    "TITLE": "Registrace",
     "USERNAME": "Uživatelské jméno",
     "PASSWORD": "Heslo",
+    "CONFIRM_PASSWORD": "Potvrďte heslo",
+    "PROFILE_PICTURE": "Profilový obrázek",
+    "SELECT_FILE": "Vyberte soubor",
     "SUBMIT": "Registrovat",
     "SUCCESS": "Registrace byla úspěšná.",
     "ERROR": "Nepodařilo se zaregistrovat."
@@ -53,6 +57,7 @@
     "CREATED": "Vytvořeno",
     "PLAYER": "Hráč",
     "PLAYERS": "Hráči",
+    "TIMELEFT": "Zbývající čas",
     "ACTION": "Akce"
   },
   "ERROR": {

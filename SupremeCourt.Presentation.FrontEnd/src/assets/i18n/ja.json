@@ -33,8 +33,12 @@
     "ERROR": "ログインに失敗しました。"
   },
   "REGISTER": {
+    "TITLE": "登録",
     "USERNAME": "ユーザー名",
     "PASSWORD": "パスワード",
+    "CONFIRM_PASSWORD": "パスワードを確認",
+    "PROFILE_PICTURE": "プロフィール画像",
+    "SELECT_FILE": "ファイルを選択",
     "SUBMIT": "登録",
     "SUCCESS": "登録に成功しました。",
     "ERROR": "登録に失敗しました。"
@@ -53,6 +57,7 @@
       "CREATED": "作成日",
       "PLAYER": "プレイヤー",
       "PLAYERS": "プレイヤー数",
+      "TIMELEFT": "残り時間",
       "ACTION": "アクション"
     }
   }

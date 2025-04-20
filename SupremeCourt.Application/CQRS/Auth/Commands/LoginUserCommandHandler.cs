@@ -24,7 +24,10 @@ namespace SupremeCourt.Application.CQRS.Auth.Commands
             return new LoginResultDto
             {
                 Token = token,
-                UserId = user.Id
+                UserId = user.Id,
+                ProfileImageUrl = user.ProfilePicture != null
+                    ? $"/api/users/{user.Id}/profile-picture" // ✅ připrav si endpoint
+                    : null
             };
         }
     }

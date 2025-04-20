@@ -1,8 +1,9 @@
-﻿using System.Collections.Concurrent;
+﻿using SupremeCourt.Domain.Interfaces;
+using System.Collections.Concurrent;
 
 namespace SupremeCourt.Application.Services
 {
-    public class TokenBlacklistService
+    public class TokenBlacklistService : ITokenBlacklistService
     {
         private readonly ConcurrentDictionary<string, DateTime> _blacklistedTokens = new();
 

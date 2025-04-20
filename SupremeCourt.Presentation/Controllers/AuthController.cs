@@ -7,6 +7,7 @@ using SupremeCourt.Domain.DTOs;
 using SupremeCourt.Domain.Interfaces;
 using SupremeCourt.Application.CQRS.Auth.Commands;
 using SupremeCourt.Application.CQRS.Auth.DTOs;
+using SupremeCourt.Infrastructure.Repositories;
 
 namespace SupremeCourt.Presentation.Controllers
 {
@@ -37,18 +38,16 @@ namespace SupremeCourt.Presentation.Controllers
         /// 409 Conflict if a user with the same username already exists.
         /// </returns>
         [HttpPost("register")]
-        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(object), StatusCodes.Status409Conflict)]
-        public async Task<IActionResult> Register([FromBody] RegisterUserCommand command)
+        [Consumes("multipart/form-data")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Register([FromForm] RegisterUserCommand command)
         {
-            var success = await _mediator.Send(command);
-
-            if (!success)
-                return Conflict(new { message = "User already exists." });
-
-            return Ok(new { message = "Registration successful." });
+            var result = await _mediator.Send(command);
+            if (!result) return BadRequest();
+            return Ok();
         }
-
+        
         /// <summary>
         /// Authenticates the user and returns a JWT token and user ID.
         /// </summary>
@@ -71,7 +70,9 @@ namespace SupremeCourt.Presentation.Controllers
             {
                 message = "Login successful.",
                 token = result.Token,
-                userId = result.UserId
+                userId = result.UserId,
+                userName = command.Username,
+                profileImageUrl = result.ProfileImageUrl
             });
         }
 
@@ -114,7 +115,7 @@ namespace SupremeCourt.Presentation.Controllers
         [ProducesResponseType(typeof(object), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteUser()
         {
-            var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
             var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(token))
@@ -148,6 +149,25 @@ namespace SupremeCourt.Presentation.Controllers
             return Ok(new { token });
         }
 
+        [Authorize]
+        [HttpPut("me")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> UpdateProfile([FromForm] UpdateUserProfileCommand command)
+        {
+            var userIdClaimName = User.FindFirstValue(ClaimTypes.Name);
+            if (string.IsNullOrWhiteSpace(userIdClaimName))
+                return Unauthorized();
+            var test = ClaimTypes.NameIdentifier;
+            var userIdClaimIndetifier = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
 
+            if (!int.TryParse(userIdClaimIndetifier, out var userId))
+                return Unauthorized();
+
+            command.UserId = userId;
+
+            var result = await _mediator.Send(command);
+            return result ? Ok() : BadRequest();
+        }
     }
 }

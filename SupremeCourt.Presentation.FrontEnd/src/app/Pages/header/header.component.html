@@ -1,50 +1,87 @@
-<nav class="top-menu w-full bg-green-600 text-white p-3 flex justify-end items-center space-x-4 shadow-md relative">
+<nav class="top-menu w-full bg-green-600 text-white px-4 py-3 flex justify-between items-center shadow-md">
 
-  <!-- 🌍 Jazykový přepínač s vlaječkami -->
-  <div class="relative" (mouseleave)="dropdownOpen = false">
-    
-    <!-- Tlačítko -->
+  <!-- 🏠 Home tlačítko -->
+  <div class="flex items-center space-x-4">
     <button
-      (mouseenter)="dropdownOpen = true"
-      class="bg-green-700 text-white rounded-full px-3 py-1 hover:bg-green-800 flex items-center"
-      aria-label="Current language"
+      (click)="goHome()"
+      class="text-white font-semibold hover:underline flex items-center gap-1"
     >
-      <img
-        [src]="'assets/flags/4x3/' + getFlag(currentLang) + '.png'"
-        alt="Current language"
-        class="w-6 h-auto rounded-sm"
-      />
+      🏠 <span class="hidden sm:inline">Domů</span>
     </button>
-
-    <!-- Dropdown -->
-    <div
-      *ngIf="dropdownOpen"
-      (mouseenter)="dropdownOpen = true"
-      (mouseleave)="dropdownOpen = false"
-      class="absolute right-0 mt-0 bg-white text-black rounded shadow-md z-50 min-w-[60px]"
-    >
-      <button
-        *ngFor="let lang of languages"
-        (click)="switchLanguage(lang.code); dropdownOpen = false"
-        class="w-full px-3 py-2 hover:bg-gray-100 flex items-center justify-center"
-        [attr.aria-label]="lang.name"
-      >
-        <img
-          [src]="'assets/flags/4x3/' + getFlag(lang.code) + '.png'"
-          class="w-6 h-auto rounded-sm"
-          alt="{{ lang.name }}"
-        />
-      </button>
-    </div>
   </div>
 
-  <!-- 🚪 Odhlášení -->
-  <button
-    *ngIf="auth.isLoggedIn()"
-    (click)="logout()"
-    class="bg-red-600 hover:bg-red-700 text-white rounded px-3 py-1"
-    aria-label="Logout"
-  >
-    🚪
-  </button>
+  <!-- 🔧 Pravá část: jazyk + uživatel -->
+  <div class="flex items-center space-x-4 relative">
+
+    <!-- 🌍 Jazykový přepínač -->
+    <div class="relative" (mouseleave)="dropdownOpen = false">
+      <button
+        (mouseenter)="dropdownOpen = true"
+        class="bg-green-700 text-white rounded-full px-3 py-1 hover:bg-green-800 flex items-center"
+        aria-label="Current language"
+      >
+        <img
+          [src]="'assets/flags/4x3/' + getFlag(currentLang) + '.png'"
+          alt="Current language"
+          class="w-6 h-auto rounded-sm"
+        />
+      </button>
+
+      <div
+        *ngIf="dropdownOpen"
+        (mouseenter)="dropdownOpen = true"
+        (mouseleave)="dropdownOpen = false"
+        class="absolute right-0 mt-2 bg-white text-black rounded shadow-md z-50 min-w-[60px]"
+      >
+        <button
+          *ngFor="let lang of languages"
+          (click)="switchLanguage(lang.code); dropdownOpen = false"
+          class="w-full px-3 py-2 hover:bg-gray-100 flex items-center justify-center"
+          [attr.aria-label]="lang.name"
+        >
+          <img
+            [src]="'assets/flags/4x3/' + getFlag(lang.code) + '.png'"
+            class="w-6 h-auto rounded-sm"
+            alt="{{ lang.name }}"
+          />
+        </button>
+      </div>
+    </div>
+
+    <!-- 👤 Uživatel -->
+    <ng-container *ngIf="auth.isLoggedIn(); else notLoggedIn">
+
+      <!-- Uživatelské jméno -->
+      <span class="text-sm font-medium hidden sm:inline">{{ getUserName() }}</span>
+
+      <!-- Profilový obrázek -->
+      <img
+        *ngIf="avatarUrl"
+        [src]="avatarUrl"
+        alt="Profilový obrázek"
+        class="w-10 h-10 rounded-full border-2 border-white object-cover cursor-pointer"
+        title="Můj profil"
+        (click)="goToProfile()"
+      />
+
+      <!-- 🚪 Logout -->
+      <button
+        (click)="logout()"
+        class="bg-red-600 hover:bg-red-700 text-white rounded px-3 py-1"
+        aria-label="Logout"
+      >
+        🚪 <span class="hidden sm:inline">Odhlásit</span>
+      </button>
+    </ng-container>
+
+    <!-- 🔑 Login pokud není přihlášen -->
+    <ng-template #notLoggedIn>
+      <button
+        (click)="goToLogin()"
+        class="bg-blue-600 hover:bg-blue-700 text-white rounded px-3 py-1"
+      >
+        🔑 <span class="hidden sm:inline">Přihlásit</span>
+      </button>
+    </ng-template>
+  </div>
 </nav>

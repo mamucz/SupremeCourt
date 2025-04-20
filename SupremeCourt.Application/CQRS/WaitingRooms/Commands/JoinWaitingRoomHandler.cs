@@ -39,13 +39,9 @@ namespace SupremeCourt.Application.CQRS.WaitingRooms.Commands
 
             //if (waitingRoom.Players.Any(p => p.Id == request.PlayerId))
             //    return true; // už je připojený
-            _logger.LogInformation("ThreadId: {ThreadId} ➡️ Kontrola hráčů v místnosti ID: {RoomId}", Environment.CurrentManagedThreadId, waitingRoom.Id);
-            _logger.LogInformation("ThreadId: {ThreadId} ➡️ Počet hráčů: {Count}", Environment.CurrentManagedThreadId, waitingRoom.Players.Count);
-            foreach (var p in waitingRoom.Players)
-            {
-                _logger.LogInformation("ThreadId: {ThreadId} Environment.CurrentManagedThreadId🧑 Hráč ID: {Id}, UserID: {UserId}, Eliminated: {Eliminated}",
-                    Environment.CurrentManagedThreadId, p.Id, p.UserId, p.IsEliminated);
-            }
+            _logger.LogInformation("➡️ Kontrola hráčů v místnosti ID: {RoomId}", waitingRoom.Id);
+            _logger.LogInformation("➡️ Počet hráčů: {Count}",  waitingRoom.Players.Count);
+            
             _logger.LogInformation("🧪 Hledám hráče ID: {RequestId}", request.PlayerId);
             var alreadyJoined = waitingRoom.Players.Any(p => p.Id == request.PlayerId);
             _logger.LogInformation("Výsledek kontrola připojení: {Result}", alreadyJoined);

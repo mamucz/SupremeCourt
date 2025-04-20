@@ -13,7 +13,8 @@ namespace SupremeCourt.Domain.Sessions
         private Timer? _timer;
         private int _timeLeftSeconds;
 
-        public event Action<int>? OnCountdownTick;
+        // Změněná signatura — nyní předává i roomId
+        public event Action<int, int>? OnCountdownTick;
         public event Action<int>? OnRoomExpired;
 
         // ⚠️ parameterless constructor pro Mapperly
@@ -21,7 +22,6 @@ namespace SupremeCourt.Domain.Sessions
         {
         }
 
-        // ➕ volitelný inicializátor z entity
         public void InitializeFromEntity(WaitingRoom entity, int expirationSeconds)
         {
             WaitingRoomId = entity.Id;
@@ -36,7 +36,10 @@ namespace SupremeCourt.Domain.Sessions
         private void Tick(object? state)
         {
             _timeLeftSeconds--;
-            OnCountdownTick?.Invoke(_timeLeftSeconds);
+
+            // 🔁 Trigger každou sekundu se správnými parametry
+            OnCountdownTick?.Invoke(WaitingRoomId, _timeLeftSeconds);
+
             if (_timeLeftSeconds <= 0)
             {
                 _timer?.Dispose();
@@ -56,7 +59,7 @@ namespace SupremeCourt.Domain.Sessions
 
         public void Dispose()
         {
-           
+            _timer?.Dispose();
         }
     }
 }

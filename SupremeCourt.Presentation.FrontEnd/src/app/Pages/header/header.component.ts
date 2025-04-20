@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../Services/auth.service';
+import { environment } from '../../../environments/environment';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-header',
@@ -10,9 +12,11 @@ import { AuthService } from '../../Services/auth.service';
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss']
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
   currentLang: string = 'cs';
-  dropdownOpen = false; // ← TADY je ta proměnná!
+  dropdownOpen = false;
+  avatarUrl: string | null = null;
+
   languages = [
     { code: 'cs', name: 'Čeština' },
     { code: 'en', name: 'English' },
@@ -21,12 +25,20 @@ export class HeaderComponent {
 
   constructor(
     public auth: AuthService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private router: Router
   ) {
     const savedLang = localStorage.getItem('lang') || 'cs';
     this.translate.setDefaultLang(savedLang);
     this.translate.use(savedLang);
     this.currentLang = savedLang;
+  }
+
+  ngOnInit(): void {
+    this.auth.refreshProfileImageUrl(); // 👈 načti z localStorage
+    this.auth.currentImageUrl$.subscribe(url => {
+      this.avatarUrl = url;
+    });
   }
 
   logout(): void {
@@ -47,5 +59,25 @@ export class HeaderComponent {
       ja: 'jp'
     };
     return map[code] || code;
+  }
+
+  getUserName(): string {
+    return this.auth.getUserName() ?? 'Uživatel';
+  }
+
+  goToProfile(): void {
+    this.router.navigate(['/profile']);
+  }
+
+  goToLogin(): void {
+    this.router.navigate(['/login']);
+  }
+
+  goHome(): void {
+    if (this.auth.isLoggedIn()) {
+      this.router.navigate(['/waiting-rooms']);
+    } else {
+      this.router.navigate(['/']);
+    }
   }
 }

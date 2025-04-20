@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SupremeCourt.Domain.DTOs;
 using SupremeCourt.Domain.Entities;
@@ -15,10 +16,11 @@ namespace SupremeCourt.Application.Services
         private readonly IWaitingRoomRepository _waitingRoomRepository;
         private readonly IPlayerRepository _playerRepository;
         private readonly ILogger<WaitingRoomListService> _logger;
-        private readonly IWaitingRoomListNotifier _waitingRoomListNotifier; // ✅ Použití nového notifieru
+        private readonly IWaitingRoomListNotifier _waitingRoomListNotifier;
         private readonly IWaitingRoomNotifier _waitingRoomNotifier;
         private readonly WaitingRoomSessionManager _sessionManager;
-        
+        private readonly IWaitingRoomEventHandler _eventHandler;
+        private readonly int _roomExpirationSeconds;
 
         public WaitingRoomListService(
             IWaitingRoomRepository waitingRoomRepository,
@@ -28,15 +30,18 @@ namespace SupremeCourt.Application.Services
             IWaitingRoomListNotifier waitingRoomListNotifier,
             IWaitingRoomNotifier waitingRoomNotifier,
             WaitingRoomSessionManager sessionManager,
-            ILogger<WaitingRoomListService> logger)
+            IWaitingRoomEventHandler eventHandler,
+            ILogger<WaitingRoomListService> logger,
+            IConfiguration configuration)
         {
             _waitingRoomRepository = waitingRoomRepository;
             _playerRepository = playerRepository;
             _waitingRoomListNotifier = waitingRoomListNotifier;
             _waitingRoomNotifier = waitingRoomNotifier;
             _sessionManager = sessionManager;
+            _eventHandler = eventHandler;
             _logger = logger;
-            
+            _roomExpirationSeconds = configuration.GetValue<int>("WaitingRoom:ExpirationMinutes", 3) * 60;
         }
 
         public async Task<WaitingRoom?> CreateWaitingRoomAsync(int createdByPlayerId, CancellationToken cancellationToken)
@@ -47,31 +52,41 @@ namespace SupremeCourt.Application.Services
             var waitingRoom = new WaitingRoom
             {
                 CreatedByPlayerId = createdByPlayerId,
-                Players = new List<Player> ()
+                Players = new List<Player>()
             };
 
             await _waitingRoomRepository.AddAsync(waitingRoom, cancellationToken);
 
             // ✅ Po uložení vytvoř runtime session a přidej ji do manageru
             var session = Domain.Mappings.WaitingRoomMapper.Instance.ToSession(waitingRoom);
+
+            session.OnCountdownTick += async (roomId, secondsLeft) =>
+            {
+                await _eventHandler.HandleCountdownTickAsync(roomId, secondsLeft);
+            };
+
+            session.OnRoomExpired += async roomId =>
+            {
+                await _eventHandler.HandleRoomExpiredAsync(roomId);
+            };
+
+            session.InitializeFromEntity(waitingRoom, _roomExpirationSeconds);
             _sessionManager.AddSession(session);
 
-            // Po vytvoření místnosti odešli notifikaci
             await _waitingRoomListNotifier.NotifyWaitingRoomCreatedAsync(new WaitingRoomDto
             {
                 WaitingRoomId = waitingRoom.Id,
                 CreatedAt = waitingRoom.CreatedAt,
                 CreatedByPlayerId = player.User.Id,
-                CreatedByPlayerName = player.User?.Username ?? "Neznámý", 
-                
-                
+                CreatedByPlayerName = player.User?.Username ?? "Neznámý",
+                TimeLeftSeconds = _roomExpirationSeconds
             });
+
             return waitingRoom;
         }
 
         public async Task<bool> JoinWaitingRoomAsync(int waitingRoomId, int playerId, CancellationToken cancellationToken)
         {
-            // ⛔ Zjisti, zda už není v jiné místnosti
             var existingRoom = await _waitingRoomRepository.GetRoomByPlayerIdAsync(playerId, cancellationToken);
             if (existingRoom != null)
             {
@@ -99,8 +114,7 @@ namespace SupremeCourt.Application.Services
             return true;
         }
 
-
-        public async Task<List<WaitingRoom>> GetAllWaitingRoomsAsync(CancellationToken cancellationToken) // ✅ Přidáno
+        public async Task<List<WaitingRoom>> GetAllWaitingRoomsAsync(CancellationToken cancellationToken)
         {
             return await _waitingRoomRepository.GetAllAsync(cancellationToken);
         }
@@ -117,18 +131,20 @@ namespace SupremeCourt.Application.Services
                 var creatorName = creator?.User?.Username ?? "Neznámý";
                 var creatorUserId = creator?.User?.Id ?? -1;
 
+                var session = _sessionManager.GetSession(wr.Id);
+                var secondsLeft = session?.GetTimeLeft() ?? _roomExpirationSeconds;
+
                 result.Add(new WaitingRoomDto
                 {
                     WaitingRoomId = wr.Id,
                     CreatedAt = wr.CreatedAt,
                     CreatedByPlayerId = creatorUserId,
                     CreatedByPlayerName = creatorName,
+                    TimeLeftSeconds = secondsLeft
                 });
             }
 
             return result;
         }
-
-        
     }
 }

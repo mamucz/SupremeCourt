@@ -14,7 +14,17 @@ namespace SupremeCourt.Application.CQRS.Auth.Commands
 
         public async Task<bool> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
         {
-            return await _authService.RegisterAsync(request.Username, request.Password);
+            byte[]? imageData = null;
+            string? mimeType = null;
+
+            if (request.ProfilePicture != null && request.ProfilePicture.Length > 0)
+            {
+                using var ms = new MemoryStream();
+                await request.ProfilePicture.CopyToAsync(ms, cancellationToken);
+                imageData = ms.ToArray();
+                mimeType = request.ProfilePicture.ContentType;
+            }
+            return await _authService.RegisterAsync(request.Username, request.Password, imageData, mimeType);
         }
     }
 }

@@ -33,8 +33,12 @@
     "ERROR": "Login failed."
   },
   "REGISTER": {
+    "TITLE": "Register",
     "USERNAME": "Username",
     "PASSWORD": "Password",
+    "CONFIRM_PASSWORD": "Confirm Password",
+    "PROFILE_PICTURE": "Profile Picture",
+    "SELECT_FILE": "Select File",
     "SUBMIT": "Register",
     "SUCCESS": "Registration successful.",
     "ERROR": "Registration failed."
@@ -53,6 +57,7 @@
       "CREATED": "Created",
       "PLAYER": "Player",
       "PLAYERS": "Players",
+      "TIMELEFT": "Time Left",
       "ACTION": "Action"
     }
   }  

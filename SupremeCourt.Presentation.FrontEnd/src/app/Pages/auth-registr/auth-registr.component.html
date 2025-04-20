@@ -1,22 +1,69 @@
-<!-- 
-Autor: Petr Ondra
-Date: 9.3.2021
-Description: Registration page component
-File Name: auth-registr.component.html
--->
+<form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-6 max-w-md mx-auto mt-10">
 
-<form (ngSubmit)="onSubmit()">
-  <input [(ngModel)]="username" name="username" [placeholder]="'REGISTER.USERNAME' | translate" required>
-  <input [(ngModel)]="password" name="password" [placeholder]="'REGISTER.PASSWORD' | translate" type="password" required>
-  <button type="submit">{{ 'REGISTER.SUBMIT' | translate }}</button>
+  <!-- Přezdívka -->
+  <div>
+    <label class="block text-sm font-medium text-gray-700 mb-1">Přezdívka</label>
+    <input
+      type="text"
+      formControlName="nickname"
+      class="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring focus:ring-blue-300"
+      placeholder="Přezdívka"
+    />
+  </div>
+
+  <!-- Heslo -->
+  <div>
+    <label class="block text-sm font-medium text-gray-700 mb-1">Heslo</label>
+    <input
+      type="password"
+      formControlName="password"
+      [class.border-red-500]="passwordsDoNotMatch"
+      class="w-full border p-2 rounded-md focus:outline-none focus:ring focus:ring-blue-300"
+      placeholder="Heslo"
+    />
+  </div>
+
+  <!-- Potvrzení hesla -->
+  <div>
+    <label class="block text-sm font-medium text-gray-700 mb-1">Potvrzení hesla</label>
+    <input
+      type="password"
+      formControlName="confirmPassword"
+      [class.border-red-500]="passwordsDoNotMatch"
+      class="w-full border p-2 rounded-md focus:outline-none focus:ring focus:ring-blue-300"
+      placeholder="Potvrzení hesla"
+    />
+    <p *ngIf="passwordsDoNotMatch" class="text-red-500 text-sm mt-1">
+      Hesla se neshodují.
+    </p>
+  </div>
+
+  <!-- Nahrání obrázku -->
+  <div>
+    <label class="block text-sm font-medium text-gray-700 mb-1">Profilový obrázek</label>
+    <input type="file" (change)="onFileSelected($event)" accept="image/*" />
+  </div>
+
+  <!-- Náhled obrázku -->
+  <div *ngIf="imagePreviewUrl" class="mt-4">
+    <p class="text-sm text-gray-500">Náhled:</p>
+    <img
+      [src]="imagePreviewUrl"
+      alt="Náhled"
+      class="mt-2 w-32 h-32 object-cover rounded-full border border-gray-300 shadow-sm"
+    />
+  </div>
+
+  <!-- Tlačítko -->
+  <button
+    type="submit"
+    [disabled]="!registerForm.valid || passwordsDoNotMatch"
+    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+  >
+    Registrovat
+  </button>
+
+  <!-- Zprávy -->
+  <div *ngIf="message" class="text-green-600 text-center mt-4">{{ message }}</div>
+  <div *ngIf="errorMessage" class="text-red-600 text-center mt-4">{{ errorMessage }}</div>
 </form>
-
-<!-- ✅ Úspěšná zpráva -->
-<div *ngIf="message" style="color: green;">  
-  {{ message }}
-</div>
-
-<!-- ❌ Chybová zpráva -->
-<div *ngIf="errorMessage" style="color: red;">  
-  {{ errorMessage }}
-</div>

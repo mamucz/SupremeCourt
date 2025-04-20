@@ -1,31 +1,55 @@
-<h2>🎮 {{ 'WAITINGROOM.TITLE' | translate }}</h2>
+<div class="max-w-5xl mx-auto px-4 py-8">
+  <h2 class="text-3xl font-bold mb-6 text-center">
+    🎮 {{ 'WAITINGROOM.TITLE' | translate }}
+  </h2>
 
-<button (click)="createWaitingRoom()">➕ {{ 'WAITINGROOM.CREATE' | translate }}</button>
+  <div class="flex justify-end mb-4">
+    <button
+      (click)="createWaitingRoom()"
+      class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow transition">
+      ➕ {{ 'WAITINGROOM.CREATE' | translate }}
+    </button>
+  </div>
 
-<div *ngIf="message" style="color: green;">{{ message }}</div>
-<div *ngIf="error" style="color: red;">{{ error }}</div>
+  <div *ngIf="message" class="text-green-600 font-medium mb-2">
+    {{ message }}
+  </div>
+  <div *ngIf="error" class="text-red-600 font-medium mb-2">
+    {{ error }}
+  </div>
 
-<table *ngIf="waitingRooms.length > 0" border="1" style="margin-top: 1rem;">
-  <thead>
-    <tr>
-      <th>{{ 'WAITINGROOM.TABLE.ID' | translate }}</th>
-      <th>{{ 'WAITINGROOM.TABLE.CREATED' | translate }}</th>
-      <th>{{ 'WAITINGROOM.TABLE.PLAYER' | translate }}</th>
-      <th>{{ 'WAITINGROOM.TABLE.PLAYERS' | translate }}</th>
-      <th>{{ 'WAITINGROOM.TABLE.ACTION' | translate }}</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let room of waitingRooms">
-      <td>{{ room.waitingRoomId }}</td>
-      <td>{{ room.createdAt | date:'short' }}</td>
-      <td>{{ room.createdByPlayerName }}</td>
-      <td>{{ room.playerCount }}/5</td>
-      <td>
-        <button (click)="joinRoom(room.waitingRoomId)">{{ 'WAITINGROOM.JOIN' | translate }}</button>
-      </td>
-    </tr>
-  </tbody>
-</table>
+  <div *ngIf="waitingRooms.length > 0" class="overflow-x-auto rounded shadow">
+    <table class="min-w-full text-left bg-white border border-gray-200">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="px-4 py-2 border-b">{{ 'WAITINGROOM.TABLE.ID' | translate }}</th>
+          <th class="px-4 py-2 border-b">{{ 'WAITINGROOM.TABLE.CREATED' | translate }}</th>
+          <th class="px-4 py-2 border-b">{{ 'WAITINGROOM.TABLE.PLAYER' | translate }}</th>
+          <th class="px-4 py-2 border-b">{{ 'WAITINGROOM.TABLE.PLAYERS' | translate }}</th>
+          <th class="px-4 py-2 border-b">{{ 'WAITINGROOM.TABLE.TIMELEFT' | translate }}</th>
+          <th class="px-4 py-2 border-b">{{ 'WAITINGROOM.TABLE.ACTION' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let room of waitingRooms" class="hover:bg-gray-50">
+          <td class="px-4 py-2 border-b">{{ room.waitingRoomId }}</td>
+          <td class="px-4 py-2 border-b">{{ room.createdAt | date:'short' }}</td>
+          <td class="px-4 py-2 border-b">{{ room.createdByPlayerName }}</td>
+          <td class="px-4 py-2 border-b">{{ room.playerCount }}/5</td>
+          <td class="px-4 py-2 border-b">{{ room.timeLeftSeconds | timeFormat }}</td>
+          <td class="px-4 py-2 border-b">
+            <button
+              (click)="joinRoom(room.waitingRoomId)"
+              class="bg-green-600 hover:bg-green-700 text-white font-semibold py-1 px-3 rounded shadow transition">
+              {{ 'WAITINGROOM.JOIN' | translate }}
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-<p *ngIf="waitingRooms.length === 0">{{ 'WAITINGROOM.EMPTY' | translate }}</p>
+  <p *ngIf="waitingRooms.length === 0" class="text-center text-gray-500 mt-6">
+    {{ 'WAITINGROOM.EMPTY' | translate }}
+  </p>
+</div>

@@ -1,5 +1,4 @@
 // Autor: Petr Ondra
-// Date: 9.3.2021
 // Description: Component for displaying waiting rooms with i18n
 // File: waiting-room-list.component.ts
 
@@ -12,6 +11,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import * as signalR from '@microsoft/signalr';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
+import { TimeFormatPipe } from '../../Pipes/time-format.pipe';
 
 export interface PlayerDto {
   playerId: number;
@@ -32,7 +32,7 @@ export interface WaitingRoomDto {
 @Component({
   selector: 'app-waiting-room-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule],
+  imports: [CommonModule, RouterModule, TranslateModule,TimeFormatPipe],
   templateUrl: './waiting-room-list.component.html',
   styleUrls: ['./waiting-room-list.component.scss']
 })
@@ -161,6 +161,14 @@ export class WaitingRoomListComponent implements OnInit, OnDestroy {
       this.translate.get('WAITINGROOM.CREATED').subscribe(text => {
         this.message = `🆕 ${text.replace('#', newRoom.waitingRoomId)}`;
       });
+    });
+
+    // ✅ Posloucháme event, který posílá backend (UpdateTimeLeft)
+    this.hubConnection.on('UpdateTimeLeft', (data: { waitingRoomId: number, timeLeftSeconds: number }) => {
+      const room = this.waitingRooms.find(r => r.waitingRoomId === data.waitingRoomId);
+      if (room) {
+        room.timeLeftSeconds = data.timeLeftSeconds;
+      }
     });
   }
 }

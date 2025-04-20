@@ -9,5 +9,8 @@
         public bool Deleted { get; set; } = false; // Nový atribut místo mazání
 
         public Player? Player { get; set; } // Navigační vlastnost
+        public byte[]? ProfilePicture { get; set; }
+        public string? ProfilePictureMimeType { get; set; } // např. "image/png"
+
     }
 }

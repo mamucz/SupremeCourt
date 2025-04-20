@@ -11,6 +11,7 @@ using System.Text;
 using SupremeCourt.Application.Background;
 using SupremeCourt.Infrastructure.SignalR;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 // ✅ Bootstrap logger pro logování během startu
 Log.Logger = new LoggerConfiguration()
@@ -19,6 +20,7 @@ Log.Logger = new LoggerConfiguration()
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddHttpContextAccessor();
 // ✅ Serilog z konfigurace
 builder.Host.UseSerilog((context, services, configuration) =>
 {
@@ -44,7 +46,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey!))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey!)),
+
+            // ✅ DŮLEŽITÉ: zamezí duplikacím a mapováním "sub" → NameIdentifier
+            NameClaimType = ClaimTypes.Name,
+            RoleClaimType = ClaimTypes.Role
         };
     });
 

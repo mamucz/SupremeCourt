@@ -14,7 +14,7 @@ namespace SupremeCourt.Infrastructure
         {
             services.AddDbContext<GameDbContext>(options =>
                 options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
-
+            services.AddSingleton<IPasswordHasher, SimplePasswordHasher>();
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IPlayerRepository, PlayerRepository>(); // Registrace PlayerRepository
