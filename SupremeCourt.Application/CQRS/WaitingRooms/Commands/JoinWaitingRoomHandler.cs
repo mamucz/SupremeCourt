@@ -59,14 +59,13 @@ namespace SupremeCourt.Application.CQRS.WaitingRooms.Commands
             waitingRoom.Players.Add(player);
             await _waitingRoomRepository.UpdateAsync(waitingRoom, cancellationToken);
 
-            await _notifier.NotifyPlayerJoinedAsync(request.WaitingRoomId, player.User?.Username ?? "Hráč");
+            await _notifier.NotifyPlayerJoinedAsync(request.WaitingRoomId, Domain.Mappings.PlayerMapper.Instance.ToDto(player));
 
             if (waitingRoom.Players.Count == GameRules.MaxPlayers)
             {
                 _logger.LogInformation($"Místnost {request.WaitingRoomId} má 5 hráčů – spouštíme hru.");
                 return await _gameService.StartGameAsync(request.WaitingRoomId);
             }
-
             return true;
         }
     }

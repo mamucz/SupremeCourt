@@ -1,5 +1,3 @@
-// File: waiting-room.component.ts
-
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -8,17 +6,17 @@ import { AuthService } from '../../Services/auth.service';
 import * as signalR from '@microsoft/signalr';
 import { environment } from '../../../environments/environment';
 
-
-interface PlayerInfo {
+interface PlayerDto {
   playerId: number;
   username: string;
+  profileImageUrl?: string;
 }
 
 interface WaitingRoomDto {
   waitingRoomId: number;
   createdByPlayerId: number;
   createdAt: string;
-  players: PlayerInfo[];
+  players: PlayerDto[];
   timeLeftSeconds: number;
   canStartGame: boolean;
 }
@@ -72,7 +70,7 @@ export class WaitingRoomComponent implements OnInit, OnDestroy {
 
   setupSignalR() {
     this.hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl('${environment.apiUrl}/waitingRoomHub', {
+      .withUrl(`${environment.apiUrl}/waitingRoomHub`, {
         accessTokenFactory: () => this.auth.getToken() || ''
       })
       .withAutomaticReconnect()
@@ -113,7 +111,7 @@ export class WaitingRoomComponent implements OnInit, OnDestroy {
   }
 
   canLeave(): boolean {
-    return this.waitingRoom?.players.some(p => p.playerId === this.playerId) ?? false;
+    return this.waitingRoom?.players?.some(p => p.playerId === this.playerId) ?? false;
   }
 
   canStartGame(): boolean {
@@ -123,6 +121,10 @@ export class WaitingRoomComponent implements OnInit, OnDestroy {
 
   startGame(): void {
     // TODO: Odeslat požadavek na zahájení hry (např. přes HTTP)
-    console.log('Hra zahájena!');
+    console.log('🚀 Zahájení hry');
+  }
+
+  getPlayerImageUrl(player: PlayerDto): string {
+    return player.profileImageUrl ?? 'assets/img/default-avatar.png';
   }
 }

@@ -10,5 +10,6 @@ namespace SupremeCourt.Domain.DTOs
     {
         public int PlayerId { get; set; }
         public string Username { get; set; } = string.Empty;
+        public string? ProfileImageUrl { get; set; } // ✅ přidat
     }
 }

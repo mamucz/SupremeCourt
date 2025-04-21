@@ -1,59 +1,58 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using SupremeCourt.Domain.DTOs;
 using SupremeCourt.Domain.Interfaces;
+using SupremeCourt.Infrastructure.Interfaces;
 using SupremeCourt.Infrastructure.SignalR;
 
 namespace SupremeCourt.Infrastructure.Services
 {
     public class WaitingRoomNotifier : IWaitingRoomNotifier
     {
+        private readonly ISignalRSender _signalRSender;
         private readonly IHubContext<WaitingRoomListHub> _listHub;
         private readonly IHubContext<WaitingRoomHub> _roomHub;
 
         public WaitingRoomNotifier(
+            ISignalRSender signalRSender,
             IHubContext<WaitingRoomListHub> listHub,
             IHubContext<WaitingRoomHub> roomHub)
         {
+            _signalRSender = signalRSender;
             _listHub = listHub;
             _roomHub = roomHub;
         }
 
-        public async Task NotifyPlayerJoinedAsync(int waitingRoomId, string playerName)
+        public Task NotifyPlayerJoinedAsync(int waitingRoomId, PlayerDto player)
         {
-            await _roomHub.Clients.Group(waitingRoomId.ToString())
-                .SendAsync("PlayerJoined", playerName);
+            return _signalRSender.SendToGroupAsync(_roomHub, waitingRoomId.ToString(), "PlayerJoined", player);
         }
 
-        public async Task NotifyWaitingRoomCreatedAsync(object dto)
+        public Task NotifyWaitingRoomCreatedAsync(object dto)
         {
-            await _listHub.Clients.All.SendAsync("NewWaitingRoomCreated", dto);
+            return _signalRSender.SendToAllAsync(_listHub, "NewWaitingRoomCreated", dto);
         }
 
         public async Task NotifyCountdownTickAsync(int roomId, int secondsLeft)
         {
-            // 👥 1️⃣ Poslat do přehledu místností
-            await _listHub.Clients.Group("waitingroom-list")
-                .SendAsync("UpdateTimeLeft", new
-                {
-                    waitingRoomId = roomId,
-                    timeLeftSeconds = secondsLeft
-                });
+            // 👥 1️⃣ Update v seznamu místností
+            await _signalRSender.SendToGroupAsync(_listHub, "waitingroom-list", "UpdateTimeLeft", new
+            {
+                waitingRoomId = roomId,
+                timeLeftSeconds = secondsLeft
+            });
 
-            // 🧍 2️⃣ Poslat do konkrétní místnosti (detail místnosti)
-            await _roomHub.Clients.Group(roomId.ToString())
-                .SendAsync("CountdownTick", secondsLeft);
+            // 🧍 2️⃣ Update v konkrétní místnosti
+            await _signalRSender.SendToGroupAsync(_roomHub, roomId.ToString(), "CountdownTick", secondsLeft);
         }
 
-        public async Task NotifyRoomExpiredAsync(int roomId)
+        public Task NotifyRoomExpiredAsync(int roomId)
         {
-            await _roomHub.Clients.Group(roomId.ToString())
-                .SendAsync("RoomExpired");
+            return _signalRSender.SendToGroupAsync(_roomHub, roomId.ToString(), "RoomExpired", null);
         }
 
-        public async Task NotifyRoomUpdatedAsync(WaitingRoomDto dto)
+        public Task NotifyRoomUpdatedAsync(WaitingRoomDto dto)
         {
-            await _roomHub.Clients.Group(dto.WaitingRoomId.ToString())
-                .SendAsync("RoomUpdated", dto);
+            return _signalRSender.SendToGroupAsync(_roomHub, dto.WaitingRoomId.ToString(), "RoomUpdated", dto);
         }
     }
 }

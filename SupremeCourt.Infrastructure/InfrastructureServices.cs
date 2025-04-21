@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.Session;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SupremeCourt.Application.Common.Interfaces;
 using SupremeCourt.Domain.Interfaces;
+using SupremeCourt.Infrastructure.Interfaces;
 using SupremeCourt.Infrastructure.Repositories;
 using SupremeCourt.Infrastructure.Services;
+using SupremeCourt.Infrastructure.SignalR;
 
 namespace SupremeCourt.Infrastructure
 {
@@ -12,9 +15,16 @@ namespace SupremeCourt.Infrastructure
     {
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, string connectionString)
         {
+            services.AddSingleton<ISignalRSender, SignalRSender>();
+            services.AddSingleton<HubLoggerFilter>();
+
+            services.AddSignalR(options =>
+            {
+                options.AddFilter<HubLoggerFilter>();
+            });
+
             services.AddDbContext<GameDbContext>(options =>
                 options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
-            services.AddSingleton<IPasswordHasher, SimplePasswordHasher>();
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IPlayerRepository, PlayerRepository>(); // Registrace PlayerRepository

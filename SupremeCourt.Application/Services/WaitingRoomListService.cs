@@ -109,7 +109,7 @@ namespace SupremeCourt.Application.Services
             waitingRoom.Players.Add(player);
             await _waitingRoomRepository.UpdateAsync(waitingRoom, cancellationToken);
 
-            await _waitingRoomNotifier.NotifyPlayerJoinedAsync(waitingRoomId, player.User.Username);
+            await _waitingRoomNotifier.NotifyPlayerJoinedAsync(waitingRoomId, Domain.Mappings.PlayerMapper.Instance.ToDto(player));
 
             return true;
         }

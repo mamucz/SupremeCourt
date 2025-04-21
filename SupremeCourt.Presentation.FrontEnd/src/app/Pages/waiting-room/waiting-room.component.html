@@ -1,36 +1,57 @@
-<h2>🎮 Čekací místnost #{{ waitingRoomId }}</h2>
+<div class="max-w-3xl mx-auto p-6 space-y-6">
 
-<!-- ✅ Počet hráčů -->
-<p>
-  👥 Připojeno hráčů: {{ waitingRoom?.players || 0 }}/5
-</p>
+  <!-- 🎮 Název místnosti -->
+  <h2 class="text-2xl font-bold text-center text-green-700">
+    🎮 Čekací místnost #{{ waitingRoomId }}
+  </h2>
 
-<!-- 🕒 Odpočet -->
-<p *ngIf="waitingRoom && waitingRoom.timeLeftSeconds > 0">
-  ⏳ Čas: {{ waitingRoom.timeLeftSeconds }}s
-</p>
+  <!-- 👥 Počet hráčů -->
+  <p class="text-center text-sm text-gray-700">
+    👥 Připojeno hráčů: {{ waitingRoom?.players?.length }}/5
+  </p>
 
-<!-- 🧑 Seznam hráčů -->
-<ul>
-  <li *ngFor="let player of waitingRoom?.players">
-    {{ player.username }}
-    <button 
-      *ngIf="player.playerId === playerId" 
-      (click)="leaveRoom()"
+  <!-- 🕒 Odpočet -->
+  <p *ngIf="waitingRoom && waitingRoom.timeLeftSeconds > 0" class="text-center text-sm text-gray-700">
+    ⏳ Čas: {{ waitingRoom.timeLeftSeconds }}s
+  </p>
+
+  <!-- 🧑 Seznam hráčů jako grid -->
+  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 justify-items-center">
+    <div *ngFor="let player of waitingRoom?.players" class="flex flex-col items-center text-center">
+      <img
+        [src]="getPlayerImageUrl(player)"
+        alt="avatar"
+        class="w-20 h-20 rounded-full object-cover border mb-2 shadow-md"
+      />
+      <span class="text-sm font-semibold text-gray-800">{{ player.username }}</span>
+
+      <!-- 🔘 Opustit místnost -->
+      <button
+        *ngIf="player.playerId === playerId"
+        (click)="leaveRoom()"
+        class="mt-2 text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+      >
+        Opustit
+      </button>
+    </div>
+  </div>
+
+  <!-- 🚀 Tlačítko pro spuštění hry -->
+  <div class="text-center mt-6">
+    <button
+      *ngIf="canStartGame()"
+      (click)="startGame()"
+      class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded text-lg shadow"
     >
-      Opustit místnost
+      🚀 Zahájit hru
     </button>
-  </li>
-</ul>
+  </div>
 
-<!-- ✅ Tlačítko pro spuštění hry -->
-<button 
-  *ngIf="canStartGame()" 
-  (click)="startGame()"
->
-  🚀 Zahájit hru
-</button>
-
-<!-- ✅ Zprávy -->
-<div *ngIf="message" style="color: green;">{{ message }}</div>
-<div *ngIf="error" style="color: red;">{{ error }}</div>
+  <!-- ✅ Zprávy -->
+  <div *ngIf="message" class="text-center text-green-600 font-medium mt-4">
+    {{ message }}
+  </div>
+  <div *ngIf="error" class="text-center text-red-600 font-medium mt-4">
+    {{ error }}
+  </div>
+</div>
