@@ -15,9 +15,11 @@ namespace SupremeCourt.Infrastructure.Repositories
 
         public async Task<WaitingRoom?> GetByIdAsync(int waitingRoomId, CancellationToken cancellationToken)
         {
-            return await _context.WaitingRooms
+            var waitingroom = await _context.WaitingRooms
                 .Include(w => w.Players)
+                .ThenInclude(p => p.User) // ✅ TADY přidej
                 .FirstOrDefaultAsync(w => w.Id == waitingRoomId);
+            return waitingroom;
         }
 
         public async Task AddAsync(WaitingRoom waitingRoom, CancellationToken cancellationToken)

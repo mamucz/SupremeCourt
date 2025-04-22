@@ -8,10 +8,11 @@ namespace SupremeCourt.Domain.Mappings;
 public partial class PlayerMapper
 {
     public static readonly PlayerMapper Instance = new();
-    // ✅ Základní mapování pomocí Mapperly
-    private partial PlayerDto ToDtoInternal(Player player);
 
-    // ✅ Veřejná metoda doplňující URL po mapování
+    [MapProperty(nameof(Player.Id), nameof(PlayerDto.PlayerId))]
+    [MapProperty(nameof(Player.User.Username), nameof(PlayerDto.Username))]
+    public partial PlayerDto ToDtoInternal(Player player); // 👈 změněno z private na public
+
     public PlayerDto ToDto(Player player)
     {
         var dto = ToDtoInternal(player);
