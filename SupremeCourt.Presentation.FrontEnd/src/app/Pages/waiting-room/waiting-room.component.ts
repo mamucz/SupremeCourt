@@ -125,6 +125,6 @@ export class WaitingRoomComponent implements OnInit, OnDestroy {
   }
 
   getPlayerImageUrl(player: PlayerDto): string {
-    return player.profileImageUrl ?? 'assets/img/default-avatar.png';
+    return `${environment.signalRBaseUrl}/api/player/${player.playerId}/profile-picture` + '?v=' + Date.now();
   }
 }
