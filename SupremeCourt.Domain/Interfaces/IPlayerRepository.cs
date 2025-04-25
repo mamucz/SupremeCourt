@@ -10,6 +10,7 @@ namespace SupremeCourt.Domain.Interfaces
         Task DeleteAsync(Player player);
         Task<List<Player>> GetAllAsync();
         Task UpdateAsync(Player player); // Přidáno
-        
+        Task<List<Player>> GetAllAiPlayersAsync(CancellationToken cancellationToken);
+
     }
 }

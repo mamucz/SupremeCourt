@@ -51,5 +51,13 @@ namespace SupremeCourt.Infrastructure.Repositories
             _context.Players.Update(player);
             await _context.SaveChangesAsync();
         }
+        public async Task<List<Player>> GetAllAiPlayersAsync(CancellationToken cancellationToken)
+        {
+            return await _context.Players
+                .Include(p => p.User)
+                .Where(p => p.IsAi)
+                .ToListAsync(cancellationToken);
+        }
+
     }
 }

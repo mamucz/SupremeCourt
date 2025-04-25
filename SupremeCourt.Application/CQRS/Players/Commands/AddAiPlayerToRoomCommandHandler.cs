@@ -5,6 +5,7 @@ using SupremeCourt.Domain.DTOs;
 using SupremeCourt.Domain.Interfaces;
 using SupremeCourt.Domain.Sessions;
 using System;
+using SupremeCourt.Domain.Entities;
 
 namespace SupremeCourt.Application.CQRS.Players.Commands
 {
@@ -38,17 +39,11 @@ namespace SupremeCourt.Application.CQRS.Players.Commands
                 return false;
             }
 
-            var aiPlayer = new PlayerDto
-            {
-                PlayerId = GenerateFakeId(),
-                Username = GenerateRandomAiName(),
-                ProfileImageUrl = "/assets/img/default-avatar.png"
-            };
 
-            session.Players.Add(aiPlayer);
+            session.Players.Add(request.player);
 
-            await _eventHandler.NotifyPlayerJoinedAsync(request.WaitingRoomId, aiPlayer);
-            _logger.LogInformation("🤖 AI hráč {Username} přidán do místnosti {RoomId}", aiPlayer.Username, request.WaitingRoomId);
+            await _eventHandler.NotifyPlayerJoinedAsync(request.WaitingRoomId, Domain.Mappings.PlayerMapper.Instance.ToDto(request.player as Player), cancellationToken);
+            _logger.LogInformation("🤖 AI hráč {Username} přidán do místnosti {RoomId}", request.player.Username, request.WaitingRoomId);
 
             return true;
         }

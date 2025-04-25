@@ -16,7 +16,6 @@ public partial class PlayerMapper
     public PlayerDto ToDto(Player player)
     {
         var dto = ToDtoInternal(player);
-        dto.ProfileImageUrl = $"/api/player/{player.Id}/profile-picture";
         return dto;
     }
 }

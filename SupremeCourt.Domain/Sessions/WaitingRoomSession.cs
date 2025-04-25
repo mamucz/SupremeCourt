@@ -1,4 +1,5 @@
 ﻿using SupremeCourt.Domain.Entities;
+using SupremeCourt.Domain.Interfaces;
 using SupremeCourt.Domain.Logic;
 
 namespace SupremeCourt.Domain.Sessions
@@ -6,7 +7,7 @@ namespace SupremeCourt.Domain.Sessions
     public class WaitingRoomSession : IDisposable
     {
         public int WaitingRoomId { get; set; }
-        public List<Player> Players { get; private set; } = new();
+        public List<IPlayer> Players { get; private set; } = new();
         public DateTime CreatedAt { get; set; }
         public int CreatedByPlayerId { get; set; }
 
@@ -27,7 +28,7 @@ namespace SupremeCourt.Domain.Sessions
             WaitingRoomId = entity.Id;
             CreatedAt = entity.CreatedAt;
             CreatedByPlayerId = entity.CreatedByPlayerId;
-            Players = entity.Players;
+            Players = entity.Players.OfType<IPlayer>().ToList();
 
             _timeLeftSeconds = expirationSeconds;
             _timer = new Timer(Tick, null, 1000, 1000);

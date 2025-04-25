@@ -27,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SupremeCounter.Domain.AIPlayers\SupremeCourt.Domain.AIPlayers.csproj" />
     <ProjectReference Include="..\SupremeCourt.Application\SupremeCourt.Application.csproj" />
     <ProjectReference Include="..\SupremeCourt.Infrastructure\SupremeCourt.Infrastructure.csproj" />
   </ItemGroup>

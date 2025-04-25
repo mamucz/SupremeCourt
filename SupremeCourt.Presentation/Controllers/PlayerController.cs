@@ -69,7 +69,16 @@ namespace SupremeCourt.Presentation.Controllers
 
             return Ok();
         }
+        
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<List<PlayerDto>>> GetAll()
+        {
+            var result = await _mediator.Send(new GetAllAiPlayersQuery());
+            return Ok(result);
 
+        }
+        
     }
 
 }

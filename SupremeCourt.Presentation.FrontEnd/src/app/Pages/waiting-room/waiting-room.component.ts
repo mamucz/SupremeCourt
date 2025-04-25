@@ -127,4 +127,19 @@ export class WaitingRoomComponent implements OnInit, OnDestroy {
   getPlayerImageUrl(player: PlayerDto): string {
     return `${environment.signalRBaseUrl}/api/player/${player.playerId}/profile-picture` + '?v=' + Date.now();
   }
+
+  addAiPlayer(type: string): void {
+    this.http.post(
+      `${environment.apiUrl}/waitingroom/${this.waitingRoomId}/add-ai`,
+      { type }, // tělo požadavku – např. "Random"
+      { headers: this.auth.getAuthHeaders() }
+    ).subscribe({
+      next: () => this.message = `AI hráč (${type}) přidán.`,
+      error: () => this.error = 'Chyba při přidávání AI hráče.'
+    });
+  }
+  onImageError(event: Event): void {
+  (event.target as HTMLImageElement).src = 'assets/img/default-avatar.png';
+}
+
 }

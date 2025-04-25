@@ -36,6 +36,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		docker-compose.yml = docker-compose.yml
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SupremeCourt.Domain.AIPlayers", "SupremeCounter.Domain.AIPlayers\SupremeCourt.Domain.AIPlayers.csproj", "{2DF59CC6-960C-4E93-B8A4-ADCFC49BB467}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -130,6 +132,18 @@ Global
 		{D1DE4314-8F10-62CB-7AB4-16CBB0A62175}.Release|x64.Build.0 = Release|Any CPU
 		{D1DE4314-8F10-62CB-7AB4-16CBB0A62175}.Release|x86.ActiveCfg = Release|Any CPU
 		{D1DE4314-8F10-62CB-7AB4-16CBB0A62175}.Release|x86.Build.0 = Release|Any CPU
+		{2DF59CC6-960C-4E93-B8A4-ADCFC49BB467}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DF59CC6-960C-4E93-B8A4-ADCFC49BB467}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DF59CC6-960C-4E93-B8A4-ADCFC49BB467}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2DF59CC6-960C-4E93-B8A4-ADCFC49BB467}.Debug|x64.Build.0 = Debug|Any CPU
+		{2DF59CC6-960C-4E93-B8A4-ADCFC49BB467}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2DF59CC6-960C-4E93-B8A4-ADCFC49BB467}.Debug|x86.Build.0 = Debug|Any CPU
+		{2DF59CC6-960C-4E93-B8A4-ADCFC49BB467}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DF59CC6-960C-4E93-B8A4-ADCFC49BB467}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2DF59CC6-960C-4E93-B8A4-ADCFC49BB467}.Release|x64.ActiveCfg = Release|Any CPU
+		{2DF59CC6-960C-4E93-B8A4-ADCFC49BB467}.Release|x64.Build.0 = Release|Any CPU
+		{2DF59CC6-960C-4E93-B8A4-ADCFC49BB467}.Release|x86.ActiveCfg = Release|Any CPU
+		{2DF59CC6-960C-4E93-B8A4-ADCFC49BB467}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -145,6 +159,7 @@ Global
 		{B8BF28EA-D56C-D804-0C28-4E1B79417DCA} = {35743061-CB91-4A53-BC72-E79A530525ED}
 		{1FA2639F-0B2F-4CD7-8FEC-E0A96A6A372B} = {277F4135-B007-4BE5-8DC9-48245DC1424A}
 		{D1DE4314-8F10-62CB-7AB4-16CBB0A62175} = {1FA2639F-0B2F-4CD7-8FEC-E0A96A6A372B}
+		{2DF59CC6-960C-4E93-B8A4-ADCFC49BB467} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D81690FA-2046-4FA7-8B60-174F75C54A57}

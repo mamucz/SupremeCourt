@@ -27,16 +27,16 @@ public static class ApplicationServices
         services.AddScoped<IWaitingRoomService, WaitingRoomService>();
 
         // ✅ Lazy event handler
-        services.AddSingleton<IWaitingRoomEventHandler, WaitingRoomEventHandler>();
-        services.AddSingleton(provider =>
-            new Lazy<IWaitingRoomEventHandler>(() => provider.GetRequiredService<IWaitingRoomEventHandler>())
-        );
+        services.AddScoped<IWaitingRoomEventHandler, WaitingRoomEventHandler>();
+        //services.AddSingleton(provider =>
+        //    new Lazy<IWaitingRoomEventHandler>(() => provider.GetRequiredService<IWaitingRoomEventHandler>())
+        //);
 
         // ✅ Session manager
-        services.AddSingleton<WaitingRoomSessionManager>();
-        services.AddSingleton(provider =>
-            new Lazy<WaitingRoomSessionManager>(() => provider.GetRequiredService<WaitingRoomSessionManager>())
-        );
+        services.AddScoped<WaitingRoomSessionManager>();
+        //services.AddSingleton(provider =>
+        //    new Lazy<WaitingRoomSessionManager>(() => provider.GetRequiredService<WaitingRoomSessionManager>())
+        //);
 
         // ✅ Token blacklist
         services.AddSingleton<TokenBlacklistService>();

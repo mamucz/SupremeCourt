@@ -12,6 +12,8 @@ using SupremeCourt.Application.Background;
 using SupremeCourt.Infrastructure.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using SupremeCourt.Domain.Interfaces;
+using SupremeCourt.Domain;
 
 // ✅ Bootstrap logger pro logování během startu
 Log.Logger = new LoggerConfiguration()
@@ -90,8 +92,9 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(connectionString);
 builder.Services.AddPresentationServices();
-builder.Services.AddHostedService<WaitingRoomMonitor>();
-
+//builder.Services.AddHostedService<WaitingRoomMonitor>();
+//AI hráči
+builder.Services.AddScoped<IAIPlayerRegistrar, AiPlayerRegistrar>();
 // 🌐 CORS
 builder.Services.AddCors(options =>
 {
@@ -112,6 +115,11 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<GameDbContext>();
     db.Database.Migrate();
+    // 🤖 Registrace AI hráčů
+    // ✅ Umělý dotyk na typ z AI assembly
+    var _ = typeof(SupremeCourt.Domain.AIPlayers.RandomAiPlayerDefinition);
+    var registrar = scope.ServiceProvider.GetRequiredService<IAIPlayerRegistrar>();
+    await registrar.RegisterAllAiPlayersAsync();
 }
 
 // 📈 Serilog request logging s filtrem pro /health

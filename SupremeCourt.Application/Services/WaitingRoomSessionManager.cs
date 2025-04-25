@@ -10,9 +10,10 @@ namespace SupremeCourt.Application.Services
         private readonly ConcurrentDictionary<int, WaitingRoomSession> _sessions = new();
         private readonly Lazy<IWaitingRoomEventHandler> _eventHandler;
 
-        public WaitingRoomSessionManager(Lazy<IWaitingRoomEventHandler> eventHandler)
+        public WaitingRoomSessionManager(Func<IWaitingRoomEventHandler> eventHandlerFactory)
         {
-            _eventHandler = eventHandler ?? throw new ArgumentNullException(nameof(eventHandler));
+            _eventHandlerFactory = eventHandlerFactory;
+        }
         }
 
         public void AddSession(WaitingRoomSession session)
