@@ -1,148 +1,75 @@
-﻿using System.Threading;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using SupremeCourt.Domain.DTOs;
-using SupremeCourt.Domain.Entities;
+﻿using SupremeCourt.Domain.DTOs;
 using SupremeCourt.Domain.Interfaces;
-using SupremeCourt.Domain.Logic;
-using SupremeCourt.Domain.Mappings;
 using SupremeCourt.Domain.Sessions;
+using Microsoft.Extensions.Logging;
 
 namespace SupremeCourt.Application.Services
 {
     public class WaitingRoomListService : IWaitingRoomListService
     {
-        private readonly IWaitingRoomRepository _waitingRoomRepository;
-        private readonly IPlayerRepository _playerRepository;
+        private readonly IWaitingRoomSessionManager _sessionManager;
         private readonly ILogger<WaitingRoomListService> _logger;
-        private readonly IWaitingRoomListNotifier _waitingRoomListNotifier;
-        private readonly IWaitingRoomNotifier _waitingRoomNotifier;
-        private readonly WaitingRoomSessionManager _sessionManager;
-        private readonly IWaitingRoomEventHandler _eventHandler;
-        private readonly int _roomExpirationSeconds;
 
         public WaitingRoomListService(
-            IWaitingRoomRepository waitingRoomRepository,
-            IGameRepository gameRepository,
-            IPlayerRepository playerRepository,
-            IGameService gameService,
-            IWaitingRoomListNotifier waitingRoomListNotifier,
-            IWaitingRoomNotifier waitingRoomNotifier,
-            WaitingRoomSessionManager sessionManager,
-            IWaitingRoomEventHandler eventHandler,
-            ILogger<WaitingRoomListService> logger,
-            IConfiguration configuration)
+            IWaitingRoomSessionManager sessionManager,
+            ILogger<WaitingRoomListService> logger)
         {
-            _waitingRoomRepository = waitingRoomRepository;
-            _playerRepository = playerRepository;
-            _waitingRoomListNotifier = waitingRoomListNotifier;
-            _waitingRoomNotifier = waitingRoomNotifier;
             _sessionManager = sessionManager;
-            _eventHandler = eventHandler;
             _logger = logger;
-            _roomExpirationSeconds = configuration.GetValue<int>("WaitingRoom:ExpirationMinutes", 3) * 60;
         }
 
-        public async Task<WaitingRoom?> CreateWaitingRoomAsync(int createdByPlayerId, CancellationToken cancellationToken)
+        public async Task<WaitingRoomSession?> CreateWaitingRoomAsync(int createdByPlayerId, CancellationToken cancellationToken)
         {
-            var player = await _playerRepository.GetByIdAsync(createdByPlayerId);
-            if (player == null) return null;
-
-            var waitingRoom = new WaitingRoom
+            // TODO: Načti hráče z databáze přes IPlayerRepository
+            // Zatím fake player
+            var fakePlayer = new SupremeCourt.Domain.Entities.Player
             {
-                CreatedByPlayerId = createdByPlayerId,
-                Players = new List<Player>()
+                Id = createdByPlayerId,
+                User = new SupremeCourt.Domain.Entities.User
+                {
+                    Id = createdByPlayerId,
+                    Username = $"Player {createdByPlayerId}"
+                }
             };
 
-            await _waitingRoomRepository.AddAsync(waitingRoom, cancellationToken);
+            var roomId = _sessionManager.CreateRoom(fakePlayer as IPlayer);
+            var session = _sessionManager.GetSession(roomId);
 
-            // ✅ Po uložení vytvoř runtime session a přidej ji do manageru
-            var session = Domain.Mappings.WaitingRoomMapper.Instance.ToSession(waitingRoom);
-
-            session.OnCountdownTick += async (roomId, secondsLeft) =>
-            {
-                await _eventHandler.HandleCountdownTickAsync(roomId, secondsLeft);
-            };
-
-            session.OnRoomExpired += async roomId =>
-            {
-                await _eventHandler.HandleRoomExpiredAsync(roomId);
-            };
-
-            session.InitializeFromEntity(waitingRoom, _roomExpirationSeconds);
-            _sessionManager.AddSession(session);
-
-            await _waitingRoomListNotifier.NotifyWaitingRoomCreatedAsync(new WaitingRoomDto
-            {
-                WaitingRoomId = waitingRoom.Id,
-                CreatedAt = waitingRoom.CreatedAt,
-                CreatedByPlayerId = player.User.Id,
-                CreatedByPlayerName = player.User?.Username ?? "Neznámý",
-                TimeLeftSeconds = _roomExpirationSeconds
-            });
-
-            return waitingRoom;
+            return session;
         }
 
         public async Task<bool> JoinWaitingRoomAsync(int waitingRoomId, int playerId, CancellationToken cancellationToken)
         {
-            var existingRoom = await _waitingRoomRepository.GetRoomByPlayerIdAsync(playerId, cancellationToken);
-            if (existingRoom != null)
+            // TODO: Načti hráče z databáze přes IPlayerRepository
+            var fakePlayer = new SupremeCourt.Domain.Entities.Player
             {
-                _logger.LogWarning("Hráč {PlayerId} je již ve waiting room #{RoomId}", playerId, existingRoom.Id);
-                return false;
-            }
+                Id = playerId,
+                User = new SupremeCourt.Domain.Entities.User
+                {
+                    Id = playerId,
+                    Username = $"Player {playerId}"
+                }
+            };
 
-            var waitingRoom = await _waitingRoomRepository.GetByIdAsync(waitingRoomId, cancellationToken);
-            if (waitingRoom == null) return false;
-
-            if (waitingRoom.Players.Count >= GameRules.MaxPlayers)
-            {
-                _logger.LogWarning($"Hráč {playerId} se pokusil připojit do plné místnosti {waitingRoomId}.", cancellationToken);
-                return false;
-            }
-
-            var player = await _playerRepository.GetByIdAsync(playerId);
-            if (player == null) return false;
-
-            waitingRoom.Players.Add(player);
-            await _waitingRoomRepository.UpdateAsync(waitingRoom, cancellationToken);
-
-            await _waitingRoomNotifier.NotifyPlayerJoinedAsync(waitingRoomId, Domain.Mappings.PlayerMapper.Instance.ToDto(player));
-
-            return true;
+            return _sessionManager.TryJoinPlayer(waitingRoomId, fakePlayer as IPlayer);
         }
 
-        public async Task<List<WaitingRoom>> GetAllWaitingRoomsAsync(CancellationToken cancellationToken)
+        public async Task<List<WaitingRoomSession>> GetAllWaitingRoomsAsync(CancellationToken cancellationToken)
         {
-            return await _waitingRoomRepository.GetAllAsync(cancellationToken);
+            return _sessionManager.GetAllSessions();
         }
 
         public async Task<List<WaitingRoomDto>> GetWaitingRoomSummariesAsync(CancellationToken cancellationToken)
         {
-            var all = await _waitingRoomRepository.GetAllAsync(cancellationToken);
+            var sessions = _sessionManager.GetAllSessions();
 
-            var result = new List<WaitingRoomDto>();
-
-            foreach (var wr in all.Where(wr => wr.Players.Count < GameRules.MaxPlayers))
+            var result = sessions.Select(session => new WaitingRoomDto
             {
-                var creator = await _playerRepository.GetByIdAsync(wr.CreatedByPlayerId);
-                var creatorName = creator?.User?.Username ?? "Neznámý";
-                var creatorUserId = creator?.User?.Id ?? -1;
-
-                var session = _sessionManager.GetSession(wr.Id);
-                var secondsLeft = session?.GetTimeLeft() ?? _roomExpirationSeconds;
-
-                result.Add(new WaitingRoomDto
-                {
-                    WaitingRoomId = wr.Id,
-                    CreatedAt = wr.CreatedAt,
-                    CreatedByPlayerId = creatorUserId,
-                    CreatedByPlayerName = creatorName,
-                    TimeLeftSeconds = secondsLeft
-                });
-            }
+                WaitingRoomId = session.WaitingRoomId,
+                CreatedAt = session.CreatedAt,
+                CreatedByPlayerId = session.CreatedBy.Id,
+                TimeLeftSeconds = session.GetTimeLeft()
+            }).ToList();
 
             return result;
         }

@@ -1,13 +1,14 @@
 ﻿using SupremeCourt.Domain.DTOs;
 using SupremeCourt.Domain.Entities;
+using SupremeCourt.Domain.Sessions;
 
 namespace SupremeCourt.Domain.Interfaces
 {
     public interface IWaitingRoomListService
     {
-        Task<WaitingRoom?> CreateWaitingRoomAsync(int gameId, CancellationToken cancellationToken);
-        Task<bool> JoinWaitingRoomAsync(int gameId, int playerId, CancellationToken cancellationToken);
-        Task<List<WaitingRoom>> GetAllWaitingRoomsAsync(CancellationToken cancellationToken); // ✅ Přidáno
-        Task<List<WaitingRoomDto>> GetWaitingRoomSummariesAsync(CancellationToken cancellationToken); // ✅ Přidáno
+        Task<WaitingRoomSession?> CreateWaitingRoomAsync(int createdByPlayerId, CancellationToken cancellationToken);
+        Task<bool> JoinWaitingRoomAsync(int waitingRoomId, int playerId, CancellationToken cancellationToken);
+        Task<List<WaitingRoomSession>> GetAllWaitingRoomsAsync(CancellationToken cancellationToken);
+        Task<List<WaitingRoomDto>> GetWaitingRoomSummariesAsync(CancellationToken cancellationToken);
     }
 }

@@ -1,30 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 using SupremeCourt.Domain.DTOs;
 using SupremeCourt.Domain.Interfaces;
-using SupremeCourt.Domain.Mappings;
 
-namespace SupremeCourt.Application.CQRS.WaitingRooms.Queries
+namespace SupremeCourt.Application.CQRS.WaitingRooms.Queries;
+
+public class GetWaitingRoomByIdQueryHandler : IRequestHandler<GetWaitingRoomByIdQuery, WaitingRoomDto?>
 {
-    public class GetWaitingRoomByIdQueryHandler : IRequestHandler<GetWaitingRoomByIdQuery, WaitingRoomDto?>
-    {
-        private readonly IWaitingRoomRepository _repository;
-        
-        public GetWaitingRoomByIdQueryHandler(IWaitingRoomRepository repository)
-        {
-            _repository = repository;
-        }
+    private readonly IWaitingRoomSessionManager _sessionManager;
 
-        public async Task<WaitingRoomDto?> Handle(GetWaitingRoomByIdQuery request, CancellationToken cancellationToken)
+    public GetWaitingRoomByIdQueryHandler(IWaitingRoomSessionManager sessionManager)
+    {
+        _sessionManager = sessionManager;
+    }
+
+    public Task<WaitingRoomDto?> Handle(GetWaitingRoomByIdQuery request, CancellationToken cancellationToken)
+    {
+        var session = _sessionManager.GetSession(request.WaitingRoomId);
+        if (session == null)
+            return Task.FromResult<WaitingRoomDto?>(null);
+
+        var dto = new WaitingRoomDto
         {
-            var result = await _repository.GetByIdAsync(request.WaitingRoomId, cancellationToken);
-            if (result == null)
-                return null;
-            return Domain.Mappings.WaitingRoomMapper.Instance.ToDto(result);
-        }
+            WaitingRoomId = session.WaitingRoomId,
+            CreatedAt = session.CreatedAt,
+            CreatedByPlayerId = session.CreatedBy.Id,
+            Players = session.Players.Select(p => new PlayerDto
+            {
+                PlayerId =  p.Id,
+                Username = p.Username,
+            }).ToList(),
+            TimeLeftSeconds = session.GetTimeLeft(),
+        };
+
+        return Task.FromResult(dto);
     }
 }

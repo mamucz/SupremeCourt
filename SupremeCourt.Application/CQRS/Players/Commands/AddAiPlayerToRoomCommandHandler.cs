@@ -11,16 +11,17 @@ namespace SupremeCourt.Application.CQRS.Players.Commands
 {
     public class AddAiPlayerToRoomCommandHandler : IRequestHandler<AddAiPlayerToRoomCommand, bool>
     {
-        private readonly WaitingRoomSessionManager _sessionManager;
+        private readonly IWaitingRoomSessionManager _sessionManager;
         private readonly IWaitingRoomEventHandler _eventHandler;
+        private readonly IPlayerRepository _playerRepository;
         private readonly ILogger<AddAiPlayerToRoomCommandHandler> _logger;
         public AddAiPlayerToRoomCommandHandler(
-            WaitingRoomSessionManager sessionManager,
-            IWaitingRoomEventHandler eventHandler,
+            IWaitingRoomSessionManager sessionManager,
+            IPlayerRepository playerRepository,
             ILogger<AddAiPlayerToRoomCommandHandler> logger)
         {
             _sessionManager = sessionManager;
-            _eventHandler = eventHandler;
+            _playerRepository = playerRepository;
             _logger = logger;
         }
 

@@ -1,25 +1,22 @@
-﻿using SupremeCourt.Domain.Interfaces;
-
-using SupremeCourt.Application.Services;
-using SupremeCourt.Domain.DTOs;
+﻿using SupremeCourt.Domain.DTOs;
+using SupremeCourt.Domain.Interfaces;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SupremeCourt.Application.EventHandlers
 {
     public class WaitingRoomEventHandler : IWaitingRoomEventHandler
     {
         private readonly IWaitingRoomNotifier _notifier;
-        private readonly Lazy<WaitingRoomSessionManager> _sessionManager;
-        private readonly IWaitingRoomRepository _repository;
-
+        private readonly Lazy<IWaitingRoomSessionManager> _sessionManager;
         public WaitingRoomEventHandler(
             IWaitingRoomNotifier notifier,
-            Lazy<WaitingRoomSessionManager> sessionManager,
-            IWaitingRoomRepository repository)
+            Lazy<IWaitingRoomSessionManager> sessionManager)
         {
             _notifier = notifier;
             _sessionManager = sessionManager;
-            _repository = repository;
         }
+
 
         public async Task HandleCountdownTickAsync(int roomId, int secondsLeft)
         {
@@ -34,15 +31,24 @@ namespace SupremeCourt.Application.EventHandlers
 
         public async Task NotifyPlayerJoinedAsync(int roomId, PlayerDto player, CancellationToken cancellationToken)
         {
-            // 1.Načti aktuální stav místnosti
-            var room = await _repository.GetByIdAsync(roomId,cancellationToken);
-            if (room == null)
+            var session = _sessionManager.Value.GetSession(roomId);
+            if (session == null)
                 return;
 
-            // 2. Přemapuj na DTO
-            var roomDto = Domain.Mappings.WaitingRoomMapper.Instance.ToDto(room);
+            var roomDto = new WaitingRoomDto
+            {
+                WaitingRoomId = session.WaitingRoomId,
+                CreatedAt = session.CreatedAt,
+                CreatedByPlayerId = session.CreatedBy.Id,
+                TimeLeftSeconds = session.GetTimeLeft(),
+                Players = session.Players.Select(p => new PlayerDto
+                {
+                    PlayerId = p.Id,
+                    Username = p.Username,
+                    
+                }).ToList()
+            };
 
-            // 3. Odeslat do klientů přes SignalR
             await _notifier.NotifyRoomUpdatedAsync(roomDto);
         }
     }

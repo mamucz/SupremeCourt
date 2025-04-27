@@ -1,31 +1,30 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Logging;
+using SupremeCourt.Domain.DTOs;
 using SupremeCourt.Domain.Interfaces;
 using SupremeCourt.Domain.Logic;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SupremeCourt.Application.CQRS.WaitingRooms.Commands
 {
     public class JoinWaitingRoomHandler : IRequestHandler<JoinWaitingRoomCommand, bool>
     {
-        private readonly IWaitingRoomRepository _waitingRoomRepository;
+        private readonly IWaitingRoomSessionManager _sessionManager;
         private readonly IPlayerRepository _playerRepository;
         private readonly IGameService _gameService;
         private readonly IWaitingRoomNotifier _notifier;
         private readonly ILogger<JoinWaitingRoomHandler> _logger;
 
         public JoinWaitingRoomHandler(
-            IWaitingRoomRepository waitingRoomRepository,
+            IWaitingRoomSessionManager sessionManager,
             IPlayerRepository playerRepository,
             IGameService gameService,
             IWaitingRoomNotifier notifier,
             ILogger<JoinWaitingRoomHandler> logger)
         {
-            _waitingRoomRepository = waitingRoomRepository;
+            _sessionManager = sessionManager;
             _playerRepository = playerRepository;
             _gameService = gameService;
             _notifier = notifier;
@@ -34,38 +33,43 @@ namespace SupremeCourt.Application.CQRS.WaitingRooms.Commands
 
         public async Task<bool> Handle(JoinWaitingRoomCommand request, CancellationToken cancellationToken)
         {
-            var waitingRoom = await _waitingRoomRepository.GetByIdAsync(request.WaitingRoomId, cancellationToken);
-            if (waitingRoom == null) return false;
-
-            //if (waitingRoom.Players.Any(p => p.Id == request.PlayerId))
-            //    return true; // už je připojený
-            _logger.LogInformation("➡️ Kontrola hráčů v místnosti ID: {RoomId}", waitingRoom.Id);
-            _logger.LogInformation("➡️ Počet hráčů: {Count}",  waitingRoom.Players.Count);
-            
-            _logger.LogInformation("🧪 Hledám hráče ID: {RequestId}", request.PlayerId);
-            var alreadyJoined = waitingRoom.Players.Any(p => p.Id == request.PlayerId);
-            _logger.LogInformation("Výsledek kontrola připojení: {Result}", alreadyJoined);
-
-
-            if (waitingRoom.Players.Count >= GameRules.MaxPlayers)
+            var session = _sessionManager.GetSession(request.WaitingRoomId);
+            if (session == null)
             {
-                _logger.LogWarning($"Hráč {request.PlayerId} se pokusil připojit do plné místnosti {request.WaitingRoomId}.");
+                _logger.LogWarning("Místnost {RoomId} neexistuje.", request.WaitingRoomId);
+                return false;
+            }
+
+            if (session.Players.Any(p => p.Id == request.PlayerId))
+            {
+                _logger.LogInformation("Hráč {PlayerId} je již v místnosti {RoomId}.", request.PlayerId, request.WaitingRoomId);
+                return true;
+            }
+
+            if (session.IsFull)
+            {
+                _logger.LogWarning("Místnost {RoomId} je plná. Hráč {PlayerId} nemůže vstoupit.", request.WaitingRoomId, request.PlayerId);
                 return false;
             }
 
             var player = await _playerRepository.GetByIdAsync(request.PlayerId);
-            if (player == null) return false;
+            if (player == null)
+            {
+                _logger.LogWarning("Hráč {PlayerId} nebyl nalezen.", request.PlayerId);
+                return false;
+            }
 
-            waitingRoom.Players.Add(player);
-            await _waitingRoomRepository.UpdateAsync(waitingRoom, cancellationToken);
+            session.TryAddPlayer(player as IPlayer);
+            _logger.LogInformation("Hráč {PlayerId} byl přidán do místnosti {RoomId}.", request.PlayerId, request.WaitingRoomId);
 
             await _notifier.NotifyPlayerJoinedAsync(request.WaitingRoomId, Domain.Mappings.PlayerMapper.Instance.ToDto(player));
 
-            if (waitingRoom.Players.Count == GameRules.MaxPlayers)
+            if (session.IsFull)
             {
-                _logger.LogInformation($"Místnost {request.WaitingRoomId} má 5 hráčů – spouštíme hru.");
+                _logger.LogInformation("Místnost {RoomId} má plný počet hráčů – zahajuji hru.", request.WaitingRoomId);
                 return await _gameService.StartGameAsync(request.WaitingRoomId);
             }
+
             return true;
         }
     }

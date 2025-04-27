@@ -9,8 +9,7 @@ namespace SupremeCourt.Infrastructure
         public DbSet<Player> Players { get; set; }
         public DbSet<Game> Games { get; set; } // Přidáno
         public DbSet<GameRound> GameRounds { get; set; } // Přidáno
-        public DbSet<WaitingRoom> WaitingRooms { get; set; }
-
+    
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         public GameDbContext(DbContextOptions<GameDbContext> options) : base(options) { }
@@ -29,12 +28,6 @@ namespace SupremeCourt.Infrastructure
                 .WithOne(r => r.Game)
                 .HasForeignKey(r => r.GameId)
                 .OnDelete(DeleteBehavior.Restrict);  // ⚠️ Zabránění cyklům smazání
-
-            modelBuilder.Entity<WaitingRoom>()
-                .HasOne(w => w.Game)
-                .WithOne()
-                .HasForeignKey<WaitingRoom>(w => w.GameId)
-                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Player>()
                 .HasOne(p => p.User)

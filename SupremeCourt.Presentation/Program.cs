@@ -8,7 +8,7 @@ using SupremeCourt.Infrastructure;
 using SupremeCourt.Presentation;
 using SupremeCourt.Presentation.Middleware;
 using System.Text;
-using SupremeCourt.Application.Background;
+
 using SupremeCourt.Infrastructure.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;

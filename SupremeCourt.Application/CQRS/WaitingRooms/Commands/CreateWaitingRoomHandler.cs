@@ -21,18 +21,25 @@ namespace SupremeCourt.Application.CQRS.WaitingRooms.Commands
         public async Task<WaitingRoomCreatedDto> Handle(CreateWaitingRoomCommand request, CancellationToken cancellationToken)
         {
             if (request.PlayerId <= 0)
+            {
+                _logger.LogWarning("❌ Neplatné PlayerId: {PlayerId}", request.PlayerId);
                 return null!;
+            }
 
             var room = await _waitingRoomService.CreateWaitingRoomAsync(request.PlayerId, cancellationToken);
-            if (room == null) return null!;
+            if (room == null)
+            {
+                _logger.LogWarning("❌ Nepodařilo se vytvořit místnost pro hráče {PlayerId}", request.PlayerId);
+                return null!;
+            }
 
-            _logger.LogInformation("🎯 Waiting room {Id} vytvořena hráčem {PlayerId}", room.Id, room.CreatedByPlayerId);
+            _logger.LogInformation("🎯 Waiting room {RoomId} vytvořena hráčem {PlayerId}", room.WaitingRoomId, room.CreatedBy.Id);
 
             return new WaitingRoomCreatedDto
             {
-                WaitingRoomId = room.Id,
+                WaitingRoomId = room.WaitingRoomId,
                 CreatedAt = room.CreatedAt,
-                CreatedByPlayerId = room.CreatedByPlayerId
+                CreatedByPlayerId = room.CreatedBy.Id
             };
         }
     }

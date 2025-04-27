@@ -17,6 +17,10 @@
     <ProjectReference Include="..\SupremeCourt.Domain\SupremeCourt.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Background\" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

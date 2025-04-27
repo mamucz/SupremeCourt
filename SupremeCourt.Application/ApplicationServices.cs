@@ -15,30 +15,25 @@ public static class ApplicationServices
         {
             cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
         });
-       
+
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
 
         // ✅ Aplikační služby
         services.AddScoped<ITokenBlacklistService, TokenBlacklistService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IGameService, GameService>();
-        services.AddScoped<IWaitingRoomListService, WaitingRoomListService>();
         services.AddScoped<ICreateGameHandler, CreateGameHandler>();
-        services.AddScoped<IWaitingRoomService, WaitingRoomService>();
 
-        // ✅ Lazy event handler
+        services.AddScoped<IWaitingRoomSessionManager, WaitingRoomSessionManager>();
+        services.AddScoped<IWaitingRoomListService, WaitingRoomListService>();
         services.AddScoped<IWaitingRoomEventHandler, WaitingRoomEventHandler>();
-        //services.AddSingleton(provider =>
-        //    new Lazy<IWaitingRoomEventHandler>(() => provider.GetRequiredService<IWaitingRoomEventHandler>())
-        //);
 
-        // ✅ Session manager
-        services.AddScoped<WaitingRoomSessionManager>();
-        //services.AddSingleton(provider =>
-        //    new Lazy<WaitingRoomSessionManager>(() => provider.GetRequiredService<WaitingRoomSessionManager>())
-        //);
+        // 🔥 Přidání Lazy<IWaitingRoomSessionManager>
+        services.AddScoped(provider =>
+            new Lazy<IWaitingRoomSessionManager>(() => provider.GetRequiredService<IWaitingRoomSessionManager>())
+        );
 
-        // ✅ Token blacklist
+        // ✅ Token blacklist jako singleton
         services.AddSingleton<TokenBlacklistService>();
 
         return services;

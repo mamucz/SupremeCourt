@@ -9,36 +9,45 @@ namespace SupremeCourt.Domain.Sessions
         public int WaitingRoomId { get; set; }
         public List<IPlayer> Players { get; private set; } = new();
         public DateTime CreatedAt { get; set; }
-        public int CreatedByPlayerId { get; set; }
+        public IPlayer CreatedBy{ get; set; }
 
         private Timer? _timer;
         private int _timeLeftSeconds;
 
-        // Změněná signatura — nyní předává i roomId
         public event Action<int, int>? OnCountdownTick;
         public event Action<int>? OnRoomExpired;
 
-        // ⚠️ parameterless constructor pro Mapperly
         public WaitingRoomSession()
         {
         }
 
-        public void InitializeFromEntity(WaitingRoom entity, int expirationSeconds)
+        public WaitingRoomSession(int roomId, IPlayer createdBy, IWaitingRoomEventHandler eventHandler)
         {
-            WaitingRoomId = entity.Id;
-            CreatedAt = entity.CreatedAt;
-            CreatedByPlayerId = entity.CreatedByPlayerId;
-            Players = entity.Players.OfType<IPlayer>().ToList();
+            WaitingRoomId = roomId;
+            CreatedAt = DateTime.UtcNow;
+            CreatedBy = createdBy;
+            Players.Add(createdBy);
 
-            _timeLeftSeconds = expirationSeconds;
+            _timeLeftSeconds = 3 * 60; // Např. 3 minuty
             _timer = new Timer(Tick, null, 1000, 1000);
+
+            OnCountdownTick += async (id, seconds) => await eventHandler.HandleCountdownTickAsync(id, seconds);
+            OnRoomExpired += async id => await eventHandler.HandleRoomExpiredAsync(id);
+        }
+
+        public bool TryAddPlayer(IPlayer player)
+        {
+            if (Players.Any(p => p.Id == player.Id))
+                return false;
+
+            Players.Add(player);
+            return true;
         }
 
         private void Tick(object? state)
         {
             _timeLeftSeconds--;
 
-            // 🔁 Trigger každou sekundu se správnými parametry
             OnCountdownTick?.Invoke(WaitingRoomId, _timeLeftSeconds);
 
             if (_timeLeftSeconds <= 0)
@@ -50,13 +59,16 @@ namespace SupremeCourt.Domain.Sessions
 
         public int GetTimeLeft() => _timeLeftSeconds;
 
-        public void AddPlayer(Player player)
-        {
-            if (!Players.Any(p => p.Id == player.Id))
-                Players.Add(player);
-        }
-
         public bool IsFull => Players.Count >= GameRules.MaxPlayers;
+        public bool TryRemovePlayer(int playerId)
+        {
+            var player = Players.FirstOrDefault(p => p.Id == playerId);
+            if (player == null)
+                return false;
+
+            Players.Remove(player);
+            return true;
+        }
 
         public void Dispose()
         {
