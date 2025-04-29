@@ -8,7 +8,7 @@ namespace SupremeCourt.Domain.DTOs
 {
     public class WaitingRoomCreatedDto
     {
-        public int WaitingRoomId { get; set; }
+        public Guid WaitingRoomId { get; set; }
         public DateTime CreatedAt { get; set; }
         public int CreatedByPlayerId { get; set; }
     }

@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using SupremeCourt.Domain.DTOs;
 using SupremeCourt.Domain.Interfaces;
+using SupremeCourt.Domain.Mappings; // ⬅️ Přidat using
 
 namespace SupremeCourt.Application.CQRS.WaitingRooms.Queries;
 
@@ -19,18 +20,7 @@ public class GetWaitingRoomByIdQueryHandler : IRequestHandler<GetWaitingRoomById
         if (session == null)
             return Task.FromResult<WaitingRoomDto?>(null);
 
-        var dto = new WaitingRoomDto
-        {
-            WaitingRoomId = session.WaitingRoomId,
-            CreatedAt = session.CreatedAt,
-            CreatedByPlayerId = session.CreatedBy.Id,
-            Players = session.Players.Select(p => new PlayerDto
-            {
-                PlayerId =  p.Id,
-                Username = p.Username,
-            }).ToList(),
-            TimeLeftSeconds = session.GetTimeLeft(),
-        };
+        var dto = WaitingRoomSessionMapper.ToDto(session);
 
         return Task.FromResult(dto);
     }

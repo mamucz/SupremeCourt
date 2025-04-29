@@ -79,7 +79,7 @@ namespace SupremeCourt.Presentation.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(WaitingRoomDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetWaitingRoom(int id)
+        public async Task<IActionResult> GetWaitingRoom(Guid id)
         {
             var result = await _mediator.Send(new GetWaitingRoomByIdQuery(id));
             if (result == null)

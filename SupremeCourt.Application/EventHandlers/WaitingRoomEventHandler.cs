@@ -18,18 +18,18 @@ namespace SupremeCourt.Application.EventHandlers
         }
 
 
-        public async Task HandleCountdownTickAsync(int roomId, int secondsLeft)
+        public async Task HandleCountdownTickAsync(Guid roomId, int secondsLeft)
         {
             await _notifier.NotifyCountdownTickAsync(roomId, secondsLeft);
         }
 
-        public async Task HandleRoomExpiredAsync(int roomId)
+        public async Task HandleRoomExpiredAsync(Guid roomId)
         {
             _sessionManager.Value.RemoveSession(roomId);
             await _notifier.NotifyRoomExpiredAsync(roomId);
         }
 
-        public async Task NotifyPlayerJoinedAsync(int roomId, PlayerDto player, CancellationToken cancellationToken)
+        public async Task NotifyPlayerJoinedAsync(Guid roomId, PlayerDto player, CancellationToken cancellationToken)
         {
             var session = _sessionManager.Value.GetSession(roomId);
             if (session == null)

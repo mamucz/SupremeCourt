@@ -22,7 +22,7 @@ namespace SupremeCourt.Infrastructure.Services
             _roomHub = roomHub;
         }
 
-        public Task NotifyPlayerJoinedAsync(int waitingRoomId, PlayerDto player)
+        public Task NotifyPlayerJoinedAsync(Guid waitingRoomId, PlayerDto player)
         {
             return _signalRSender.SendToGroupAsync(_roomHub, waitingRoomId.ToString(), "PlayerJoined", player);
         }
@@ -32,7 +32,7 @@ namespace SupremeCourt.Infrastructure.Services
             return _signalRSender.SendToAllAsync(_listHub, "NewWaitingRoomCreated", dto);
         }
 
-        public async Task NotifyCountdownTickAsync(int roomId, int secondsLeft)
+        public async Task NotifyCountdownTickAsync(Guid roomId, int secondsLeft)
         {
             // 👥 1️⃣ Update v seznamu místností
             await _signalRSender.SendToGroupAsync(_listHub, "waitingroom-list", "UpdateTimeLeft", new
@@ -45,7 +45,7 @@ namespace SupremeCourt.Infrastructure.Services
             await _signalRSender.SendToGroupAsync(_roomHub, roomId.ToString(), "CountdownTick", secondsLeft);
         }
 
-        public Task NotifyRoomExpiredAsync(int roomId)
+        public Task NotifyRoomExpiredAsync(Guid roomId)
         {
             return _signalRSender.SendToGroupAsync(_roomHub, roomId.ToString(), "RoomExpired", null);
         }

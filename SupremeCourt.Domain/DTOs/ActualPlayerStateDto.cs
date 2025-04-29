@@ -16,7 +16,7 @@ namespace SupremeCourt.Domain.DTOs
         /// <summary>
         /// ID místnosti, pokud je hráč ve Waiting Room. Jinak null.
         /// </summary>
-        public int? IsInWaitingRoom { get; set; }
+        public Guid? IsInWaitingRoom { get; set; }
 
         /// <summary>
         /// ID hry, pokud je hráč ve hře. Jinak null.

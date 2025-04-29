@@ -9,6 +9,6 @@ using SupremeCourt.Domain.Interfaces;
 namespace SupremeCourt.Application.CQRS.Players.Commands
 {
       
-    public record AddAiPlayerToRoomCommand(int WaitingRoomId, IPlayer player) : IRequest<bool>;
+    public record AddAiPlayerToRoomCommand(Guid WaitingRoomId, IPlayer player) : IRequest<bool>;
 
 }

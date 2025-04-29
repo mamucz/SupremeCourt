@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using SupremeCourt.Domain.Entities;
 using SupremeCourt.Domain.Interfaces;
-using Microsoft.Extensions.Logging;
 using SupremeCourt.Domain.Logic;
 
 namespace SupremeCourt.Application.Services
@@ -15,7 +15,10 @@ namespace SupremeCourt.Application.Services
         private readonly IPlayerRepository _playerRepository;
         private readonly ILogger<GameService> _logger;
 
-        public GameService(IGameRepository gameRepository, IPlayerRepository playerRepository, ILogger<GameService> logger)
+        public GameService(
+            IGameRepository gameRepository,
+            IPlayerRepository playerRepository,
+            ILogger<GameService> logger)
         {
             _gameRepository = gameRepository;
             _playerRepository = playerRepository;
@@ -25,8 +28,10 @@ namespace SupremeCourt.Application.Services
         public async Task<Game?> CreateGameAsync()
         {
             var game = new Game();
-            await _gameRepository.AddAsync(game);
-            _logger.LogInformation("Hra {GameId} vytvořena.", game.Id);
+            await _gameRepository.AddAsync(game); // tady AddAsync() musí buď:
+            // - ihned SaveChanges
+            // - nebo ty ho musíš explicitně zavolat
+            _logger.LogInformation("🎯 Hra {GameId} byla vytvořena.", game.Id);
             return game;
         }
 
@@ -40,11 +45,11 @@ namespace SupremeCourt.Application.Services
             var game = await _gameRepository.GetByIdAsync(gameId);
             if (game == null || !game.IsActive)
             {
-                _logger.LogWarning("Hra ID {GameId} neexistuje nebo není aktivní", gameId);
+                _logger.LogWarning("⚠️ Hra ID {GameId} neexistuje nebo není aktivní.", gameId);
                 throw new InvalidOperationException("Hra neexistuje nebo není aktivní.");
             }
 
-            GameRules.ProcessRound(game, playerChoices); // ✅ Voláme logiku z Domain
+            GameRules.ProcessRound(game, playerChoices);
 
             await _gameRepository.UpdateAsync(game);
 
@@ -54,21 +59,28 @@ namespace SupremeCourt.Application.Services
                 RoundNumber = game.RoundNumber,
                 PlayerChoices = playerChoices,
                 CalculatedAverage = (int)Math.Round(playerChoices.Values.Average() * 0.8),
-                WinningPlayerId = playerChoices.OrderBy(p => Math.Abs(p.Value - (int)Math.Round(playerChoices.Values.Average() * 0.8))).First().Key
+                WinningPlayerId = playerChoices
+                    .OrderBy(p => Math.Abs(p.Value - (int)Math.Round(playerChoices.Values.Average() * 0.8)))
+                    .First().Key
             };
         }
-        public async Task<bool> StartGameAsync(int gameId)
+
+        public async Task<Game> StartGameAsync(List<IPlayer> players)
         {
-            var game = await _gameRepository.GetByIdAsync(gameId);
-            if (game == null || game.IsActive) return false;
+            var game = new Game
+            {
+                Players = players.Cast<Player>().ToList(), // Přetypujeme na Player
+                CreatedAt = DateTime.UtcNow,
+                IsActive = true
+            };
 
-            GameRules.StartGame(game); // ✅ Voláme logiku z Domain
 
-            await _gameRepository.UpdateAsync(game);
-            _logger.LogInformation($"Hra {gameId} byla spuštěna.");
+            await _gameRepository.AddAsync(game);
+            _logger.LogInformation("🚀 Nová hra {GameId} spuštěna.", game.Id);
 
-            return true;
+            return game;
         }
+
 
         public async Task<Game?> GetGameIdByUserIdAsync(int playerId)
         {

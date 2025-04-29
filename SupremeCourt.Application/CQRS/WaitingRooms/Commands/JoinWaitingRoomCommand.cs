@@ -9,10 +9,10 @@ namespace SupremeCourt.Application.CQRS.WaitingRooms.Commands
 {
     public class JoinWaitingRoomCommand : IRequest<bool>
     {
-        public int WaitingRoomId { get; set; }
+        public Guid WaitingRoomId { get; set; }
         public int PlayerId { get; set; }
 
-        public JoinWaitingRoomCommand(int waitingRoomId, int playerId)
+        public JoinWaitingRoomCommand(Guid waitingRoomId, int playerId)
         {
             WaitingRoomId = waitingRoomId;
             PlayerId = playerId;

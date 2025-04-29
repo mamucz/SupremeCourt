@@ -3,9 +3,9 @@ using SupremeCourt.Domain.DTOs;
 
 public class GetWaitingRoomByIdQuery : IRequest<WaitingRoomDto?>
 {
-    public int WaitingRoomId { get; }
+    public Guid WaitingRoomId { get; }
 
-    public GetWaitingRoomByIdQuery(int waitingRoomId)
+    public GetWaitingRoomByIdQuery(Guid waitingRoomId)
     {
         WaitingRoomId = waitingRoomId;
     }

@@ -4,8 +4,8 @@ namespace SupremeCourt.Domain.Interfaces
 {
     public interface IWaitingRoomEventHandler
     {
-        Task HandleCountdownTickAsync(int roomId, int secondsLeft);
-        Task HandleRoomExpiredAsync(int roomId);
-        Task NotifyPlayerJoinedAsync(int roomId, PlayerDto player, CancellationToken cancellationToken);
+        Task HandleCountdownTickAsync(Guid roomId, int secondsLeft);
+        Task HandleRoomExpiredAsync(Guid roomId);
+        Task NotifyPlayerJoinedAsync(Guid roomId, PlayerDto player, CancellationToken cancellationToken);
     }
 }

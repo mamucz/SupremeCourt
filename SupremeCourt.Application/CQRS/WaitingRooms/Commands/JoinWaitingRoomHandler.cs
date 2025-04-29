@@ -36,41 +36,44 @@ namespace SupremeCourt.Application.CQRS.WaitingRooms.Commands
             var session = _sessionManager.GetSession(request.WaitingRoomId);
             if (session == null)
             {
-                _logger.LogWarning("Místnost {RoomId} neexistuje.", request.WaitingRoomId);
+                _logger.LogWarning("❌ Místnost {RoomId} neexistuje.", request.WaitingRoomId);
                 return false;
             }
 
             if (session.Players.Any(p => p.Id == request.PlayerId))
             {
-                _logger.LogInformation("Hráč {PlayerId} je již v místnosti {RoomId}.", request.PlayerId, request.WaitingRoomId);
+                _logger.LogInformation("ℹ️ Hráč {PlayerId} je již připojen do místnosti {RoomId}.", request.PlayerId, request.WaitingRoomId);
                 return true;
             }
 
             if (session.IsFull)
             {
-                _logger.LogWarning("Místnost {RoomId} je plná. Hráč {PlayerId} nemůže vstoupit.", request.WaitingRoomId, request.PlayerId);
+                _logger.LogWarning("⚠️ Místnost {RoomId} je plná. Hráč {PlayerId} nemůže vstoupit.", request.WaitingRoomId, request.PlayerId);
                 return false;
             }
 
             var player = await _playerRepository.GetByIdAsync(request.PlayerId);
             if (player == null)
             {
-                _logger.LogWarning("Hráč {PlayerId} nebyl nalezen.", request.PlayerId);
+                _logger.LogWarning("❌ Hráč {PlayerId} nebyl nalezen v databázi.", request.PlayerId);
                 return false;
             }
 
-            session.TryAddPlayer(player as IPlayer);
-            _logger.LogInformation("Hráč {PlayerId} byl přidán do místnosti {RoomId}.", request.PlayerId, request.WaitingRoomId);
-
-            await _notifier.NotifyPlayerJoinedAsync(request.WaitingRoomId, Domain.Mappings.PlayerMapper.Instance.ToDto(player));
-
-            if (session.IsFull)
+            // Přidání hráče do session
+            var success = session.TryAddPlayer(player as IPlayer);
+            if (!success)
             {
-                _logger.LogInformation("Místnost {RoomId} má plný počet hráčů – zahajuji hru.", request.WaitingRoomId);
-                return await _gameService.StartGameAsync(request.WaitingRoomId);
+                _logger.LogWarning("❌ Nepodařilo se přidat hráče {PlayerId} do místnosti {RoomId}.", request.PlayerId, request.WaitingRoomId);
+                return false;
             }
+
+            _logger.LogInformation("✅ Hráč {PlayerId} byl přidán do místnosti {RoomId}.", request.PlayerId, request.WaitingRoomId);
+
+            // Informování ostatních klientů
+            await _notifier.NotifyPlayerJoinedAsync(session.WaitingRoomId, Domain.Mappings.PlayerMapper.Instance.ToDto(player));
 
             return true;
         }
+
     }
 }

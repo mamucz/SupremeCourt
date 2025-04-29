@@ -4,10 +4,10 @@ namespace SupremeCourt.Domain.Interfaces
 {
     public interface IWaitingRoomNotifier
     {
-        Task NotifyPlayerJoinedAsync(int waitingRoomId, PlayerDto player);
+        Task NotifyPlayerJoinedAsync(Guid waitingRoomId, PlayerDto player);
         Task NotifyWaitingRoomCreatedAsync(object dto); // již existuje
-        Task NotifyCountdownTickAsync(int roomId, int secondsLeft); // 🕒
-        Task NotifyRoomExpiredAsync(int roomId); // ⛔
+        Task NotifyCountdownTickAsync(Guid roomId, int secondsLeft); // 🕒
+        Task NotifyRoomExpiredAsync(Guid roomId); // ⛔
         Task NotifyRoomUpdatedAsync(WaitingRoomDto dto); // ✅ PŘIDAT TUTO METODU
     }
 }

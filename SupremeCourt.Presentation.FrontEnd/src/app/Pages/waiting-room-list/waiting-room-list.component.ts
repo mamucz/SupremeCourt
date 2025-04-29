@@ -15,11 +15,11 @@ import { TimeFormatPipe } from '../../Pipes/time-format.pipe';
 
 export interface PlayerDto {
   playerId: number;
-  name: string;
+  username: string;
 }
 
 export interface WaitingRoomDto {
-  waitingRoomId: number;
+  waitingRoomId: string; // ➡️ GUID jako string
   players: PlayerDto[];
   createdByPlayerId: number;
   createdByPlayerName: string;
@@ -32,7 +32,7 @@ export interface WaitingRoomDto {
 @Component({
   selector: 'app-waiting-room-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule,TimeFormatPipe],
+  imports: [CommonModule, RouterModule, TranslateModule, TimeFormatPipe],
   templateUrl: './waiting-room-list.component.html',
   styleUrls: ['./waiting-room-list.component.scss']
 })
@@ -111,7 +111,7 @@ export class WaitingRoomListComponent implements OnInit, OnDestroy {
     });
   }
 
-  joinRoom(gameId: number) {
+  joinRoom(roomId: string) {
     const playerId = this.auth.getUserId();
     if (!playerId) {
       this.error = 'Nejste přihlášen.';
@@ -119,15 +119,15 @@ export class WaitingRoomListComponent implements OnInit, OnDestroy {
     }
 
     this.http.post(`${environment.apiUrl}/waitingroom/join`, {
-      waitingRoomId: gameId,
+      waitingRoomId: roomId,
       playerId
     }, {
       headers: this.auth.getAuthHeaders()
     }).subscribe({
       next: () => {
-        this.message = `✅ Připojeno k místnosti #${gameId}`;
+        this.message = `✅ Připojeno k místnosti #${roomId}`;
         this.error = '';
-        this.router.navigate([`/waiting-room/${gameId}`]);
+        this.router.navigate([`/waiting-room/${roomId}`]);
       },
       error: err => {
         this.error = err.error?.message || 'Nepodařilo se připojit.';
@@ -163,8 +163,7 @@ export class WaitingRoomListComponent implements OnInit, OnDestroy {
       });
     });
 
-    // ✅ Posloucháme event, který posílá backend (UpdateTimeLeft)
-    this.hubConnection.on('UpdateTimeLeft', (data: { waitingRoomId: number, timeLeftSeconds: number }) => {
+    this.hubConnection.on('UpdateTimeLeft', (data: { waitingRoomId: string; timeLeftSeconds: number }) => {
       const room = this.waitingRooms.find(r => r.waitingRoomId === data.waitingRoomId);
       if (room) {
         room.timeLeftSeconds = data.timeLeftSeconds;

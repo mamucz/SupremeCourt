@@ -6,9 +6,9 @@ namespace SupremeCourt.Application.CQRS.WaitingRooms.Queries
 {
     public class GetWaitingRoomQuery : IRequest<WaitingRoomDto>
     {
-        public int WaitingRoomId { get; set; }
+        public Guid WaitingRoomId { get; set; }
 
-        public GetWaitingRoomQuery(int id)
+        public GetWaitingRoomQuery(Guid id)
         {
             WaitingRoomId = id;
         }

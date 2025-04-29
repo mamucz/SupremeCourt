@@ -2,7 +2,7 @@
 {
     public class JoinGameRequest
     {
-        public int WaitingRoomId { get; set; }
+        public Guid WaitingRoomId { get; set; }
         public int PlayerId { get; set; }
     }
 }
