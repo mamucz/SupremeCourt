@@ -33,6 +33,7 @@ namespace SupremeCourt.Infrastructure
             services.AddSingleton<IWaitingRoomNotifier, WaitingRoomNotifier>();
             services.AddSingleton<IWaitingRoomListNotifier, WaitingRoomListNotifier>(); // ✅ Registrace Notifieru
             services.AddSingleton<IUserSessionRepository, UserSessionRepository>();
+            services.AddHttpClient<IOpenAiGameStrategyService, OpenAiGameStrategyService>();
 
             services.AddSignalR();
             return services;

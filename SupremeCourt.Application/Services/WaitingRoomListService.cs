@@ -1,72 +1,58 @@
-﻿using SupremeCourt.Domain.DTOs;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using SupremeCourt.Domain.DTOs;
+using SupremeCourt.Domain.Entities;
 using SupremeCourt.Domain.Interfaces;
+using SupremeCourt.Domain.Mappings;
 
+namespace SupremeCourt.Application.Services;
 
-namespace SupremeCourt.Application.Services
+public class WaitingRoomListService : IWaitingRoomListService
 {
-    public class WaitingRoomListService : IWaitingRoomListService
+    private readonly IWaitingRoomSessionManager _sessionManager;
+    private readonly IPlayerRepository _playerRepository;
+
+    public WaitingRoomListService(
+        IWaitingRoomSessionManager sessionManager,
+        IPlayerRepository playerRepository)
     {
-        private readonly IWaitingRoomSessionManager _sessionManager;
+        _sessionManager = sessionManager;
+        _playerRepository = playerRepository;
+    }
 
-        public WaitingRoomListService(IWaitingRoomSessionManager sessionManager)
-        {
-            _sessionManager = sessionManager;
-        }
+    public async Task<WaitingRoomSession?> CreateWaitingRoomAsync(int createdByPlayerId, CancellationToken cancellationToken)
+    {
+        var player = await _playerRepository.GetByIdAsync(createdByPlayerId);
+        if (player == null)
+            return null; // hráč neexistuje
 
-        public Task<List<WaitingRoomDto>> GetWaitingRoomSummariesAsync(CancellationToken cancellationToken)
-        {
-            var sessions = _sessionManager.GetAllSessions();
-            var summaries = sessions.Select(s => new WaitingRoomDto
-            {
-                WaitingRoomId = s.WaitingRoomId,
-                CreatedAt = s.CreatedAt,
-                CreatedByPlayerId = s.CreatedBy.Id,
-                CreatedByPlayerName = s.CreatedBy.Username,
-                Players = s.Players.Select(p => new PlayerDto
-                {
-                    PlayerId = p.Id,
-                    Username = p.Username
-                }).ToList(),
-                TimeLeftSeconds = s.GetTimeLeft()
-            }).ToList();
+        var roomId = _sessionManager.CreateRoom(player as IPlayer);
+        return _sessionManager.GetSession(roomId);
+    }
 
-            return Task.FromResult(summaries);
-        }
+    public async Task<bool> JoinWaitingRoomAsync(Guid waitingRoomId, int playerId, CancellationToken cancellationToken)
+    {
+        var player = await _playerRepository.GetByIdAsync(playerId);
+        if (player == null)
+            return false; // hráč neexistuje
 
-        public Task<List<WaitingRoomSession>> GetAllWaitingRoomsAsync(CancellationToken cancellationToken)
-        {
-            var sessions = _sessionManager.GetAllSessions();
-            return Task.FromResult(sessions);
-        }
+        var result = _sessionManager.TryJoinPlayer(waitingRoomId, player as IPlayer);
+        return result;
+    }
 
-        public async Task<WaitingRoomSession?> CreateWaitingRoomAsync(int createdByPlayerId, CancellationToken cancellationToken)
-        {
-            // Tady by normálně bylo načtení hráče z repozitáře
-            // My to teď jednoduše nahradíme "mock" hráčem
-            var fakePlayer = new SupremeCourt.Domain.Entities.Player
-            {
-                Id = createdByPlayerId,
-                Username = $"Player{createdByPlayerId}"
-            };
+    public Task<List<WaitingRoomDto>> GetWaitingRoomSummariesAsync(CancellationToken cancellationToken)
+    {
+        var sessions = _sessionManager.GetAllSessions();
+        var summaries = sessions.Select(WaitingRoomSessionMapper.ToDto).ToList();
+        return Task.FromResult(summaries);
+    }
 
-            var roomId = _sessionManager.CreateRoom(fakePlayer);
-            return _sessionManager.GetSession(roomId);
-        }
-
-        public Task<bool> JoinWaitingRoomAsync(Guid waitingRoomId, int playerId, CancellationToken cancellationToken)
-        {
-            var session = _sessionManager.GetSession(waitingRoomId);
-            if (session == null)
-                return Task.FromResult(false);
-
-            var fakePlayer = new SupremeCourt.Domain.Entities.Player
-            {
-                Id = playerId,
-                Username = $"Player{playerId}"
-            };
-
-            var result = _sessionManager.TryJoinPlayer(waitingRoomId, fakePlayer);
-            return Task.FromResult(result);
-        }
+    public Task<List<WaitingRoomSession>> GetAllWaitingRoomsAsync(CancellationToken cancellationToken)
+    {
+        var sessions = _sessionManager.GetAllSessions();
+        return Task.FromResult(sessions);
     }
 }

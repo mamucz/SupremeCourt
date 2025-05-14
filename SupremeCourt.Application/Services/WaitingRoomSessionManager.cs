@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using SupremeCourt.Domain.Interfaces;
-using SupremeCourt.Domain.Sessions;
 using System.Collections.Concurrent;
 
 public class WaitingRoomSessionManager : IWaitingRoomSessionManager
