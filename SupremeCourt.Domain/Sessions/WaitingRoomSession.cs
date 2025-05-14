@@ -7,6 +7,8 @@ public class WaitingRoomSession : IDisposable
     public IPlayer CreatedBy { get; }
     public List<IPlayer> Players { get; } = new();
 
+    public bool IsFull => Players.Count > 4;
+
     private readonly Timer _timer;
     private readonly Action<Guid> _onExpired;
     private int _timeLeftSeconds = 60; // např. 60 sekund default

@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using SupremeCourt.Application.Services;
 using SupremeCourt.Domain.DTOs;
 using SupremeCourt.Domain.Interfaces;
-using SupremeCourt.Domain.Sessions;
+
 using System;
 using SupremeCourt.Domain.Entities;
 
