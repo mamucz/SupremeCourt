@@ -1,5 +1,7 @@
 ﻿using SupremeCourt.Domain.DTOs;
 using SupremeCourt.Domain.Interfaces;
+using SupremeCourt.Domain.Sessions;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -8,15 +10,15 @@ namespace SupremeCourt.Application.EventHandlers
     public class WaitingRoomEventHandler : IWaitingRoomEventHandler
     {
         private readonly IWaitingRoomNotifier _notifier;
-        private readonly Lazy<IWaitingRoomSessionManager> _sessionManager;
+        private readonly IWaitingRoomSessionManager _sessionManager;
+
         public WaitingRoomEventHandler(
             IWaitingRoomNotifier notifier,
-            Lazy<IWaitingRoomSessionManager> sessionManager)
+            IWaitingRoomSessionManager sessionManager)
         {
             _notifier = notifier;
             _sessionManager = sessionManager;
         }
-
 
         public async Task HandleCountdownTickAsync(Guid roomId, int secondsLeft)
         {
@@ -25,30 +27,17 @@ namespace SupremeCourt.Application.EventHandlers
 
         public async Task HandleRoomExpiredAsync(Guid roomId)
         {
-            _sessionManager.Value.RemoveSession(roomId);
+            _sessionManager.RemoveSession(roomId);
             await _notifier.NotifyRoomExpiredAsync(roomId);
         }
 
         public async Task NotifyPlayerJoinedAsync(Guid roomId, PlayerDto player, CancellationToken cancellationToken)
         {
-            var session = _sessionManager.Value.GetSession(roomId);
+            var session = _sessionManager.GetSession(roomId);
             if (session == null)
                 return;
 
-            var roomDto = new WaitingRoomDto
-            {
-                WaitingRoomId = session.WaitingRoomId,
-                CreatedAt = session.CreatedAt,
-                CreatedByPlayerId = session.CreatedBy.Id,
-                TimeLeftSeconds = session.GetTimeLeft(),
-                Players = session.Players.Select(p => new PlayerDto
-                {
-                    PlayerId = p.Id,
-                    Username = p.Username,
-                    
-                }).ToList()
-            };
-
+            var roomDto = Domain.Mappings.WaitingRoomSessionMapper.ToDto(session);
             await _notifier.NotifyRoomUpdatedAsync(roomDto);
         }
     }

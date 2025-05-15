@@ -6,12 +6,13 @@ File Name: app.component.html
 -->
 
 <ng-container *ngIf="isConnected; else disconnected">
-  <div class="min-h-screen flex flex-col">
+  <div class="flex flex-col min-h-screen">
+    
     <!-- 🔝 Header -->
     <app-header></app-header>
 
-    <!-- 🔁 Obsah (flex-grow = roztáhnout zbytek stránky) -->
-    <main class="flex-1">
+    <!-- 🔁 Obsah -->
+    <main class="flex-grow">
       <router-outlet></router-outlet>
     </main>
 
@@ -23,3 +24,4 @@ File Name: app.component.html
 <ng-template #disconnected>
   <app-connection-lost></app-connection-lost>
 </ng-template>
+

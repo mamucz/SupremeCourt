@@ -7,6 +7,7 @@ using SupremeCourt.Domain.DTOs;
 using SupremeCourt.Domain.Entities;
 using SupremeCourt.Domain.Interfaces;
 using SupremeCourt.Domain.Mappings;
+using SupremeCourt.Domain.Sessions;
 
 namespace SupremeCourt.Application.Services;
 

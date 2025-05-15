@@ -1,5 +1,6 @@
 ﻿using SupremeCourt.Domain.DTOs;
 using SupremeCourt.Domain.Entities;
+using SupremeCourt.Domain.Sessions;
 
 namespace SupremeCourt.Domain.Interfaces;
 
@@ -35,4 +36,5 @@ public interface IWaitingRoomSessionManager
     /// </summary>
     List<WaitingRoomSession> GetAllSessions();
     WaitingRoomSession? GetSessionByPlayerId(int playerId);
+    void RegisterCallbacks(Func<Guid, int, Task> onTick, Func<Guid, Task> onExpired);
 }

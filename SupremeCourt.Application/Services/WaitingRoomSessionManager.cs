@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using SupremeCourt.Domain.Interfaces;
+using SupremeCourt.Domain.Sessions;
 using System.Collections.Concurrent;
 
 public class WaitingRoomSessionManager : IWaitingRoomSessionManager
@@ -7,16 +8,16 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
     private readonly ConcurrentDictionary<Guid, WaitingRoomSession> _sessions = new();
     private readonly ILogger<WaitingRoomSessionManager> _logger;
     private readonly IWaitingRoomNotifier _notifier;
-    private readonly IWaitingRoomEventHandler _eventHandler;
+   
+    private Func<Guid, int, Task>? _onTickCallback;
+    private Func<Guid, Task>? _onExpiredCallback;
 
     public WaitingRoomSessionManager(
         ILogger<WaitingRoomSessionManager> logger,
-        IWaitingRoomNotifier notifier,
-        IWaitingRoomEventHandler eventHandler)
+        IWaitingRoomNotifier notifier)
     {
         _logger = logger;
         _notifier = notifier;
-        _eventHandler = eventHandler;
     }
 
     public WaitingRoomSession? GetSession(Guid roomId)
@@ -30,6 +31,10 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
     public Guid CreateRoom(IPlayer createdBy)
     {
         var session = new WaitingRoomSession(createdBy, RemoveAndNotifyRoomExpired);
+
+        // 🔁 Zaregistruj callbacky pro SignalR notifikace
+        AttachCallbacks(session);
+
         _sessions.TryAdd(session.WaitingRoomId, session);
         _logger.LogInformation("✅ Místnost {RoomId} byla vytvořena.", session.WaitingRoomId);
         return session.WaitingRoomId;
@@ -61,14 +66,42 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
         }
     }
 
-    private async void RemoveAndNotifyRoomExpired(Guid roomId)
-    {
-        RemoveSession(roomId);
-        await _eventHandler.HandleRoomExpiredAsync(roomId);
-    }
-
     public WaitingRoomSession? GetSessionByPlayerId(int playerId)
     {
         return _sessions.Values.FirstOrDefault(s => s.Players.Any(p => p.Id == playerId));
+    }
+
+    private void AttachCallbacks(WaitingRoomSession session)
+    {
+        if (_onTickCallback != null)
+        {
+            session.OnCountdownTick += _onTickCallback;
+        }
+
+        if (_onExpiredCallback != null)
+        {
+            session.OnRoomExpired += _onExpiredCallback;
+        }
+    }
+
+    private async void RemoveAndNotifyRoomExpired(Guid roomId)
+    {
+        RemoveSession(roomId);
+        if (_onExpiredCallback != null)
+        {
+            await _onExpiredCallback(roomId);
+        }
+    }
+
+    public void RegisterCallbacks(Func<Guid, int, Task> onTick, Func<Guid, Task> onExpired)
+    {
+        _onTickCallback = onTick;
+        _onExpiredCallback = onExpired;
+
+        // Zpětná registrace i pro již existující sessiony
+        foreach (var session in _sessions.Values)
+        {
+            AttachCallbacks(session);
+        }
     }
 }

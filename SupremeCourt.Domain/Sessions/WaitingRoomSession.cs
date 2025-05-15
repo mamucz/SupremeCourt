@@ -1,62 +1,82 @@
 ﻿using SupremeCourt.Domain.Interfaces;
 
-public class WaitingRoomSession : IDisposable
+namespace SupremeCourt.Domain.Sessions
 {
-    public Guid WaitingRoomId { get; }
-    public DateTime CreatedAt { get; }
-    public IPlayer CreatedBy { get; }
-    public List<IPlayer> Players { get; } = new();
 
-    public bool IsFull => Players.Count > 4;
 
-    private readonly Timer _timer;
-    private readonly Action<Guid> _onExpired;
-    private int _timeLeftSeconds = 60; // např. 60 sekund default
-
-    public WaitingRoomSession(IPlayer createdBy, Action<Guid> onExpired)
+    public class WaitingRoomSession : IDisposable
     {
-        WaitingRoomId = Guid.NewGuid();
-        CreatedAt = DateTime.UtcNow;
-        CreatedBy = createdBy;
-        Players.Add(createdBy);
-        _onExpired = onExpired;
+        public Guid WaitingRoomId { get; }
+        public DateTime CreatedAt { get; }
+        public IPlayer CreatedBy { get; }
+        public List<IPlayer> Players { get; } = new();
 
-        _timer = new Timer(Tick, null, 1000, 1000);
-    }
+        public bool IsFull => Players.Count >= 5;
 
-    private void Tick(object? state)
-    {
-        _timeLeftSeconds--;
-        if (_timeLeftSeconds <= 0)
+        private readonly Timer _timer;
+        private readonly Action<Guid> _onExpired;
+        private int _timeLeftSeconds = 60;
+
+        public event Func<Guid, int, Task>? OnCountdownTick;
+        public event Func<Guid, Task>? OnRoomExpired;
+
+        public WaitingRoomSession(IPlayer createdBy, Action<Guid> onExpired)
         {
-            _timer.Dispose();
-            _onExpired.Invoke(WaitingRoomId);
+            WaitingRoomId = Guid.NewGuid();
+            CreatedAt = DateTime.UtcNow;
+            CreatedBy = createdBy;
+            Players.Add(createdBy);
+            _onExpired = onExpired;
+
+            _timer = new Timer(Tick, null, 1000, 1000);
         }
-    }
 
-    public int GetTimeLeft() => _timeLeftSeconds;
-
-    public bool TryAddPlayer(IPlayer player)
-    {
-        if (Players.Any(p => p.Id == player.Id))
-            return false;
-        Players.Add(player);
-        return true;
-    }
-
-    public bool TryRemovePlayer(int playerId)
-    {
-        var player = Players.FirstOrDefault(p => p.Id == playerId);
-        if (player != null)
+        private async void Tick(object? state)
         {
-            Players.Remove(player);
+            _timeLeftSeconds--;
+
+            // 🔁 Vyvolat událost o ticku
+            if (OnCountdownTick != null)
+                await OnCountdownTick.Invoke(WaitingRoomId, _timeLeftSeconds);
+
+            if (_timeLeftSeconds <= 0)
+            {
+                _timer.Dispose();
+
+                // 🧨 Zavolat událost o expiraci
+                if (OnRoomExpired != null)
+                    await OnRoomExpired.Invoke(WaitingRoomId);
+
+                _onExpired.Invoke(WaitingRoomId);
+            }
+        }
+
+        public int GetTimeLeft() => _timeLeftSeconds;
+
+        public bool TryAddPlayer(IPlayer player)
+        {
+            if (Players.Any(p => p.Id == player.Id))
+                return false;
+
+            Players.Add(player);
             return true;
         }
-        return false;
-    }
 
-    public void Dispose()
-    {
-        _timer.Dispose();
+        public bool TryRemovePlayer(int playerId)
+        {
+            var player = Players.FirstOrDefault(p => p.Id == playerId);
+            if (player != null)
+            {
+                Players.Remove(player);
+                return true;
+            }
+
+            return false;
+        }
+
+        public void Dispose()
+        {
+            _timer.Dispose();
+        }
     }
 }

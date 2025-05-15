@@ -1,5 +1,6 @@
 ﻿using SupremeCourt.Domain.DTOs;
 using SupremeCourt.Domain.Entities;
+using SupremeCourt.Domain.Sessions;
 
 
 namespace SupremeCourt.Domain.Interfaces
