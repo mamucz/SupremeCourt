@@ -9,13 +9,16 @@ namespace SupremeCourt.Application.CQRS.WaitingRooms.Commands
     {
         private readonly IWaitingRoomListService _waitingRoomService;
         private readonly ILogger<CreateWaitingRoomHandler> _logger;
+        private readonly IWaitingRoomListNotifier _notifier;
 
         public CreateWaitingRoomHandler(
             IWaitingRoomListService waitingRoomService,
+            IWaitingRoomListNotifier notifier,
             ILogger<CreateWaitingRoomHandler> logger)
         {
             _waitingRoomService = waitingRoomService;
             _logger = logger;
+            _notifier = notifier;
         }
 
         public async Task<WaitingRoomCreatedDto> Handle(CreateWaitingRoomCommand request, CancellationToken cancellationToken)
@@ -34,7 +37,7 @@ namespace SupremeCourt.Application.CQRS.WaitingRooms.Commands
             }
 
             _logger.LogInformation("🎯 Waiting room {RoomId} vytvořena hráčem {PlayerId}", room.WaitingRoomId, room.CreatedBy.Id);
-
+            await _notifier.NotifyWaitingRoomCreatedAsync(Domain.Mappings.WaitingRoomSessionMapper.ToDto(room));
             return new WaitingRoomCreatedDto
             {
                 WaitingRoomId = room.WaitingRoomId,

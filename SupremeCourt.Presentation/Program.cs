@@ -110,6 +110,14 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// ✅ Po sestavení aplikačních služeb zaregistruj callbacky
+var sessionManager = app.Services.GetRequiredService<IWaitingRoomSessionManager>();
+var eventHandler = app.Services.GetRequiredService<IWaitingRoomEventHandler>();
+sessionManager.RegisterCallbacks(
+    onTick: eventHandler.HandleCountdownTickAsync,
+    onExpired: eventHandler.HandleRoomExpiredAsync
+);
+
 // 🗃️ Migrace databáze
 using (var scope = app.Services.CreateScope())
 {
