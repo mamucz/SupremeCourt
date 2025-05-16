@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../Services/auth.service';
 import * as signalR from '@microsoft/signalr';
 import { environment } from '../../../environments/environment';
+import { TimeFormatPipe } from '../../Pipes/time-format.pipe';
 
 interface PlayerDto {
   playerId: number;
@@ -13,7 +14,7 @@ interface PlayerDto {
 }
 
 interface WaitingRoomDto {
-  waitingRoomId: number;
+  waitingRoomId: string;
   createdByPlayerId: number;
   createdAt: string;
   players: PlayerDto[];
@@ -24,17 +25,18 @@ interface WaitingRoomDto {
 @Component({
   selector: 'app-waiting-room',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, TimeFormatPipe],
   templateUrl: './waiting-room.component.html',
   styleUrls: ['./waiting-room.component.scss']
 })
 export class WaitingRoomComponent implements OnInit, OnDestroy {
-  waitingRoomId!: number;
+  waitingRoomId!: string;
   waitingRoom: WaitingRoomDto | null = null;
   playerId: number | null = null;
   message = '';
   error = '';
   private hubConnection!: signalR.HubConnection;
+  playerImages: { [playerId: number]: string } = {};
 
   constructor(
     private route: ActivatedRoute,
@@ -44,9 +46,8 @@ export class WaitingRoomComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.waitingRoomId = Number(this.route.snapshot.paramMap.get('id'));
+    this.waitingRoomId = this.route.snapshot.paramMap.get('id')!;
     this.playerId = this.auth.getUserId();
-
     this.loadWaitingRoom();
     this.setupSignalR();
   }
@@ -63,28 +64,39 @@ export class WaitingRoomComponent implements OnInit, OnDestroy {
     }).subscribe({
       next: (data) => {
         this.waitingRoom = data;
+        this.prepareImageUrls();
       },
-      error: () => this.error = 'Chyba pÅ™i naÄÃ­tÃ¡nÃ­ mÃ­stnosti.'
+      error: () => this.error = 'Chyba pøi naèítání místnosti.'
     });
   }
 
   setupSignalR() {
+    const hubUrl = `${environment.apiUrl.replace('/api', '')}/waitingRoomHub`;
+
     this.hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl(`${environment.apiUrl}/waitingRoomHub`, {
-        accessTokenFactory: () => this.auth.getToken() || ''
+      .withUrl(hubUrl, {
+        accessTokenFactory: () => {
+          const token = this.auth.getToken() || '';
+          console.log('??? JWT Token:', token);
+          return token;
+        }
       })
-      .withAutomaticReconnect()
+      .withAutomaticReconnect([0, 2000, 5000, 10000])
+      .configureLogging(signalR.LogLevel.Information)
       .build();
 
     this.hubConnection.start()
       .then(() => {
-        this.hubConnection.invoke('JoinRoom', this.waitingRoomId.toString());
-        console.log('âœ… PÅ™ipojeno do SignalR mÃ­stnosti', this.waitingRoomId);
+        console.log('? SignalR pøipojeno k WaitingRoomHub:', this.waitingRoomId);
+        return this.hubConnection.invoke('JoinRoom', this.waitingRoomId.toString());
       })
-      .catch(err => console.error('âŒ Chyba SignalR:', err));
+      .catch(err => {
+        console.error('? Chyba pøi pøipojení k SignalR:', err);
+      });
 
     this.hubConnection.on('WaitingRoomUpdated', (data: WaitingRoomDto) => {
       this.waitingRoom = data;
+      this.prepareImageUrls();
     });
 
     this.hubConnection.on('CountdownTick', (secondsLeft: number) => {
@@ -94,18 +106,38 @@ export class WaitingRoomComponent implements OnInit, OnDestroy {
     });
 
     this.hubConnection.on('RoomExpired', () => {
-      this.message = 'â›” MÃ­stnost byla zruÅ¡ena.';
+      this.message = '? Místnost byla zrušena.';
       this.router.navigate(['/waiting-rooms']);
+    });
+
+    this.hubConnection.onclose(err => {
+      console.warn('?? SignalR spojení bylo ukonèeno:', err);
+    });
+
+    this.hubConnection.onreconnected(() => {
+      console.log('?? SignalR znovu pøipojeno, opìt vstupuji do místnosti:', this.waitingRoomId);
+      this.hubConnection.invoke('JoinRoom', this.waitingRoomId.toString());
+    });
+
+    this.hubConnection.onreconnecting(err => {
+      console.warn('?? SignalR znovu se pøipojuje:', err);
     });
   }
 
+  prepareImageUrls(): void {
+    if (!this.waitingRoom) return;
+    const now = Date.now();
+    this.playerImages = {};
+    for (const p of this.waitingRoom.players) {
+      this.playerImages[p.playerId] = `${environment.signalRBaseUrl}/api/player/${p.playerId}/profile-picture?v=${now}`;
+    }
+  }
+
   leaveRoom() {
-    this.http.post(`${environment.apiUrl}/waitingroom/${this.waitingRoomId}/leave`, {
-      playerId: this.playerId
-    }, {
+    this.http.post(`${environment.apiUrl}/waitingroom/${this.waitingRoomId}/leave/${this.playerId}`, {}, {
       headers: this.auth.getAuthHeaders()
     }).subscribe(() => {
-      this.message = 'Opustil jsi mÃ­stnost.';
+      this.message = 'Opustil jsi místnost.';
       this.router.navigate(['/waiting-rooms']);
     });
   }
@@ -115,31 +147,44 @@ export class WaitingRoomComponent implements OnInit, OnDestroy {
   }
 
   canStartGame(): boolean {
-    if (!this.waitingRoom) return false;
-    return this.waitingRoom.canStartGame && this.playerId === this.waitingRoom.createdByPlayerId;
+    return !!this.waitingRoom &&
+           this.waitingRoom.canStartGame &&
+           this.playerId === this.waitingRoom.createdByPlayerId;
   }
 
   startGame(): void {
-    // TODO: Odeslat poÅ¾adavek na zahÃ¡jenÃ­ hry (napÅ™. pÅ™es HTTP)
-    console.log('ðŸš€ ZahÃ¡jenÃ­ hry');
+    console.log('?? Zahájení hry');
+    // TODO: odeslat požadavek na zahájení hry
   }
 
   getPlayerImageUrl(player: PlayerDto): string {
-    return `${environment.signalRBaseUrl}/api/player/${player.playerId}/profile-picture` + '?v=' + Date.now();
+    return this.playerImages[player.playerId] || 'assets/img/default-avatar.png';
   }
 
   addAiPlayer(type: string): void {
     this.http.post(
       `${environment.apiUrl}/waitingroom/${this.waitingRoomId}/add-ai`,
-      { type }, // tÄ›lo poÅ¾adavku â€“ napÅ™. "Random"
+      { type },
       { headers: this.auth.getAuthHeaders() }
     ).subscribe({
-      next: () => this.message = `AI hrÃ¡Ä (${type}) pÅ™idÃ¡n.`,
-      error: () => this.error = 'Chyba pÅ™i pÅ™idÃ¡vÃ¡nÃ­ AI hrÃ¡Äe.'
+      next: () => this.message = `AI hráè (${type}) pøidán.`,
+      error: () => this.error = 'Chyba pøi pøidávání AI hráèe.'
     });
   }
-  onImageError(event: Event): void {
-  (event.target as HTMLImageElement).src = 'assets/img/default-avatar.png';
-}
 
+  canAddAiPlayer(): boolean {
+    return this.waitingRoom !== null &&
+           this.playerId === this.waitingRoom.createdByPlayerId &&
+           this.waitingRoom.players.length < 5;
+  }
+
+  getEmptyAiSlots(): number[] {
+    if (!this.waitingRoom) return [];
+    const slots = 5 - this.waitingRoom.players.length;
+    return Array(slots).fill(0).map((_, i) => i);
+  }
+
+  onImageError(event: Event): void {
+    (event.target as HTMLImageElement).src = 'assets/img/default-avatar.png';
+  }
 }

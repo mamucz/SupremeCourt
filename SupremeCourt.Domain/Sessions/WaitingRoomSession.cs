@@ -20,14 +20,14 @@ namespace SupremeCourt.Domain.Sessions
         public event Func<Guid, int, Task>? OnCountdownTick;
         public event Func<Guid, Task>? OnRoomExpired;
 
-        public WaitingRoomSession(IPlayer createdBy, Action<Guid> onExpired)
+        public WaitingRoomSession(IPlayer createdBy, Action<Guid> onExpired, int timeLeftSeconds)
         {
             WaitingRoomId = Guid.NewGuid();
             CreatedAt = DateTime.UtcNow;
             CreatedBy = createdBy;
             Players.Add(createdBy);
             _onExpired = onExpired;
-
+            _timeLeftSeconds = timeLeftSeconds;
             _timer = new Timer(Tick, null, 1000, 1000);
         }
 

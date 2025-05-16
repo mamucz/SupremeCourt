@@ -49,12 +49,33 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey!)),
-
-            // ✅ DŮLEŽITÉ: zamezí duplikacím a mapováním "sub" → NameIdentifier
             NameClaimType = ClaimTypes.Name,
             RoleClaimType = ClaimTypes.Role
         };
+
+        // ✅ Toto umožní čtení access_token z query stringu (pro SignalR!)
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+
+                // Tady zadej všechny své SignalR endpointy
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    (path.StartsWithSegments("/waitingRoomHub") ||
+                     path.StartsWithSegments("/waitingRoomListHub") ||
+                     path.StartsWithSegments("/hubLoggerFilter") ||
+                     path.StartsWithSegments("/gameHub")))
+                {
+                    context.Token = accessToken;
+                }
+
+                return Task.CompletedTask;
+            }
+        };
     });
+
 
 builder.Services.AddAuthorization();
 
@@ -152,11 +173,12 @@ app.UseMiddleware<BlacklistTokenMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
+
 // 📡 Endpoints
 app.MapControllers();
-app.MapHub<GameHub>("/gameHub");
-app.MapHub<WaitingRoomListHub>("/waitingRoomListHub");
-app.MapHub<WaitingRoomHub>("/waitingRoomHub");
+app.MapHub<GameHub>("/gameHub").RequireAuthorization();
+app.MapHub<WaitingRoomListHub>("/waitingRoomListHub").RequireAuthorization();
+app.MapHub<WaitingRoomHub>("/waitingRoomHub").RequireAuthorization();
 app.MapGet("/health", () => "OK");
 
 app.Run();

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using SupremeCourt.Domain.Interfaces;
 using SupremeCourt.Domain.Sessions;
 using System.Collections.Concurrent;
@@ -8,16 +9,23 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
     private readonly ConcurrentDictionary<Guid, WaitingRoomSession> _sessions = new();
     private readonly ILogger<WaitingRoomSessionManager> _logger;
     private readonly IWaitingRoomNotifier _notifier;
-   
+    private readonly int _expirationSeconds;
+
     private Func<Guid, int, Task>? _onTickCallback;
     private Func<Guid, Task>? _onExpiredCallback;
 
     public WaitingRoomSessionManager(
         ILogger<WaitingRoomSessionManager> logger,
-        IWaitingRoomNotifier notifier)
+        IWaitingRoomNotifier notifier,
+        IConfiguration configuration)
     {
         _logger = logger;
         _notifier = notifier;
+
+        // 🕒 Načtení hodnoty z konfigurace, default 900 sekund (15 minut), pokud nenalezena
+        _expirationSeconds = configuration.GetValue<int?>("WaitingRoom:ExpirationMinutes") is int minutes && minutes > 0
+            ? minutes * 60
+            : 60; // fallback na 60 sekund
     }
 
     public WaitingRoomSession? GetSession(Guid roomId)
@@ -30,9 +38,8 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
 
     public Guid CreateRoom(IPlayer createdBy)
     {
-        var session = new WaitingRoomSession(createdBy, RemoveAndNotifyRoomExpired);
+        var session = new WaitingRoomSession(createdBy, RemoveAndNotifyRoomExpired, _expirationSeconds);
 
-        // 🔁 Zaregistruj callbacky pro SignalR notifikace
         AttachCallbacks(session);
 
         _sessions.TryAdd(session.WaitingRoomId, session);
@@ -74,14 +81,10 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
     private void AttachCallbacks(WaitingRoomSession session)
     {
         if (_onTickCallback != null)
-        {
             session.OnCountdownTick += _onTickCallback;
-        }
 
         if (_onExpiredCallback != null)
-        {
             session.OnRoomExpired += _onExpiredCallback;
-        }
     }
 
     private async void RemoveAndNotifyRoomExpired(Guid roomId)
@@ -98,7 +101,6 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
         _onTickCallback = onTick;
         _onExpiredCallback = onExpired;
 
-        // Zpětná registrace i pro již existující sessiony
         foreach (var session in _sessions.Values)
         {
             AttachCallbacks(session);

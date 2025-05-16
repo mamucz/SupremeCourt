@@ -40,5 +40,16 @@ namespace SupremeCourt.Application.EventHandlers
             var roomDto = Domain.Mappings.WaitingRoomSessionMapper.ToDto(session);
             await _notifier.NotifyRoomUpdatedAsync(roomDto);
         }
+
+        public async Task NotifyRoomUpdatedAsync(Guid roomId, CancellationToken cancellationToken)
+        {
+            var session = _sessionManager.GetSession(roomId);
+            if (session == null)
+                return;
+
+            var dto = Domain.Mappings.WaitingRoomSessionMapper.ToDto(session);
+            await _notifier.NotifyRoomUpdatedAsync(dto);
+        }
+
     }
 }

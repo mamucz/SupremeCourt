@@ -1,15 +1,10 @@
-// Autor: Petr Ondra
-// Description: Component for displaying waiting rooms with i18n
-// File: waiting-room-list.component.ts
-
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../Services/auth.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import * as signalR from '@microsoft/signalr';
-import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { TimeFormatPipe } from '../../Pipes/time-format.pipe';
 
@@ -19,7 +14,7 @@ export interface PlayerDto {
 }
 
 export interface WaitingRoomDto {
-  waitingRoomId: string; // ➡️ GUID jako string
+  waitingRoomId: string;
   players: PlayerDto[];
   createdByPlayerId: number;
   createdByPlayerName: string;
@@ -55,7 +50,8 @@ export class WaitingRoomListComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadWaitingRooms();
-    this.setupSignalR();
+    this.checkIfPlayerInRoom();
+    this.setupSignalR();    
   }
 
   ngOnDestroy(): void {
@@ -136,6 +132,27 @@ export class WaitingRoomListComponent implements OnInit, OnDestroy {
     });
   }
 
+  checkIfPlayerInRoom(): void {
+  const playerId = this.auth.getUserId();
+  if (!playerId) return;
+
+  this.http.get<any>(`${environment.apiUrl}/waitingroom/active/${playerId}`, {
+    headers: this.auth.getAuthHeaders()
+  }).subscribe({
+    next: (res) => {
+      if (res?.waitingRoomId) {
+        this.router.navigate([`/waiting-room/${res.waitingRoomId}`]);
+      }
+    },
+    error: (err) => {
+      if (err.status !== 404) {
+        console.error('Chyba při hledání aktivní místnosti:', err);
+      }
+      // 404 je očekávaný případ => hráč není v žádné místnosti
+    }
+  });
+}
+
   private setupSignalR(): void {
     const hubUrl = `${environment.apiUrl.replace('/api', '')}/waitingRoomListHub`;
 
@@ -167,6 +184,21 @@ export class WaitingRoomListComponent implements OnInit, OnDestroy {
       const room = this.waitingRooms.find(r => r.waitingRoomId === data.waitingRoomId);
       if (room) {
         room.timeLeftSeconds = data.timeLeftSeconds;
+      }
+    });
+
+    this.hubConnection.on('RoomExpired', (roomId: string) => {
+      this.waitingRooms = this.waitingRooms.filter(r => r.waitingRoomId !== roomId);
+      this.translate.get('WAITINGROOM.EXPIRED').subscribe(text => {
+        this.message = `⛔ ${text.replace('#', roomId)}`;
+      });
+    });
+
+    // ✅ Přidáno: Zpracování aktualizace místnosti
+    this.hubConnection.on('RoomUpdated', (updatedRoom: WaitingRoomDto) => {
+      const index = this.waitingRooms.findIndex(r => r.waitingRoomId === updatedRoom.waitingRoomId);
+      if (index !== -1) {
+        this.waitingRooms[index] = updatedRoom;
       }
     });
   }
