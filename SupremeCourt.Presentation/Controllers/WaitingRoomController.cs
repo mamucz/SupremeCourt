@@ -87,5 +87,37 @@ namespace SupremeCourt.Presentation.Controllers
 
             return Ok(result);
         }
+        /// <summary>
+        /// Player leaves a waiting room.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="playerId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        [HttpPost("{id}/leave/{playerId}")]
+        public async Task<IActionResult> LeaveRoom(Guid id, int playerId, CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(new LeaveWaitingRoomCommand(id,playerId), cancellationToken);
+            if (!result)
+                return BadRequest("Nelze opustit místnost.");
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Get active player waiting room id
+        /// </summary>
+        /// <param name="playerId"></param>
+        /// <param name="cancellationToken">WaitingRoomDto</param>
+        /// <returns></returns>
+        [HttpGet("active/{playerId}")]
+        public async Task<IActionResult> GetPlayerActiveRoom(int playerId, CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(new GetWaitingRoomByPlayerIdQuery(playerId), cancellationToken);
+            if (result == null)
+                return NotFound();
+
+            return Ok(result);
+        }
     }
 }

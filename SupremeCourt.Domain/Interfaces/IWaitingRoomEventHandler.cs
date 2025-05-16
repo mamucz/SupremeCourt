@@ -7,5 +7,6 @@ namespace SupremeCourt.Domain.Interfaces
         Task HandleCountdownTickAsync(Guid roomId, int secondsLeft);
         Task HandleRoomExpiredAsync(Guid roomId);
         Task NotifyPlayerJoinedAsync(Guid roomId, PlayerDto player, CancellationToken cancellationToken);
+        Task NotifyRoomUpdatedAsync(Guid roomId, CancellationToken cancellationToken);
     }
 }

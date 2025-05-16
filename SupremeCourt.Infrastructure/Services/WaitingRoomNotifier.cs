@@ -45,14 +45,22 @@ namespace SupremeCourt.Infrastructure.Services
             await _signalRSender.SendToGroupAsync(_roomHub, roomId.ToString(), "CountdownTick", secondsLeft);
         }
 
-        public Task NotifyRoomExpiredAsync(Guid roomId)
+        public async Task NotifyRoomExpiredAsync(Guid roomId)
         {
-            return _signalRSender.SendToGroupAsync(_roomHub, roomId.ToString(), "RoomExpired", null);
+            // 📤 Do konkrétní místnosti (detail)
+            await _signalRSender.SendToGroupAsync(_roomHub, roomId.ToString(), "RoomExpired", null);
+
+            // 📤 Do seznamu místností (čekací seznam)
+            await _signalRSender.SendToGroupAsync(_listHub, "waitingroom-list", "RoomExpired", roomId);
         }
 
-        public Task NotifyRoomUpdatedAsync(WaitingRoomDto dto)
+        public async Task NotifyRoomUpdatedAsync(WaitingRoomDto dto)
         {
-            return _signalRSender.SendToGroupAsync(_roomHub, dto.WaitingRoomId.ToString(), "RoomUpdated", dto);
+            // 👥 Update konkrétní místnosti
+            await _signalRSender.SendToGroupAsync(_roomHub, dto.WaitingRoomId.ToString(), "RoomUpdated", dto);
+
+            // 📋 Update seznamu místností
+            await _signalRSender.SendToGroupAsync(_listHub, "waitingroom-list", "RoomUpdated", dto);
         }
     }
 }

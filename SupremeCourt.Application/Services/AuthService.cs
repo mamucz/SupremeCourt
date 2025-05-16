@@ -124,7 +124,7 @@ namespace SupremeCourt.Application.Services
                 _configuration["Jwt:Issuer"],
                 _configuration["Jwt:Audience"],
                 claims,
-                expires: DateTime.UtcNow.AddHours(100),
+                expires: DateTime.UtcNow.AddHours(500),
                 signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

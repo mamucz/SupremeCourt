@@ -10,13 +10,14 @@
     👥 Připojeno hráčů: {{ waitingRoom?.players?.length }}/5
   </p>
 
-  <!-- 🕒 Odpočet -->
+  <!-- ⏱ Odpočet -->
   <p *ngIf="waitingRoom && waitingRoom.timeLeftSeconds > 0" class="text-center text-sm text-gray-700">
-    ⏳ Čas: {{ waitingRoom.timeLeftSeconds }}s
+    ⏱ Čas: {{ waitingRoom.timeLeftSeconds | timeFormat }}
   </p>
 
-  <!-- 🧑 Seznam hráčů jako grid -->
+  <!-- 🧑 Seznam hráčů a volná AI tlačítka jako grid -->
   <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 justify-items-center">
+    <!-- ✅ Skuteční hráči -->
     <div *ngFor="let player of waitingRoom?.players" class="flex flex-col items-center text-center">
       <img
         [src]="getPlayerImageUrl(player)"
@@ -34,6 +35,24 @@
         Opustit
       </button>
     </div>
+
+    <!-- ➕ Přidání AI hráče -->
+    <ng-container *ngIf="canAddAiPlayer()">
+      <div
+        *ngFor="let i of getEmptyAiSlots()"
+        class="flex flex-col items-center text-center justify-center"
+      >
+        <div class="w-20 h-20 flex items-center justify-center rounded-full bg-blue-100 border mb-2 shadow-md">
+          <span class="text-blue-600 text-xl font-bold">AI</span>
+        </div>
+        <button
+          (click)="addAiPlayer('Random')"
+          class="mt-2 text-xs bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+        >
+          Přidat AI
+        </button>
+      </div>
+    </ng-container>
   </div>
 
   <!-- 🚀 Tlačítko pro spuštění hry -->
