@@ -66,7 +66,7 @@ export class WaitingRoomComponent implements OnInit, OnDestroy {
         this.waitingRoom = data;
         this.prepareImageUrls();
       },
-      error: () => this.error = 'Chyba p¯i naËÌt·nÌ mÌstnosti.'
+      error: () => this.error = 'Chyba p≈ôi naƒç√≠t√°n√≠ m√≠stnosti.'
     });
   }
 
@@ -75,24 +75,15 @@ export class WaitingRoomComponent implements OnInit, OnDestroy {
 
     this.hubConnection = new signalR.HubConnectionBuilder()
       .withUrl(hubUrl, {
-        accessTokenFactory: () => {
-          const token = this.auth.getToken() || '';
-          console.log('??? JWT Token:', token);
-          return token;
-        }
+        accessTokenFactory: () => this.auth.getToken() || ''
       })
       .withAutomaticReconnect([0, 2000, 5000, 10000])
       .configureLogging(signalR.LogLevel.Information)
       .build();
 
     this.hubConnection.start()
-      .then(() => {
-        console.log('? SignalR p¯ipojeno k WaitingRoomHub:', this.waitingRoomId);
-        return this.hubConnection.invoke('JoinRoom', this.waitingRoomId.toString());
-      })
-      .catch(err => {
-        console.error('? Chyba p¯i p¯ipojenÌ k SignalR:', err);
-      });
+      .then(() => this.hubConnection.invoke('JoinRoom', this.waitingRoomId.toString()))
+      .catch(err => console.error('Chyba p≈ôi p≈ôipojen√≠ k SignalR:', err));
 
     this.hubConnection.on('WaitingRoomUpdated', (data: WaitingRoomDto) => {
       this.waitingRoom = data;
@@ -100,28 +91,16 @@ export class WaitingRoomComponent implements OnInit, OnDestroy {
     });
 
     this.hubConnection.on('CountdownTick', (secondsLeft: number) => {
-      if (this.waitingRoom) {
-        this.waitingRoom.timeLeftSeconds = secondsLeft;
-      }
+      if (this.waitingRoom) this.waitingRoom.timeLeftSeconds = secondsLeft;
     });
 
     this.hubConnection.on('RoomExpired', () => {
-      this.message = '? MÌstnost byla zruöena.';
+      this.message = 'M√≠stnost byla zru≈°ena.';
       this.router.navigate(['/waiting-rooms']);
     });
 
-    this.hubConnection.onclose(err => {
-      console.warn('?? SignalR spojenÌ bylo ukonËeno:', err);
-    });
-
-    this.hubConnection.onreconnected(() => {
-      console.log('?? SignalR znovu p¯ipojeno, opÏt vstupuji do mÌstnosti:', this.waitingRoomId);
-      this.hubConnection.invoke('JoinRoom', this.waitingRoomId.toString());
-    });
-
-    this.hubConnection.onreconnecting(err => {
-      console.warn('?? SignalR znovu se p¯ipojuje:', err);
-    });
+    this.hubConnection.onclose(err => console.warn('SignalR spojen√≠ ukonƒçeno:', err));
+    this.hubConnection.onreconnected(() => this.hubConnection.invoke('JoinRoom', this.waitingRoomId.toString()));
   }
 
   prepareImageUrls(): void {
@@ -137,7 +116,7 @@ export class WaitingRoomComponent implements OnInit, OnDestroy {
     this.http.post(`${environment.apiUrl}/waitingroom/${this.waitingRoomId}/leave/${this.playerId}`, {}, {
       headers: this.auth.getAuthHeaders()
     }).subscribe(() => {
-      this.message = 'Opustil jsi mÌstnost.';
+      this.message = 'Opustil jsi m√≠stnost.';
       this.router.navigate(['/waiting-rooms']);
     });
   }
@@ -153,23 +132,12 @@ export class WaitingRoomComponent implements OnInit, OnDestroy {
   }
 
   startGame(): void {
-    console.log('?? Zah·jenÌ hry');
-    // TODO: odeslat poûadavek na zah·jenÌ hry
+    console.log('Zah√°jen√≠ hry');
+    // TODO: odeslat po≈æadavek na zah√°jen√≠ hry
   }
 
   getPlayerImageUrl(player: PlayerDto): string {
     return this.playerImages[player.playerId] || 'assets/img/default-avatar.png';
-  }
-
-  addAiPlayer(type: string): void {
-    this.http.post(
-      `${environment.apiUrl}/waitingroom/${this.waitingRoomId}/add-ai`,
-      { type },
-      { headers: this.auth.getAuthHeaders() }
-    ).subscribe({
-      next: () => this.message = `AI hr·Ë (${type}) p¯id·n.`,
-      error: () => this.error = 'Chyba p¯i p¯id·v·nÌ AI hr·Ëe.'
-    });
   }
 
   canAddAiPlayer(): boolean {
@@ -178,10 +146,20 @@ export class WaitingRoomComponent implements OnInit, OnDestroy {
            this.waitingRoom.players.length < 5;
   }
 
-  getEmptyAiSlots(): number[] {
-    if (!this.waitingRoom) return [];
-    const slots = 5 - this.waitingRoom.players.length;
-    return Array(slots).fill(0).map((_, i) => i);
+  addAiPlayersUntilFull(): void {
+    if (!this.waitingRoom) return;
+
+    const missingCount = 5 - this.waitingRoom.players.length;
+    if (missingCount <= 0) return;
+
+    this.http.post(
+      `${environment.apiUrl}/waitingroom/${this.waitingRoomId}/add-ai-bulk`,
+      { count: missingCount, type: 'Random' },
+      { headers: this.auth.getAuthHeaders() }
+    ).subscribe({
+      next: () => this.message = `AI hr√°ƒçi p≈ôid√°ni.`,
+      error: () => this.error = 'Chyba p≈ôi p≈ôid√°v√°n√≠ AI hr√°ƒç≈Ø.'
+    });
   }
 
   onImageError(event: Event): void {

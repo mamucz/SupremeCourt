@@ -1,4 +1,6 @@
-﻿using SupremeCourt.Domain.Interfaces;
+﻿using SupremeCourt.Domain.Entities;
+using SupremeCourt.Domain.Interfaces;
+using System;
 
 namespace SupremeCourt.Domain.Sessions
 {
@@ -16,6 +18,7 @@ namespace SupremeCourt.Domain.Sessions
         private readonly Timer _timer;
         private readonly Action<Guid> _onExpired;
         private int _timeLeftSeconds = 60;
+        private readonly IAIPlayerFactory _aiFactory;
 
         public event Func<Guid, int, Task>? OnCountdownTick;
         public event Func<Guid, Task>? OnRoomExpired;
@@ -78,5 +81,20 @@ namespace SupremeCourt.Domain.Sessions
         {
             _timer.Dispose();
         }
+        public async Task AddAiPlayerAsync(string type)
+        {
+            var aiPlayer = await _aiFactory.CreateAsync(type);
+            if (aiPlayer == null)
+                throw new Exception($"AI hráč typu '{type}' nebyl nalezen.");
+
+            if (Players.Any(p => p.Id == aiPlayer.Id))
+                throw new Exception("Tento AI hráč je již připojen.");
+            Players.Add(aiPlayer);
+
+            await _eventHandler.OnPlayerJoinedAsync(WaitingRoomId, aiPlayer.ToDto());
+
+            await _eventHandler.OnWaitingRoomUpdatedAsync(WaitingRoomId, GetCurrentDto());
+        }
+
     }
 }
