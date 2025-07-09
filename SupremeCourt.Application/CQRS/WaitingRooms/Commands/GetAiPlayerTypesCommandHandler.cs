@@ -1,15 +1,13 @@
 ﻿using MediatR;
 using SupremeCourt.Domain.DTOs;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using static SupremeCourt.Application.CQRS.WaitingRooms.Commands.GetAiPlayerTypesCommand;
 
 namespace SupremeCourt.Application.CQRS.WaitingRooms.Commands
 {
-    public class GetAiPlayerTypesCommandHandler : IRequestHandler<GetAiPlayerTypesCommand, List<AiPlayerTypeDto>>
+    public class GetAiPlayerTypesCommandHandler : IRequestHandler<GetAiPlayerTypesQuery, List<AiPlayerTypeDto>>
     {
         private readonly IAIPlayerFactory _aiFactory;
 
@@ -18,9 +16,11 @@ namespace SupremeCourt.Application.CQRS.WaitingRooms.Commands
             _aiFactory = aiFactory;
         }
 
-        public async Task<List<AiPlayerTypeDto>> Handle(GetAiPlayerTypesCommand request, CancellationToken cancellationToken)
+        public async Task<List<AiPlayerTypeDto>> Handle(GetAiPlayerTypesQuery request,
+            CancellationToken cancellationToken)
         {
-            return await _aiFactory.GetAiPlayerTypesAsync();
+            var types = await _aiFactory.GetAiPlayerTypesAsync();
+            return types.Select(t => new AiPlayerTypeDto { Type = t }).ToList();
         }
     }
 }

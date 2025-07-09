@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SupremeCourt.Application.CQRS.WaitingRooms.Commands
 {
-    class GetAiPlayerTypesCommand
+    public class GetAiPlayerTypesCommand
     {
         public record GetAiPlayerTypesQuery : IRequest<List<AiPlayerTypeDto>>;
     }

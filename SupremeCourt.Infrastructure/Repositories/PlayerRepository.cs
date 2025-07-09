@@ -59,5 +59,24 @@ namespace SupremeCourt.Infrastructure.Repositories
                 .ToListAsync(cancellationToken);
         }
 
+        public async Task EnsureAiPlayerExistsAsync(string type)
+        {
+            var username = $"AI_{type}";
+            var exists = await _context.Players.AnyAsync(p => p.Username == username);
+
+            if (!exists)
+            {
+                var aiPlayer = new Player
+                {
+                    Username = username,
+                    IsAi = true,
+                    // Volitelně další výchozí hodnoty (obrázek, heslo, apod.)
+                };
+
+                _context.Players.Add(aiPlayer);
+                await _context.SaveChangesAsync();
+            }
+        }
+
     }
 }
