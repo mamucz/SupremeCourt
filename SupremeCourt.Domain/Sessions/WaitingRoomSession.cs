@@ -4,8 +4,6 @@ using System;
 
 namespace SupremeCourt.Domain.Sessions
 {
-
-
     public class WaitingRoomSession : IDisposable
     {
         public Guid WaitingRoomId { get; }

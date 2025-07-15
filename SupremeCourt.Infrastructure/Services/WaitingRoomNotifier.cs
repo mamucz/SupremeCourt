@@ -6,13 +6,13 @@ using SupremeCourt.Infrastructure.SignalR;
 
 namespace SupremeCourt.Infrastructure.Services
 {
-    public class WaitingRoomNotifier : IWaitingRoomNotifier
+    public class WaitingRoomSignalNotifier : IWaitingRoomNotifier
     {
         private readonly ISignalRSender _signalRSender;
         private readonly IHubContext<WaitingRoomListHub> _listHub;
         private readonly IHubContext<WaitingRoomHub> _roomHub;
 
-        public WaitingRoomNotifier(
+        public WaitingRoomSignalNotifier(
             ISignalRSender signalRSender,
             IHubContext<WaitingRoomListHub> listHub,
             IHubContext<WaitingRoomHub> roomHub)

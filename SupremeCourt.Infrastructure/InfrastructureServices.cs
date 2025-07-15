@@ -30,7 +30,7 @@ namespace SupremeCourt.Infrastructure
             services.AddScoped<IPlayerRepository, PlayerRepository>(); // Registrace PlayerRepository
             services.AddScoped<IGameRepository, GameRepository>();
             
-            services.AddSingleton<IWaitingRoomNotifier, WaitingRoomNotifier>();
+            services.AddSingleton<IWaitingRoomNotifier, WaitingRoomSignalNotifier>();
             services.AddSingleton<IWaitingRoomListNotifier, WaitingRoomListNotifier>(); // ✅ Registrace Notifieru
             services.AddSingleton<IUserSessionRepository, UserSessionRepository>();
             services.AddHttpClient<IOpenAiGameStrategyService, OpenAiGameStrategyService>();
