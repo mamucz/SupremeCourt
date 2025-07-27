@@ -68,7 +68,7 @@ namespace SupremeCourt.Infrastructure.Repositories
             {
                 var aiPlayer = new Player
                 {
-                    Username = username,
+                    //Username = username,
                     IsAi = true,
                     // Volitelně další výchozí hodnoty (obrázek, heslo, apod.)
                 };

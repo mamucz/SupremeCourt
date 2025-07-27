@@ -89,9 +89,9 @@ namespace SupremeCourt.Domain.Sessions
                 throw new Exception("Tento AI hráč je již připojen.");
             Players.Add(aiPlayer);
 
-            await _eventHandler.OnPlayerJoinedAsync(WaitingRoomId, aiPlayer.ToDto());
+            //await _eventHandler.OnPlayerJoinedAsync(WaitingRoomId, aiPlayer.ToDto());
 
-            await _eventHandler.OnWaitingRoomUpdatedAsync(WaitingRoomId, GetCurrentDto());
+            //await _eventHandler.OnWaitingRoomUpdatedAsync(WaitingRoomId, GetCurrentDto());
         }
 
     }

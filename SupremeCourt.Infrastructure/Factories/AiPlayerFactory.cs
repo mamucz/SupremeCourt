@@ -29,6 +29,6 @@ public class AiPlayerFactory : IAIPlayerFactory
         if (Activator.CreateInstance(AiPlayerTypes[type]) is not IAiPlayer aiInstance)
             throw new Exception($"Nepodařilo se vytvořit instanci AI hráče z typu {type}");
 
-        return await _playerRepository.EnsureAiPlayerExistsAsync(aiInstance.Username);
+        return null; // await _playerRepository.EnsureAiPlayerExistsAsync(aiInstance.Username);
     }
 }
