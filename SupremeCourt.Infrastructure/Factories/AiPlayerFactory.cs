@@ -14,6 +14,8 @@ public class AiPlayerFactory : IAIPlayerFactory
     public AiPlayerFactory(IPlayerRepository playerRepository)
     {
         _playerRepository = playerRepository;
+        var aiAssembly = AppDomain.CurrentDomain.GetAssemblies()
+            .FirstOrDefault(a => a.GetName().Name == "AiPlayers");
     }
 
     public async Task<List<string>> GetAiPlayerTypesAsync()

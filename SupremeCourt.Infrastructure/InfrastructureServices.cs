@@ -22,7 +22,7 @@ namespace SupremeCourt.Infrastructure
             {
                 options.AddFilter<HubLoggerFilter>();
             });
-
+            services.AddScoped<IAIPlayerFactory, AiPlayerFactory>();
             services.AddDbContext<GameDbContext>(options =>
                 options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();

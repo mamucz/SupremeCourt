@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SupremeCounter.Domain.AIPlayers\SupremeCourt.Domain.AIPlayers.csproj" />
     <ProjectReference Include="..\SupremeCourt.Domain\SupremeCourt.Domain.csproj" />
   </ItemGroup>
 
