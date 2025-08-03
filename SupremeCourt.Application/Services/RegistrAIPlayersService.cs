@@ -1,13 +1,9 @@
 ﻿using SupremeCourt.Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
 
 namespace SupremeCourt.Application.Services
 {
-    class RegistrAIPlayersService
+    public class RegistrAIPlayersService
     {
         private readonly IPlayerRepository _playerRepository;
 
@@ -15,17 +11,36 @@ namespace SupremeCourt.Application.Services
         {
             _playerRepository = playerRepository;
         }
+
         public async Task RegisterAiPlayersAsync(CancellationToken cancellationToken)
         {
-            var aiPlayerTypes = await _playerRepository.GetAllAiPlayersAsync(cancellationToken);
-            if (aiPlayerTypes == null || !aiPlayerTypes.Any())
+            // Najdi všechny typy, které implementují IAIPlayer
+            var aiPlayerTypes = AppDomain.CurrentDomain.GetAssemblies()
+                .Where(a => !a.IsDynamic && a.FullName!.Contains("AIPlayers")) // jen knihovny obsahující "AIPlayers"
+                .SelectMany(a =>
+                {
+                    try
+                    {
+                        return a.GetTypes();
+                    }
+                    catch
+                    {
+                        return Array.Empty<Type>();
+                    }
+                })
+                .Where(t => typeof(IPlayer).IsAssignableFrom(t) && !t.IsAbstract && t.IsClass)
+                .ToList();
+
+            if (!aiPlayerTypes.Any())
                 return;
-            foreach (var aiPlayerType in aiPlayerTypes)
+
+            foreach (var type in aiPlayerTypes)
             {
-                await _playerRepository.EnsureAiPlayerExistsAsync(aiPlayerType);
+                // Jméno typu např. "GptAiPlayer"
+                var typeName = type.Name;
+
+                await _playerRepository.EnsureAiPlayerExistsAsync(typeName, cancellationToken);
             }
         }
-
-
     }
 }

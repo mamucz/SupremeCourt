@@ -59,7 +59,7 @@ namespace SupremeCourt.Infrastructure.Repositories
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task EnsureAiPlayerExistsAsync(string type)
+        public async Task EnsureAiPlayerExistsAsync(string type, CancellationToken cancellationToken)
         {
             var username = $"AI_{type}";
             var exists = await _context.Players.AnyAsync(p => p.Username == username);

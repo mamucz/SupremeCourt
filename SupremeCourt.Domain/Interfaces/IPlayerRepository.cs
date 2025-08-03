@@ -11,6 +11,6 @@ namespace SupremeCourt.Domain.Interfaces
         Task<List<Player>> GetAllAsync();
         Task UpdateAsync(Player player); // Přidáno
         Task<List<Player>> GetAllAiPlayersAsync(CancellationToken cancellationToken);
-        Task EnsureAiPlayerExistsAsync(string type);
+        Task EnsureAiPlayerExistsAsync(string aiPlayerTypeName, CancellationToken cancellationToken);
     }
 }
