@@ -15,6 +15,8 @@ namespace SupremeCourt.Domain.Entities
         public bool IsEliminated { get; set; } = false;
         public bool IsAi { get; set; } = false;
 
+        public string AIClassName { get; set; } = string.Empty; // Název třídy AI, pokud je IsAi == true
+
         // Navigační vlastnost
         public User User { get; set; } = null!;
 
