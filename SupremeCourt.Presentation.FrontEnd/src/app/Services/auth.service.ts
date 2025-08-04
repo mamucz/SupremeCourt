@@ -23,7 +23,7 @@ export class AuthService {
     private router: Router
   ) {}
 
-  // 🔐 Registrace bez obrázku (JSON payload)
+  // 🔘 Registrace bez obrázku (JSON payload)
   register(username: string, password: string): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(`${this.baseUrl}/register`, {
       username,
@@ -31,12 +31,12 @@ export class AuthService {
     });
   }
 
-  // 🔐 Registrace s obrázkem (FormData payload)
+  // 🔘 Registrace s obrázkem (FormData payload)
   registerWithImage(formData: FormData): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(`${this.baseUrl}/register`, formData);
   }
 
-  // 🔐 Přihlášení
+  // 🔘 Přihlášení
   login(username: string, password: string): Observable<{
     token: string;
     userId: number;
@@ -70,7 +70,7 @@ export class AuthService {
     this.currentUserSubject.next(userName);
   }
 
-  // 🔐 Odhlášení
+  // 🔘 Odhlášení
   logout(): void {
     const token = this.getToken();
     if (token) {
@@ -101,7 +101,9 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return localStorage.getItem('token');
+   const token = localStorage.getItem('token');
+    console.log('JWT token:', token);
+    return token;
   }
 
   getUserId(): number | null {
