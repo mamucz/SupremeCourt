@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using SupremeCourt.Domain.Interfaces;
 
-public sealed class AiPlayerFactory : IAIPlayerFactory
+public sealed class AiPlayerFactory : IAiPlayerFactory
 {
     private readonly IServiceProvider _services;
     private readonly IPlayerRepository _playerRepository;

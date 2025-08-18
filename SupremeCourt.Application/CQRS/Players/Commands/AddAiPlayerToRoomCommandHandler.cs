@@ -1,10 +1,6 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Logging;
-using SupremeCourt.Application.Services;
-using SupremeCourt.Domain.DTOs;
 using SupremeCourt.Domain.Interfaces;
-
-using System;
 using SupremeCourt.Domain.Entities;
 
 namespace SupremeCourt.Application.CQRS.Players.Commands
@@ -13,51 +9,49 @@ namespace SupremeCourt.Application.CQRS.Players.Commands
     {
         private readonly IWaitingRoomSessionManager _sessionManager;
         private readonly IWaitingRoomEventHandler _eventHandler;
-        private readonly IPlayerRepository _playerRepository;
         private readonly ILogger<AddAiPlayerToRoomCommandHandler> _logger;
+
         public AddAiPlayerToRoomCommandHandler(
             IWaitingRoomSessionManager sessionManager,
-            IPlayerRepository playerRepository,
+            IWaitingRoomEventHandler eventHandler,
             ILogger<AddAiPlayerToRoomCommandHandler> logger)
         {
             _sessionManager = sessionManager;
-            _playerRepository = playerRepository;
+            _eventHandler = eventHandler;
             _logger = logger;
         }
 
         public async Task<bool> Handle(AddAiPlayerToRoomCommand request, CancellationToken cancellationToken)
         {
             var session = _sessionManager.GetSession(request.WaitingRoomId);
-            if (session == null)
+            if (session is null)
             {
                 _logger.LogWarning("❌ AI hráč: Místnost {RoomId} neexistuje", request.WaitingRoomId);
                 return false;
             }
 
-            if (session.Players.Count >= 5)
+            if (session.IsFull)
             {
                 _logger.LogWarning("❌ AI hráč: Místnost {RoomId} je plná", request.WaitingRoomId);
                 return false;
             }
 
+            // Přidání přes veřejnou metodu sessionu (thread-safe uvnitř)
+            var added = session.TryAddPlayer(request.player);
+            if (!added)
+            {
+                _logger.LogInformation("ℹ️ AI hráč {Username} už v místnosti {RoomId} je", request.player.Username, request.WaitingRoomId);
+                return false;
+            }
 
-            session.Players.Add(request.player);
+            // Notifikace
+            await _eventHandler.NotifyPlayerJoinedAsync(
+                request.WaitingRoomId,
+                Domain.Mappings.PlayerMapper.Instance.ToDto(request.player as Player),
+                cancellationToken);
 
-            await _eventHandler.NotifyPlayerJoinedAsync(request.WaitingRoomId, Domain.Mappings.PlayerMapper.Instance.ToDto(request.player as Player), cancellationToken);
             _logger.LogInformation("🤖 AI hráč {Username} přidán do místnosti {RoomId}", request.player.Username, request.WaitingRoomId);
-
             return true;
-        }
-
-        private int GenerateFakeId()
-        {
-            return -1 * new Random().Next(1, 100000); // záporná ID pro odlišení
-        }
-
-        private string GenerateRandomAiName()
-        {
-            var rnd = new Random().Next(1000, 9999);
-            return $"AI_{rnd}";
         }
     }
 }

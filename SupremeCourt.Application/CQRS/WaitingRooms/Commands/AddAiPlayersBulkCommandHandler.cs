@@ -1,10 +1,5 @@
 ﻿using MediatR;
 using SupremeCourt.Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SupremeCourt.Application.CQRS.WaitingRooms.Commands
 {
@@ -19,17 +14,24 @@ namespace SupremeCourt.Application.CQRS.WaitingRooms.Commands
 
         public async Task<Unit> Handle(AddAiPlayersBulkCommand request, CancellationToken cancellationToken)
         {
+            // validace vstupů
+            if (request.Count <= 0)
+                return Unit.Value;
+
+            // existuje roomka?
             var session = _sessionManager.GetSession(request.WaitingRoomId);
-            if (session == null)
-                throw new Exception("Waiting room not found");
+            if (session is null)
+                throw new InvalidOperationException("Waiting room not found.");
 
             for (int i = 0; i < request.Count; i++)
             {
-                await session.AddAiPlayerAsync(request.Type); // nebo jiný způsob přidání AI
+                // voláme manager, který vytvoří AI hráče ve scoped DI
+                var ok = await _sessionManager.AddAiPlayerAsync(request.WaitingRoomId, request.Type, cancellationToken);
+                if (!ok)
+                    break; // room může být plná apod. (volitelné: vyhoď doménovou chybu)
             }
 
             return Unit.Value;
         }
     }
-
 }

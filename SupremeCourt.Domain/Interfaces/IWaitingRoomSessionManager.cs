@@ -37,4 +37,5 @@ public interface IWaitingRoomSessionManager
     List<WaitingRoomSession> GetAllSessions();
     WaitingRoomSession? GetSessionByPlayerId(int playerId);
     void RegisterCallbacks(Func<Guid, int, Task> onTick, Func<Guid, Task> onExpired);
+    Task<bool> AddAiPlayerAsync(Guid roomId, string aiType, CancellationToken ct);
 }

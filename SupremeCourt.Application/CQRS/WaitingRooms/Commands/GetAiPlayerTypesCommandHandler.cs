@@ -9,9 +9,9 @@ namespace SupremeCourt.Application.CQRS.WaitingRooms.Commands
 {
     public class GetAiPlayerTypesCommandHandler : IRequestHandler<GetAiPlayerTypesQuery, List<AiPlayerTypeDto>>
     {
-        private readonly IAIPlayerFactory _aiFactory;
+        private readonly IAiPlayerFactory _aiFactory;
 
-        public GetAiPlayerTypesCommandHandler(IAIPlayerFactory aiFactory)
+        public GetAiPlayerTypesCommandHandler(IAiPlayerFactory aiFactory)
         {
             _aiFactory = aiFactory;
         }

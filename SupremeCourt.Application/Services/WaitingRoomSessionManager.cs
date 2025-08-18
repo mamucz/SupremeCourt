@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using SupremeCourt.Domain.Interfaces;
 using SupremeCourt.Domain.Sessions;
 using System.Collections.Concurrent;
@@ -10,7 +11,7 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
     private readonly ILogger<WaitingRoomSessionManager> _logger;
     private readonly IWaitingRoomNotifier _notifier;
     private readonly int _expirationSeconds;
-    private readonly IAIPlayerFactory _aiFactory;
+    private readonly IServiceScopeFactory _scopeFactory; // ⬅️ místo IAiPlayerFactory
 
     private Func<Guid, int, Task>? _onTickCallback;
     private Func<Guid, Task>? _onExpiredCallback;
@@ -19,16 +20,16 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
         ILogger<WaitingRoomSessionManager> logger,
         IWaitingRoomNotifier notifier,
         IConfiguration configuration,
-        IAIPlayerFactory aiFactory)
+        IServiceScopeFactory scopeFactory) // ⬅️ změna
     {
         _logger = logger;
         _notifier = notifier;
+        _scopeFactory = scopeFactory;
 
-        // 🕒 Načtení hodnoty z konfigurace, default 900 sekund (15 minut), pokud nenalezena
+        // default např. 15 min (900 s); když klíč chybí nebo <= 0, padne to na 60 s
         _expirationSeconds = configuration.GetValue<int?>("WaitingRoom:ExpirationMinutes") is int minutes && minutes > 0
             ? minutes * 60
-            : 60; // fallback na 60 sekund
-        _aiFactory = aiFactory;
+            : 60;
     }
 
     public WaitingRoomSession? GetSession(Guid roomId)
@@ -41,7 +42,8 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
 
     public Guid CreateRoom(IPlayer createdBy)
     {
-        var session = new WaitingRoomSession(createdBy, RemoveAndNotifyRoomExpired, _expirationSeconds, _aiFactory);
+        // Preferuj, ať WaitingRoomSession přijímá async callback (Func<Guid, Task>)
+        var session = new WaitingRoomSession(createdBy, RemoveAndNotifyRoomExpiredAsync, _expirationSeconds);
 
         AttachCallbacks(session);
 
@@ -90,7 +92,8 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
             session.OnRoomExpired += _onExpiredCallback;
     }
 
-    private async void RemoveAndNotifyRoomExpired(Guid roomId)
+    // ⬇️ změněno na Task (ne async void)
+    private async Task RemoveAndNotifyRoomExpiredAsync(Guid roomId)
     {
         RemoveSession(roomId);
         if (_onExpiredCallback != null)
@@ -108,5 +111,24 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
         {
             AttachCallbacks(session);
         }
+    }
+
+    // --- PŘÍKLAD: když někde uvnitř potřebuješ IAiPlayerFactory / IPlayerRepository ---
+    public async Task<bool> AddAiPlayerAsync(Guid roomId, string aiType, CancellationToken ct)
+    {
+        if (!_sessions.TryGetValue(roomId, out var session))
+            return false;
+
+        using var scope = _scopeFactory.CreateScope();
+        var aiFactory = scope.ServiceProvider.GetRequiredService<IAiPlayerFactory>();
+        var playerRepo = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
+
+        // zajisti DB entitu pro AI hráče daného typu
+        await playerRepo.EnsureAiPlayerExistsAsync(aiType, ct);
+
+        // vytvoř runtime AI hráče (IAiPlayer by měl implementovat IPlayer nebo mít adaptér)
+        var aiPlayer = await aiFactory.CreateAsync(aiType);
+
+        return session.TryAddPlayer(aiPlayer);
     }
 }

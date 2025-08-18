@@ -62,20 +62,28 @@ namespace SupremeCourt.Infrastructure.Repositories
         public async Task EnsureAiPlayerExistsAsync(string type, CancellationToken cancellationToken)
         {
             var username = $"AI_{type}";
-            var exists = await _context.Players.AnyAsync(p => p.Username == username);
+            var exists = await _context.Players
+                .Include(p => p.User)
+                .AnyAsync(p => p.User.Username == username, cancellationToken);
 
-            if (!exists)
+            if (exists) return;
+
+            // vytvoř User i Player v jedné transakci
+            var user = new User
             {
-                var aiPlayer = new Player
-                {
-                    //Username = username,
-                    IsAi = true,
-                    // Volitelně další výchozí hodnoty (obrázek, heslo, apod.)
-                };
+                Username = username,
+                // nastav co potřebuješ: PasswordHash, Deleted=false, atd.
+                Deleted = false
+            };
 
-                _context.Players.Add(aiPlayer);
-                await _context.SaveChangesAsync();
-            }
+            var player = new Player
+            {
+                User = user,
+                IsAi = true
+            };
+
+            _context.Players.Add(player);
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
     }
