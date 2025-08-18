@@ -10,6 +10,7 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
     private readonly ILogger<WaitingRoomSessionManager> _logger;
     private readonly IWaitingRoomNotifier _notifier;
     private readonly int _expirationSeconds;
+    private readonly IAIPlayerFactory _aiFactory;
 
     private Func<Guid, int, Task>? _onTickCallback;
     private Func<Guid, Task>? _onExpiredCallback;
@@ -17,7 +18,8 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
     public WaitingRoomSessionManager(
         ILogger<WaitingRoomSessionManager> logger,
         IWaitingRoomNotifier notifier,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IAIPlayerFactory aiFactory)
     {
         _logger = logger;
         _notifier = notifier;
@@ -26,6 +28,7 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
         _expirationSeconds = configuration.GetValue<int?>("WaitingRoom:ExpirationMinutes") is int minutes && minutes > 0
             ? minutes * 60
             : 60; // fallback na 60 sekund
+        _aiFactory = aiFactory;
     }
 
     public WaitingRoomSession? GetSession(Guid roomId)
@@ -38,7 +41,7 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
 
     public Guid CreateRoom(IPlayer createdBy)
     {
-        var session = new WaitingRoomSession(createdBy, RemoveAndNotifyRoomExpired, _expirationSeconds);
+        var session = new WaitingRoomSession(createdBy, RemoveAndNotifyRoomExpired, _expirationSeconds, _aiFactory);
 
         AttachCallbacks(session);
 

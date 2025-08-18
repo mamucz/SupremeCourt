@@ -51,8 +51,6 @@ namespace SupremeCourt.Domain
                 {
                     User = user,
                     IsAi = true, 
-
-
                 };
 
                 await _playerRepository.AddAsync(player);

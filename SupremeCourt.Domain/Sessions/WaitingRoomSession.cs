@@ -21,7 +21,7 @@ namespace SupremeCourt.Domain.Sessions
         public event Func<Guid, int, Task>? OnCountdownTick;
         public event Func<Guid, Task>? OnRoomExpired;
 
-        public WaitingRoomSession(IPlayer createdBy, Action<Guid> onExpired, int timeLeftSeconds)
+        public WaitingRoomSession(IPlayer createdBy, Action<Guid> onExpired, int timeLeftSeconds, IAIPlayerFactory aiFactory)
         {
             WaitingRoomId = Guid.NewGuid();
             CreatedAt = DateTime.UtcNow;
@@ -30,6 +30,7 @@ namespace SupremeCourt.Domain.Sessions
             _onExpired = onExpired;
             _timeLeftSeconds = timeLeftSeconds;
             _timer = new Timer(Tick, null, 1000, 1000);
+            _aiFactory = aiFactory;
         }
 
         private async void Tick(object? state)

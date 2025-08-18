@@ -11,6 +11,7 @@ public static class ApplicationServices
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
+        
         // 📦 MediatR – registrace handlerů
         services.AddMediatR(cfg =>
         {
@@ -25,6 +26,8 @@ public static class ApplicationServices
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IGameService, GameService>();
         services.AddScoped<ICreateGameHandler, CreateGameHandler>();
+        services.AddSingleton<IAIPlayerFactory, AiPlayerFactory>();
+
 
         // 🧠 Čekací místnosti – singletony pro zachování runtime stavu
         services.AddSingleton<IWaitingRoomSessionManager, WaitingRoomSessionManager>();
