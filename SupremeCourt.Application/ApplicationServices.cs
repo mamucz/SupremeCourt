@@ -11,7 +11,9 @@ public static class ApplicationServices
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
-        
+        services.AddScoped<RegistrAIPlayersService>();
+        services.AddHostedService<AiPlayerRegistrationHostedService>();
+
         // 📦 MediatR – registrace handlerů
         services.AddMediatR(cfg =>
         {

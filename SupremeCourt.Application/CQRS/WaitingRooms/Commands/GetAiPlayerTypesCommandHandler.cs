@@ -20,6 +20,7 @@ namespace SupremeCourt.Application.CQRS.WaitingRooms.Commands
             CancellationToken cancellationToken)
         {
             var types = await _aiFactory.GetAiPlayerTypesAsync();
+            var aiplayers = types.Select(t => new AiPlayerTypeDto { Type = t }).ToList();
             return types.Select(t => new AiPlayerTypeDto { Type = t }).ToList();
         }
     }

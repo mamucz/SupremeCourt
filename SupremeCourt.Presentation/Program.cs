@@ -144,9 +144,6 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<GameDbContext>();
     db.Database.Migrate();
-    // 🤖 Registrace AI hráčů
-    // ✅ Umělý dotyk na typ z AI assembly
-    var _ = typeof(SupremeCourt.Domain.AIPlayers.RandomAiPlayerDefinition);
     var registrar = scope.ServiceProvider.GetRequiredService<IAIPlayerRegistrar>();
     await registrar.RegisterAllAiPlayersAsync();
 }

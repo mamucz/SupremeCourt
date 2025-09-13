@@ -9,6 +9,6 @@ namespace SupremeCourt.Domain.Interfaces
 {
     public interface IAiPlayer : IPlayer
     {
-        Task<int> MakeChoiceAsync(GameRound currentRound, List<GameRound> allRounds, CancellationToken cancellationToken);
+     
     }
 }

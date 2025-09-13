@@ -1,46 +1,48 @@
 ﻿using SupremeCourt.Domain.Interfaces;
 using System.Reflection;
 
-namespace SupremeCourt.Application.Services
-{
-    public class RegistrAIPlayersService
-    {
-        private readonly IPlayerRepository _playerRepository;
+namespace SupremeCourt.Application.Services;
 
-        public RegistrAIPlayersService(IPlayerRepository playerRepository)
+public class RegistrAIPlayersService
+{
+    private readonly IPlayerRepository _playerRepository;
+
+    public RegistrAIPlayersService(IPlayerRepository playerRepository)
+    {
+        _playerRepository = playerRepository;
+    }
+
+    public async Task RegisterAiPlayersAsync(CancellationToken cancellationToken)
+    {
+        // ✅ Vynutíme načtení sestavení, aby bylo dostupné v AppDomain
+        _ = typeof(AiPlayers.GptPlayer).Assembly;
+
+        // 🔍 Najdeme všechny typy z namespace AiPlayers implementující IPlayer
+        var aiPlayerTypes = AppDomain.CurrentDomain.GetAssemblies()
+            .Where(a => !a.IsDynamic)
+            .SelectMany(a =>
+            {
+                try { return a.GetExportedTypes(); }
+                catch (ReflectionTypeLoadException ex) { return ex.Types.Where(t => t != null)!; }
+            })
+            .Where(t => t is not null
+                        && t.IsClass
+                        && !t.IsAbstract
+                        && t.Namespace != null
+                        && t.Namespace.Contains("AiPlayers")
+                        && typeof(IPlayer).IsAssignableFrom(t))
+            .ToList();
+
+        if (!aiPlayerTypes.Any())
         {
-            _playerRepository = playerRepository;
+            Console.WriteLine("⚠️ Nebyly nalezeny žádné AI třídy.");
+            return;
         }
 
-        public async Task RegisterAiPlayersAsync(CancellationToken cancellationToken)
+        foreach (var type in aiPlayerTypes)
         {
-            // Najdi všechny typy, které implementují IAIPlayer
-            var aiPlayerTypes = AppDomain.CurrentDomain.GetAssemblies()
-                .Where(a => !a.IsDynamic && a.FullName!.Contains("AIPlayers")) // jen knihovny obsahující "AIPlayers"
-                .SelectMany(a =>
-                {
-                    try
-                    {
-                        return a.GetTypes();
-                    }
-                    catch
-                    {
-                        return Array.Empty<Type>();
-                    }
-                })
-                .Where(t => typeof(IPlayer).IsAssignableFrom(t) && !t.IsAbstract && t.IsClass)
-                .ToList();
-
-            if (!aiPlayerTypes.Any())
-                return;
-
-            foreach (var type in aiPlayerTypes)
-            {
-                // Jméno typu např. "GptAiPlayer"
-                var typeName = type.Name;
-
-                await _playerRepository.EnsureAiPlayerExistsAsync(typeName, cancellationToken);
-            }
+            var typeName = type.Name; // např. "GptAiPlayer"
+            await _playerRepository.EnsureAiPlayerExistsAsync(typeName, cancellationToken);
         }
     }
 }
