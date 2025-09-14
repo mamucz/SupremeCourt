@@ -8,7 +8,11 @@ using SupremeCourt.Domain.Interfaces;
 
 namespace SupremeCourt.Application.CQRS.Players.Commands
 {
-      
-    public record AddAiPlayerToRoomCommand(Guid WaitingRoomId, IPlayer player) : IRequest<bool>;
+
+    public class AddAiPlayerToRoomCommand : IRequest<bool>
+    {
+        public Guid WaitingRoomId { get; set; }
+        public string Type { get; set; } = default!;
+    }
 
 }

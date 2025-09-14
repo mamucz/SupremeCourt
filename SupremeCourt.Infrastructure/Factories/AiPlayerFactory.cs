@@ -40,6 +40,7 @@ public sealed class AiPlayerFactory : IAiPlayerFactory
 
         // 2) vytvoř instanci typu IAiPlayer s DI (AI třídy mohou mít své služby v ctoru)
         var instance = (IAiPlayer)ActivatorUtilities.CreateInstance(_services, implType);
+        var aiplayers = (IAiPlayer)ActivatorUtilities.CreateInstance(_services, implType);
         return instance;
     }
 

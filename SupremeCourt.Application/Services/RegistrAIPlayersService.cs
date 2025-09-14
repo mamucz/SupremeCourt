@@ -3,15 +3,30 @@ using System.Reflection;
 
 namespace SupremeCourt.Application.Services;
 
+/// <summary>
+/// Služba pro registraci všech dostupných AI hráčů do databáze.
+/// 
+/// Prochází všechny načtené .NET assembly a hledá typy implementující <see cref="IPlayer"/> v namespace `AiPlayers`.
+/// Pokud typ ještě není v databázi, zavolá <see cref="IPlayerRepository.EnsureAiPlayerExistsAsync"/>.
+/// </summary>
 public class RegistrAIPlayersService
 {
     private readonly IPlayerRepository _playerRepository;
 
+    /// <summary>
+    /// Inicializuje novou instanci <see cref="RegistrAIPlayersService"/>.
+    /// </summary>
+    /// <param name="playerRepository">Repozitář hráčů, který umožňuje registraci AI typů do databáze.</param>
     public RegistrAIPlayersService(IPlayerRepository playerRepository)
     {
         _playerRepository = playerRepository;
     }
 
+    /// <summary>
+    /// Načte všechny typy AI hráčů v namespace `AiPlayers`, které implementují <see cref="IPlayer"/>,
+    /// a zaregistruje je do databáze, pokud ještě neexistují.
+    /// </summary>
+    /// <param name="cancellationToken">Token pro zrušení operace.</param>
     public async Task RegisterAiPlayersAsync(CancellationToken cancellationToken)
     {
         // ✅ Vynutíme načtení sestavení, aby bylo dostupné v AppDomain
