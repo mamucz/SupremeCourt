@@ -116,7 +116,7 @@ namespace SupremeCourt.Domain.Sessions
         {
             lock (_playersLock)
             {
-                if (_players.Any(p => p.Id == player.Id)) return false;
+                if (_players.Any(p => (p.Id == player.Id && player.IsAi==false))) return false;
                 if (_players.Count >= 5) return false;
 
                 _players.Add(player);

@@ -194,7 +194,7 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
             return false;
         }
 
-        if (session.Players.Any(p => p.Id == player.Id))
+        if (session.Players.Any(p => p.Id == player.Id) && player.IsAi == false)
         {
             _logger.LogInformation("ℹ️ Hráč {PlayerId} je již připojen do místnosti {RoomId}.", player.Id, roomId);
             return true;
