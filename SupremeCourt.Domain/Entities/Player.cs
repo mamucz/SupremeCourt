@@ -7,7 +7,7 @@ namespace SupremeCourt.Domain.Entities
     public class Player : IPlayer
     {
         [Key]
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         [ForeignKey("User")]
         public int UserId { get; set; } // Propojení s User tabulkou
@@ -20,6 +20,9 @@ namespace SupremeCourt.Domain.Entities
         public string? ProfileImageUrlPath => User.ProfileImageUrlPath;
 
         public bool IsAi => User.IsAi;
+
+        public Guid ActiveWaitingRoom { get; set; }
+        public Guid ActiveGame { get; set; }
 
     }
 }

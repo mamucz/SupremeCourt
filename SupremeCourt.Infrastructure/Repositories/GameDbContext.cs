@@ -6,7 +6,7 @@ namespace SupremeCourt.Infrastructure
     public class GameDbContext : DbContext
     {
         public DbSet<User> Users { get; set; }
-        public DbSet<Player> Players { get; set; }
+       
         public DbSet<Game> Games { get; set; } // Přidáno
         public DbSet<GameRound> GameRounds { get; set; } // Přidáno
     
@@ -22,6 +22,7 @@ namespace SupremeCourt.Infrastructure
                 .WithOne()
                 .OnDelete(DeleteBehavior.Restrict);  // ⚠️ Zabránění cyklům smazání
 
+            
             // 1:M vztah mezi Game a GameRounds
             modelBuilder.Entity<Game>()
                 .HasMany(g => g.Rounds)
@@ -29,11 +30,6 @@ namespace SupremeCourt.Infrastructure
                 .HasForeignKey(r => r.GameId)
                 .OnDelete(DeleteBehavior.Restrict);  // ⚠️ Zabránění cyklům smazání
 
-            modelBuilder.Entity<Player>()
-                .HasOne(p => p.User)
-                .WithOne(u => u.Player)
-                .HasForeignKey<Player>(p => p.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

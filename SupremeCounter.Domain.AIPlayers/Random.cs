@@ -3,14 +3,15 @@ using SupremeCourt.Domain.Interfaces;
 
 namespace AiPlayers
 {
-    public class Random : IAiPlayer
+    public class Random : IPlayer
     {
         public int Id { get; }
-        public string Username { get => "Random"; }
+        public string Username { get; }
         public string? ProfileImageUrlPath { get; }
-        public bool IsAi { get => true; }
-        public int Score { get; set; }
-        public bool IsEliminated { get ; set; }
         public int numberOfLives { get; set; }
+        public bool IsEliminated { get; set; }
+        public bool IsAi { get; }
+        public Guid ActiveWaitingRoom { get; set; }
+        public Guid ActiveGame { get; set; }
     }
 }

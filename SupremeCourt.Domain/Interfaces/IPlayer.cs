@@ -11,11 +11,14 @@ namespace SupremeCourt.Domain.Interfaces
 {
     public interface IPlayer
     {
-        int Id{ get; }
+        Guid Id{ get; }
         string Username { get; }
         string? ProfileImageUrlPath { get; }
         int numberOfLives { get; set; }
         bool IsEliminated { get; set; }
-        public bool IsAi { get; }
+        bool IsAi { get; }
+
+        Guid ActiveWaitingRoom { get; set; }
+        Guid ActiveGame { get; set; }
     }
 }
