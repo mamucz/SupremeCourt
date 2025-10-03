@@ -27,30 +27,25 @@ public class AddAiPlayersBulkCommandHandler : IRequestHandler<AddAiPlayersBulkCo
 
     public async Task<Unit> Handle(AddAiPlayersBulkCommand request, CancellationToken cancellationToken)
     {
-        if (request.Count <= 0)
-            return Unit.Value;
+        
+            //using var scope = _scopeFactory.CreateScope();
 
-        for (int i = 0; i < request.Count; i++)
-        {
-            using var scope = _scopeFactory.CreateScope();
+            //var aiFactory = scope.ServiceProvider.GetRequiredService<IAiPlayerFactory>();
+            //var playerRepo = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
 
-            var aiFactory = scope.ServiceProvider.GetRequiredService<IAiPlayerFactory>();
-            var playerRepo = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
+            //// Zajistí, že hráč s daným typem existuje v DB
+            //await playerRepo.EnsureAiPlayerExistsAsync(request.Type, cancellationToken);
 
-            // Zajistí, že hráč s daným typem existuje v DB
-            await playerRepo.EnsureAiPlayerExistsAsync(request.Type, cancellationToken);
+            //// Vytvoří instanci AI hráče
+            //var aiPlayer = await aiFactory.CreateAsync(request.Type);
 
-            // Vytvoří instanci AI hráče
-            var aiPlayer = await aiFactory.CreateAsync(request.Type);
-
-            // Pokusí se přidat hráče do místnosti včetně SignalR notifikace
-            var success = await _sessionManager.TryAddPlayerToRoomAsync(request.WaitingRoomId, aiPlayer, cancellationToken);
-            if (!success)
-            {
-                _logger.LogWarning("⚠️ Nepodařilo se přidat AI hráče {Index}/{Count} do místnosti {RoomId}.", i + 1, request.Count, request.WaitingRoomId);
-                break;
-            }
-        }
+            //// Pokusí se přidat hráče do místnosti včetně SignalR notifikace
+            //var success = await _sessionManager.TryAddPlayerToRoomAsync(request.WaitingRoomId, aiPlayer, cancellationToken);
+            //if (!success)
+            //{
+            //    _logger.LogWarning("⚠️ Nepodařilo se přidat AI hráče {Index}/{Count} do místnosti {RoomId}.", i + 1, request.Count, request.WaitingRoomId);
+            //    break;
+        
 
         return Unit.Value;
     }

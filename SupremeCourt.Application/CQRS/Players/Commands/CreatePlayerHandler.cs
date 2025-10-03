@@ -38,10 +38,10 @@ namespace SupremeCourt.Application.CQRS.Players.Commands
 
             var player = new Player
             {
-                UserId = command.UserId,
-                Score = 0,
-                IsEliminated = false,
-                User = user
+                //UserId = command.UserId,
+                //Score = 0,
+                //IsEliminated = false,
+                //User = user
             };
 
             await _playerRepository.AddAsync(player);

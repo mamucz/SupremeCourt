@@ -18,32 +18,32 @@ namespace SupremeCourt.Domain.Logic
 
         public static void ProcessRound(Game game, Dictionary<int, int> playerChoices)
         {
-            if (!game.IsActive)
-                throw new InvalidOperationException("Game is not active.");
+            //if (!game.IsActive)
+            //    throw new InvalidOperationException("Game is not active.");
 
-            // Výpočet průměru * 0.8
-            double average = playerChoices.Values.Average();
-            int calculatedAverage = (int)Math.Round(average * 0.8);
+            //// Výpočet průměru * 0.8
+            //double average = playerChoices.Values.Average();
+            //int calculatedAverage = (int)Math.Round(average * 0.8);
 
-            // Hledání hráče s nejbližší hodnotou k výsledku
-            int winningPlayerId = playerChoices
-                .OrderBy(p => Math.Abs(p.Value - calculatedAverage))
-                .First().Key;
+            //// Hledání hráče s nejbližší hodnotou k výsledku
+            //int winningPlayerId = playerChoices
+            //    .OrderBy(p => Math.Abs(p.Value - calculatedAverage))
+            //    .First().Key;
 
-            // Aktualizace skóre hráčů
-            foreach (var player in game.Players)
-            {
-                if (player.Id != winningPlayerId)
-                {
-                    player.Score -= 1;
-                    if (player.Score <= MinScore)
-                    {
-                        player.IsEliminated = true;
-                    }
-                }
-            }
+            //// Aktualizace skóre hráčů
+            //foreach (var player in game.Players)
+            //{
+            //    if (player.Id != winningPlayerId)
+            //    {
+            //        player.Score -= 1;
+            //        if (player.Score <= MinScore)
+            //        {
+            //            player.IsEliminated = true;
+            //        }
+            //    }
+            //}
 
-            game.RoundNumber++;
+            //game.RoundNumber++;
         }
     }
 }

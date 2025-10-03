@@ -11,5 +11,6 @@ namespace AiPlayers
         public bool IsAi { get => true; }
         public int Score { get; set; }
         public bool IsEliminated { get ; set; }
+        public int numberOfLives { get; set; }
     }
 }

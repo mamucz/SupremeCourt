@@ -78,8 +78,8 @@ namespace SupremeCourt.Infrastructure.Repositories
 
             var player = new Player
             {
-                User = user,
-                IsAi = true
+                //User = user,
+                //IsAi = true
             };
 
             _context.Players.Add(player);

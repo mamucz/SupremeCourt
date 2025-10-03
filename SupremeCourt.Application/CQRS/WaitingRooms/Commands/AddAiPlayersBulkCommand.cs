@@ -7,5 +7,5 @@ using System.Threading.Tasks;
 
 namespace SupremeCourt.Application.CQRS.WaitingRooms.Commands
 {
-    public record AddAiPlayersBulkCommand(Guid WaitingRoomId, int Count, string Type) : IRequest<Unit>;
+    public record AddAiPlayersBulkCommand(string Type, Guid WaitingRoomId) : IRequest<Unit>;
 }

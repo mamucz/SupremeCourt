@@ -8,7 +8,7 @@ namespace SupremeCourt.Domain.DTOs
 {
     public class AddAiPlayersBulkDto
     {
-        public int Count { get; set; }
         public string Type { get; set; } = "Random";
+        public Guid idWaitingRoom { get; set; }
     }
 }

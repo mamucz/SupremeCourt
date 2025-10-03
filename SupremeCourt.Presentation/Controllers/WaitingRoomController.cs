@@ -120,10 +120,10 @@ namespace SupremeCourt.Presentation.Controllers
             return Ok(result);
         }
 
-        [HttpPost("{roomId}/add-ai-bulk")]
-        public async Task<IActionResult> AddAiPlayersBulk(Guid roomId, [FromBody] AddAiPlayersBulkDto dto)
+        [HttpPost("{roomId}/add-ai-player")]
+        public async Task<IActionResult> AddAiPlayer(Guid roomId, [FromBody] AddAiPlayersBulkDto dto)
         {
-            await _mediator.Send(new AddAiPlayersBulkCommand(roomId, dto.Count, dto.Type));
+            await _mediator.Send(new AddAiPlayersBulkCommand(dto.Type, dto.idWaitingRoom));
             return NoContent();
         }
 

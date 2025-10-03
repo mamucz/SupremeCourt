@@ -49,8 +49,8 @@ namespace SupremeCourt.Domain
 
                 var player = new Player
                 {
-                    User = user,
-                    IsAi = true, 
+                    //User = user,
+                    //IsAi = true, 
                 };
 
                 await _playerRepository.AddAsync(player);

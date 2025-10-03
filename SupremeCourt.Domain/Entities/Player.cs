@@ -11,16 +11,15 @@ namespace SupremeCourt.Domain.Entities
 
         [ForeignKey("User")]
         public int UserId { get; set; } // Propojení s User tabulkou
-        public int Score { get; set; } = 0;
-        public bool IsEliminated { get; set; } = false;
-        public bool IsAi { get; set; } = false;
 
+        public int numberOfLives { get; set; }
+        public bool IsEliminated { get; set; } = false;
         // Navigační vlastnost
         public User User { get; set; } = null!;
-
         public string Username => User.Username;
+        public string? ProfileImageUrlPath => User.ProfileImageUrlPath;
 
-        public string? ProfileImageUrlPath => $"/api/auth/{UserId}/profile-picture";
+        public bool IsAi => User.IsAi;
 
     }
 }
