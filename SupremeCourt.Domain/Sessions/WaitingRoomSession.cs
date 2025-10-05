@@ -124,7 +124,7 @@ namespace SupremeCourt.Domain.Sessions
             }
         }
 
-        public bool TryRemovePlayer(int playerId)
+        public bool TryRemovePlayer(Guid playerId)
         {
             lock (_playersLock)
             {

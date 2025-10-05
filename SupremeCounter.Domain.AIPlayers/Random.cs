@@ -5,7 +5,7 @@ namespace AiPlayers
 {
     public class Random : IPlayer
     {
-        public int Id { get; }
+        public Guid Id { get; }
         public string Username { get; }
         public string? ProfileImageUrlPath { get; }
         public int numberOfLives { get; set; }

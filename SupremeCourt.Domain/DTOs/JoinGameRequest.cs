@@ -3,6 +3,6 @@
     public class JoinGameRequest
     {
         public Guid WaitingRoomId { get; set; }
-        public int PlayerId { get; set; }
+        public Guid PlayerId { get; set; }
     }
 }

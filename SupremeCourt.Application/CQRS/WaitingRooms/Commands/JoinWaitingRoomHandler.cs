@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Logging;
 using SupremeCourt.Application.CQRS.WaitingRooms.Commands;
+using SupremeCourt.Domain.Entities;
 using SupremeCourt.Domain.Interfaces;
 
 public class JoinWaitingRoomHandler : IRequestHandler<JoinWaitingRoomCommand, bool>
@@ -21,21 +22,21 @@ public class JoinWaitingRoomHandler : IRequestHandler<JoinWaitingRoomCommand, bo
         _logger = logger;
     }
 
-    public async Task<bool> Handle(JoinWaitingRoomCommand request, CancellationToken cancellationToken)
+    public async Task<bool> Handle(JoinWaitingRoomCommand request)
     {
-        var player = await _playerRepository.GetByIdAsync(request.PlayerId);
+        Player? player = _playerRepository.GetById(request.Player);
         if (player == null)
         {
-            _logger.LogWarning("❌ Hráč {PlayerId} nebyl nalezen v databázi.", request.PlayerId);
+            _logger.LogWarning("❌ Hráč s ID {PlayerId} nebyl nalezen.", request.Player);
             return false;
         }
 
         // Použij sjednocenou logiku včetně SignalR notifikací
-        var success = await _sessionManager.TryAddPlayerToRoomAsync(request.WaitingRoomId, player, cancellationToken);
+        var success = await _sessionManager.TryAddPlayerToRoomAsync(request.WaitingRoomId, player as IPlayer);
 
         if (!success)
         {
-            _logger.LogWarning("❌ Připojení hráče {PlayerId} do místnosti {RoomId} selhalo.", request.PlayerId, request.WaitingRoomId);
+            _logger.LogWarning("❌ Připojení hráče {Player} do místnosti {RoomId} selhalo.", request.Player.User.Username, request.WaitingRoomId);
             return false;
         }
 

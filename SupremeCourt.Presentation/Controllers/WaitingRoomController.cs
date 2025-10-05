@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using SupremeCourt.Application.CQRS.WaitingRooms.Commands;
 using SupremeCourt.Application.CQRS.WaitingRooms.Queries;
 using SupremeCourt.Domain.DTOs;
+using SupremeCourt.Domain.Entities;
 
 namespace SupremeCourt.Presentation.Controllers
 {
@@ -54,7 +55,7 @@ namespace SupremeCourt.Presentation.Controllers
         {
             var result = await _mediator.Send(new JoinWaitingRoomCommand(request.WaitingRoomId, request.PlayerId));
             if (!result)
-                return BadRequest(new { message = "Unable to join the waiting room." });
+                return BadRequest(new { message = @"Unable to join {PlayerId} the waiting room.", request.PlayerId });
 
             return Ok(new { message = "Joined successfully." });
         }

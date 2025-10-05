@@ -1,90 +1,51 @@
-﻿using Microsoft.EntityFrameworkCore;
-using SupremeCourt.Domain.Entities;
+﻿using SupremeCourt.Domain.Entities;
 using SupremeCourt.Domain.Interfaces;
+using System.Collections.Concurrent;
 
-namespace SupremeCourt.Infrastructure.Repositories
+namespace SupremeCourt.Infrastructure.Repositories;
+
+/// <summary>
+/// In-memory implementace repository pro hráče (Player).
+/// Nepoužívá databázi – veškeré operace probíhají v paměti.
+/// </summary>
+public class PlayerRepository : IPlayerRepository
 {
-    public class PlayerRepository : IPlayerRepository
+    private readonly ConcurrentDictionary<Guid, Player> _players = new();
+    
+    public Player? GetById(Guid id)
     {
-        private readonly GameDbContext _context;
-
-        public PlayerRepository(GameDbContext context)
-        {
-            _context = context;
-        }
-
-        public async Task<Player?> GetByIdAsync(int id)
-        {
-            return await _context.Players
-                .Include(p => p.User)
-                .FirstOrDefaultAsync(p => p.Id == id);
-        }
-
-        public async Task<Player?> GetByUserIdAsync(int userId)
-        {
-            return await _context.Players
-                .Include(p => p.User)
-                .Where(p => !p.User.Deleted) // Ignorujeme hráče, jejichž User je smazán
-                .FirstOrDefaultAsync(p => p.UserId == userId);
-        }
+        _players.TryGetValue(id, out var player);
+        return player;
+    }
 
 
-        public async Task AddAsync(Player player)
-        {
-            _context.Players.Add(player);
-            await _context.SaveChangesAsync();
-        }
+    public Task<List<Player>> GetAll()
+    {
+        return Task.FromResult(_players.Values.ToList());
+    }
 
-        public async Task DeleteAsync(Player player)
-        {
-            _context.Players.Remove(player);
-            await _context.SaveChangesAsync();
-        }
+    public Player CreatePlayer(User user)
+    {
+        Player newPalyer = new Player(user);
+        newPalyer.User = user;
+        newPalyer.Id = Guid.NewGuid();
 
-        public async Task<List<Player>> GetAllAsync()
-        {
-            return await _context.Players.ToListAsync();
-        }
+        _players.TryAdd(newPalyer.Id, newPalyer);
+        return newPalyer;
+    }
 
-        public async Task UpdateAsync(Player player)
-        {
-            _context.Players.Update(player);
-            await _context.SaveChangesAsync();
-        }
-        public async Task<List<Player>> GetAllAiPlayersAsync(CancellationToken cancellationToken)
-        {
-            return await _context.Players
-                .Include(p => p.User)
-                .Where(p => p.IsAi)
-                .ToListAsync(cancellationToken);
-        }
+    public void Delete(Player player)
+    {
+        _players.TryRemove(player.Id, out _);
+        return ;
+    }
 
-        public async Task EnsureAiPlayerExistsAsync(string type, CancellationToken cancellationToken)
-        {
-            var username = $"AI_{type}";
-            var exists = await _context.Players
-                .Include(p => p.User)
-                .AnyAsync(p => p.User.Username == username, cancellationToken);
+    public List<Player> GetAllAiPlayers(CancellationToken cancellationToken)
+    {
+        var aiPlayers = _players.Values
+            .Where(p => p.IsAi)
+            .ToList();
 
-            if (exists) return;
-
-            // vytvoř User i Player v jedné transakci
-            var user = new User
-            {
-                Username = username,
-                // nastav co potřebuješ: PasswordHash, Deleted=false, atd.
-                Deleted = false
-            };
-
-            var player = new Player
-            {
-                //User = user,
-                //IsAi = true
-            };
-
-            _context.Players.Add(player);
-            await _context.SaveChangesAsync(cancellationToken);
-        }
-
+        return aiPlayers;
     }
 }

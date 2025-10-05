@@ -1,7 +1,9 @@
-﻿namespace SupremeCourt.Application.CQRS.Players.Commands
+﻿using SupremeCourt.Domain.Entities;
+
+namespace SupremeCourt.Application.CQRS.Players.Commands
 {
     public class CreatePlayerCommand
     {
-        public int UserId { get; set; } // Použití UserId místo Name
+        public User User { get; set; } // Použití UserId místo Name
     }
 }
