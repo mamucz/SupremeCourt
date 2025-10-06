@@ -18,7 +18,6 @@ public class PlayerRepository : IPlayerRepository
         return player;
     }
 
-
     public Task<List<Player>> GetAll()
     {
         return Task.FromResult(_players.Values.ToList());

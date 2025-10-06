@@ -8,7 +8,7 @@ namespace SupremeCourt.Domain.DTOs
 {
     public class PlayerDto
     {
-        public int PlayerId { get; set; }
+        public Guid PlayerId { get; set; }
         public string Username { get; set; } = string.Empty;
         public string? ProfileImageUrl => $"/api/players/{PlayerId}/profile-picture";
     }

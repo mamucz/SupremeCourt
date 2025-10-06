@@ -34,5 +34,13 @@ namespace SupremeCourt.Infrastructure.Repositories
         {
             return await _context.Users.FindAsync(id);
         }
+
+    
+        public async Task<User?> GetAiUserByTypeAsync(string typeName)
+        {
+            return await _context.Users
+                .FirstOrDefaultAsync(u => u.IsAi && u.TypeName == typeName);
+        }
+    
     }
 }

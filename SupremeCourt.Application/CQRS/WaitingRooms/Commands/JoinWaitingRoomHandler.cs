@@ -24,7 +24,7 @@ public class JoinWaitingRoomHandler : IRequestHandler<JoinWaitingRoomCommand, bo
 
     public async Task<bool> Handle(JoinWaitingRoomCommand request)
     {
-        Player? player = _playerRepository.GetById(request.Player);
+        Player? player = _playerRepository.GetById(request.Player.Id);
         if (player == null)
         {
             _logger.LogWarning("❌ Hráč s ID {PlayerId} nebyl nalezen.", request.Player);

@@ -53,9 +53,9 @@ namespace SupremeCourt.Presentation.Controllers
         [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> JoinWaitingRoom([FromBody] JoinGameRequest request)
         {
-            var result = await _mediator.Send(new JoinWaitingRoomCommand(request.WaitingRoomId, request.PlayerId));
+            var result = await _mediator.Send(new JoinWaitingRoomCommand(request.WaitingRoomId, request.Player));
             if (!result)
-                return BadRequest(new { message = @"Unable to join {PlayerId} the waiting room.", request.PlayerId });
+                return BadRequest(new { message = @"Unable to join {PlayerId} the waiting room.", request.Player });
 
             return Ok(new { message = "Joined successfully." });
         }

@@ -21,6 +21,7 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
     private readonly IWaitingRoomNotifier _notifier;
     private readonly int _expirationSeconds;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IUserRepository _userRepository;
 
     private Func<Guid, int, Task>? _onTickCallback;
     private Func<Guid, Task>? _onExpiredCallback;
@@ -36,7 +37,8 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
         ILogger<WaitingRoomSessionManager> logger,
         IWaitingRoomNotifier notifier,
         IConfiguration configuration,
-        IServiceScopeFactory scopeFactory)
+        IServiceScopeFactory scopeFactory,
+        IUserRepository userRepository)
     {
         _logger = logger;
         _notifier = notifier;
@@ -45,6 +47,7 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
         _expirationSeconds = configuration.GetValue<int?>("WaitingRoom:ExpirationMinutes") is int minutes && minutes > 0
             ? minutes * 60
             : 60;
+        _userRepository = userRepository;
     }
 
     /// <summary>
@@ -113,7 +116,7 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
     /// <summary>
     /// Vrátí místnost, ve které se nachází hráč podle jeho ID.
     /// </summary>
-    public WaitingRoomSession? GetSessionByPlayerId(int playerId)
+    public WaitingRoomSession? GetSessionByPlayerId(Guid playerId)
     {
         return _sessions.Values.FirstOrDefault(s => s.Players.Any(p => p.Id == playerId));
     }
@@ -173,7 +176,9 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
         var aiFactory = scope.ServiceProvider.GetRequiredService<IAiPlayerFactory>();
         var playerRepo = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
 
-        await playerRepo.EnsureAiPlayerExistsAsync(aiType, ct);
+        await _userRepository.GetAiUserByTypeAsync(aiType, ct) is not User aiUser
+            ? throw new InvalidOperationException($"AI uživatel typu '{aiType}' nebyl nalezen v databázi.")
+            : ct.ThrowIfCancellationRequested();
         var aiPlayer = await aiFactory.CreateAsync(aiType);
 
         return session.TryAddPlayer(aiPlayer);
