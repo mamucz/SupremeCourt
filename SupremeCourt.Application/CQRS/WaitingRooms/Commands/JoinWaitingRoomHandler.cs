@@ -32,7 +32,7 @@ public class JoinWaitingRoomHandler : IRequestHandler<JoinWaitingRoomCommand, bo
         }
 
         // Použij sjednocenou logiku včetně SignalR notifikací
-        var success = await _sessionManager.TryAddPlayerToRoomAsync(request.WaitingRoomId, player as IPlayer);
+        var success = await _sessionManager.AddPlayerToRoomAsync(request.WaitingRoomId, player as IPlayer);
 
         if (!success)
         {
