@@ -14,7 +14,7 @@ namespace SupremeCourt.Domain.Interfaces
         Guid Id{ get; }
         string Username { get; }
         string? ProfileImageUrlPath { get; }
-        int numberOfLives { get; set; }
+        int NumberOfLives { get; set; }
         bool IsEliminated { get; set; }
         bool IsAi { get; }
 

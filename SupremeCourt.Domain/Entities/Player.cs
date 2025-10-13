@@ -10,7 +10,7 @@ namespace SupremeCourt.Domain.Entities
     {
         public Guid Id { get; set; } // Jedinečný ID hráče v runtime (nebo klidně přebrat z User.Id)
 
-        public int NumberOfLives { get; set; } = 3;
+        public int NumberOfLives { get; set; } = 10;
         public bool IsEliminated { get; set; } = false;
 
         public Guid ActiveWaitingRoom { get; set; } = Guid.Empty;

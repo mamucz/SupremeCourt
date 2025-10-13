@@ -4,9 +4,12 @@ using Microsoft.Extensions.DependencyInjection;
 using SupremeCourt.Domain.Interfaces;
 using SupremeCourt.Domain.Sessions;
 using System.Collections.Concurrent;
+using Newtonsoft.Json;
 using SupremeCourt.Domain.DTOs;
 using SupremeCourt.Domain.Entities;
 using SupremeCourt.Domain.Mappings;
+using MediatR;
+using SupremeCourt.Application.CQRS.WaitingRooms.Commands;
 
 /// <summary>
 /// Správce běžících (runtime) čekacích místností. 
@@ -22,6 +25,7 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
     private readonly int _expirationSeconds;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IUserRepository _userRepository;
+    private readonly IMediator _mediator;
 
     private Func<Guid, int, Task>? _onTickCallback;
     private Func<Guid, Task>? _onExpiredCallback;
@@ -38,7 +42,8 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
         IWaitingRoomNotifier notifier,
         IConfiguration configuration,
         IServiceScopeFactory scopeFactory,
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        IMediator mediator)
     {
         _logger = logger;
         _notifier = notifier;
@@ -48,6 +53,7 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
             ? minutes * 60
             : 60;
         _userRepository = userRepository;
+        _mediator = mediator;
     }
 
     /// <summary>
@@ -92,7 +98,7 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
     /// <summary>
     /// Pokusí se odstranit hráče z dané místnosti.
     /// </summary>
-    public bool TryRemovePlayer(Guid roomId, int playerId)
+    public bool TryRemovePlayer(Guid roomId, Guid playerId)
     {
         if (_sessions.TryGetValue(roomId, out var session))
         {
@@ -169,20 +175,15 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
     /// <returns>True, pokud byl hráč úspěšně přidán.</returns>
     public async Task<bool> AddAiPlayerAsync(Guid roomId, string aiType, CancellationToken ct)
     {
-        if (!_sessions.TryGetValue(roomId, out var session))
-            return false;
-
-        using var scope = _scopeFactory.CreateScope();
-        var aiFactory = scope.ServiceProvider.GetRequiredService<IAiPlayerFactory>();
-        var playerRepo = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
-
-        await _userRepository.GetAiUserByTypeAsync(aiType, ct) is not User aiUser
-            ? throw new InvalidOperationException($"AI uživatel typu '{aiType}' nebyl nalezen v databázi.")
-            : ct.ThrowIfCancellationRequested();
-        var aiPlayer = await aiFactory.CreateAsync(aiType);
-
-        return session.TryAddPlayer(aiPlayer);
+        var aiUser = await _userRepository.GetAiUserByTypeAsync(aiType);
+        Player aiPlayer = new Player(aiUser);
+        var result = await _mediator.Send(new JoinWaitingRoomCommand(roomId, aiPlayer));
+        if (!result)
+            _logger.LogError("Can't add AI Player");
+        return result;
     }
+
+    public object TypeNameAssemblyFormatHandling { get; set; }
 
     public async Task<bool> TryAddPlayerToRoomAsync(Guid roomId, IPlayer player, CancellationToken ct = default)
     {
@@ -226,5 +227,8 @@ public class WaitingRoomSessionManager : IWaitingRoomSessionManager
         return true;
     }
 
-
+    public bool AddPlayerToRoomAsync(Guid roomId, IPlayer player)
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -19,7 +19,7 @@ public interface IWaitingRoomSessionManager
     /// <summary>
     /// Pokusí se odebrat hráče z místnosti. Vrací true, pokud byl odstraněn.
     /// </summary>
-    bool TryRemovePlayer(Guid roomId, int playerId);
+    bool TryRemovePlayer(Guid roomId, Guid playerId);
 
     /// <summary>
     /// Získá session podle ID místnosti.
@@ -35,7 +35,7 @@ public interface IWaitingRoomSessionManager
     /// Vrací všechny aktuální sessiony.
     /// </summary>
     List<WaitingRoomSession> GetAllSessions();
-    WaitingRoomSession? GetSessionByPlayerId(int playerId);
+    WaitingRoomSession? GetSessionByPlayerId(Guid playerId);
     void RegisterCallbacks(Func<Guid, int, Task> onTick, Func<Guid, Task> onExpired);
     Task<bool> AddAiPlayerAsync(Guid roomId, string aiType, CancellationToken ct);
     bool AddPlayerToRoomAsync(Guid roomId, IPlayer player);

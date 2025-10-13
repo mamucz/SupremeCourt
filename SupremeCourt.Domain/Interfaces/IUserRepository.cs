@@ -8,5 +8,6 @@ namespace SupremeCourt.Domain.Interfaces
         Task<User?> GetByUsernameAsync(string username);
         Task AddAsync(User user);
         Task UpdateAsync(User user); // Přidáno
+        Task<User?> GetAiUserByTypeAsync(string typeName);
     }
 }
