@@ -9,5 +9,5 @@ using System.Threading.Tasks;
 
 namespace SupremeCourt.Application.CQRS.WaitingRooms.Commands
 {
-    public record LeaveWaitingRoomCommand(Guid WaitingRoomId, int PlayerId) : IRequest<bool>;
+    public record LeaveWaitingRoomCommand(Guid WaitingRoomId, Guid PlayerId) : IRequest<bool>;
 }

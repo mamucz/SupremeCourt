@@ -10,6 +10,6 @@ namespace SupremeCourt.Domain.DTOs
     {
         public Guid WaitingRoomId { get; set; }
         public DateTime CreatedAt { get; set; }
-        public int CreatedByPlayerId { get; set; }
+        public Guid CreatedByPlayerId { get; set; }
     }
 }

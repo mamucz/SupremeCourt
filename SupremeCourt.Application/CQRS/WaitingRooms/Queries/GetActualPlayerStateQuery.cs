@@ -10,11 +10,11 @@ namespace SupremeCourt.Application.CQRS.WaitingRooms.Queries
 {
     public class GetActualPlayerStateQuery : IRequest<ActualPlayerStateDto>
     {
-        public int UserId { get; }
+        public Guid PlayerId { get; }
 
-        public GetActualPlayerStateQuery(int userId)
+        public GetActualPlayerStateQuery(Guid playerId)
         {
-            UserId = userId;
+            PlayerId = playerId;
         }
     }
 }

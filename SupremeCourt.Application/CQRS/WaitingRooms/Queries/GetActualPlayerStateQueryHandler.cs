@@ -24,16 +24,15 @@ namespace SupremeCourt.Application.CQRS.WaitingRooms.Handlers
 
         public async Task<ActualPlayerStateDto> Handle(GetActualPlayerStateQuery request, CancellationToken cancellationToken)
         {
-            var isLoggedIn = _userSessionRepository.IsUserConnected(request.UserId);
+            var isLoggedIn = false; //TODO: await _userSessionRepository.IsUserLoggedInAsync(request.PlayerId);
 
-            var waitingRoom = _waitingRoomSessionManager.GetSessionByPlayerId((int)request.UserId);
-            var game = await _gameService.GetGameIdByUserIdAsync(request.UserId);
-
+            var waitingRoom = _waitingRoomSessionManager.GetSessionByPlayerId(request.PlayerId);
+           
             return new ActualPlayerStateDto
             {
                 IsLoggedIn = isLoggedIn,
                 IsInWaitingRoom = waitingRoom?.WaitingRoomId,
-                IsInGame = game?.Id
+                IsInGame = 0
             };
         }
     }

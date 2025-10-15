@@ -64,7 +64,6 @@ namespace SupremeCourt.Application.Services
                 PasswordHash = hashedPassword,
                 ProfilePicture = profilePicture,
                 ProfilePictureMimeType = mimeType,
-                Player = new Player()
             };
 
             await _userRepository.AddAsync(user);

@@ -8,5 +8,5 @@ using SupremeCourt.Domain.DTOs;
 
 namespace SupremeCourt.Application.CQRS.WaitingRooms.Commands
 {
-    public record GetWaitingRoomByPlayerIdQuery(int PlayerId) : IRequest<WaitingRoomDto?>;
+    public record GetWaitingRoomByPlayerIdQuery(Guid PlayerId) : IRequest<WaitingRoomDto?>;
 }

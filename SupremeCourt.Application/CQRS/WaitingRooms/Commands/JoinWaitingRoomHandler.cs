@@ -13,8 +13,8 @@ public class JoinWaitingRoomHandler : IRequestHandler<JoinWaitingRoomCommand, bo
     public JoinWaitingRoomHandler(
         IWaitingRoomSessionManager sessionManager,
         IPlayerRepository playerRepository,
-        IGameService gameService, // nepoužitý, ale můžeš ho zatím ponechat
-        IWaitingRoomNotifier notifier, // taky už není třeba zde
+        IGameService gameService, // nepoužitý
+        IWaitingRoomNotifier notifier, // nepoužitý
         ILogger<JoinWaitingRoomHandler> logger)
     {
         _sessionManager = sessionManager;
@@ -22,17 +22,16 @@ public class JoinWaitingRoomHandler : IRequestHandler<JoinWaitingRoomCommand, bo
         _logger = logger;
     }
 
-    public async Task<bool> Handle(JoinWaitingRoomCommand request)
+    public async Task<bool> Handle(JoinWaitingRoomCommand request, CancellationToken cancellationToken)
     {
-        Player? player = _playerRepository.GetById(request.Player.Id);
+        var player =  _playerRepository.GetById(request.Player.Id);
         if (player == null)
         {
-            _logger.LogWarning("❌ Hráč s ID {PlayerId} nebyl nalezen.", request.Player);
+            _logger.LogWarning("❌ Hráč s ID {PlayerId} nebyl nalezen.", request.Player.Id);
             return false;
         }
 
-        // Použij sjednocenou logiku včetně SignalR notifikací
-        var success = await _sessionManager.AddPlayerToRoomAsync(request.WaitingRoomId, player as IPlayer);
+        var success =  _sessionManager.AddPlayerToRoomAsync(request.WaitingRoomId, player);
 
         if (!success)
         {

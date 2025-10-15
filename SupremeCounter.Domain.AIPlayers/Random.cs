@@ -8,7 +8,7 @@ namespace AiPlayers
         public Guid Id { get; }
         public string Username { get; }
         public string? ProfileImageUrlPath { get; }
-        public int numberOfLives { get; set; }
+        public int NumberOfLives { get; set; }
         public bool IsEliminated { get; set; }
         public bool IsAi { get; }
         public Guid ActiveWaitingRoom { get; set; }

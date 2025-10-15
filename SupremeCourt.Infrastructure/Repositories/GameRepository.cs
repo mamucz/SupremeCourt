@@ -23,13 +23,19 @@ namespace SupremeCourt.Infrastructure.Repositories
             _context.Games.Update(game);
             await _context.SaveChangesAsync();
         }
+
+        public Task<Game?> GetActiveGameByPlayerIdAsync(int playerId)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task AddAsync(Game game)
         {
             _context.Games.Add(game);
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Game?> GetActiveGameByPlayerIdAsync(int playerId) // Implementace
+        public async Task<Game?> GetActiveGameByPlayerIdAsync(Guid playerId) // Implementace
         {
             return await _context.Games
                 .Include(g => g.Players)
